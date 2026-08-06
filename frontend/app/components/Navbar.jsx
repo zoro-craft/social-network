@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
+import Image from 'next/image';
 import styles from '../styles/navbar.module.css';
 
 export default function Navbar() {
@@ -44,10 +45,13 @@ export default function Navbar() {
               onClick={() => setOpen(!open)}
             >
               {auth.avatar ? (
-                <img
+                <Image
                   className={styles.avatarImg}
                   src={`http://localhost:8080${auth.avatar}`}
                   alt=""
+                  width={28}
+                  height={28}
+                  unoptimized
                 />
               ) : (
                 <span className={styles.avatarFallback}>
