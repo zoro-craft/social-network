@@ -1,3 +1,85 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 40px;
+  background: rgba(13, 7, 18, 0.85);
+  border-bottom: 1px solid rgba(168, 85, 247, 0.15);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.logo {
+  color: #f4f0fb;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  background: linear-gradient(135deg, #f4f0fb 0%, #c084fc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.authButtons {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.username {
+  color: #d9c9f0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+  font-family: inherit;
+}
+
+.login {
+  background: transparent;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #d9c9f0;
+}
+
+.login:hover {
+  background: rgba(168, 85, 247, 0.1);
+}
+
+.register {
+  background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.3);
+}
+
+.register:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.45);
+}
+
+.logout {
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+.logout:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
 .avatarWrap {
   position: relative;
 }
