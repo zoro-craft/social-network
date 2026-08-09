@@ -1,12 +1,15 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './context/AuthContext';
+import styles from './styles/home.module.css';
 
 export default function Home() {
   const router = useRouter();
   const { auth, loading } = useAuth();
+  const [posts, setPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !auth.authenticated) {
@@ -14,21 +17,64 @@ export default function Home() {
     }
   }, [loading, auth.authenticated, router]);
 
+  useEffect(() => {
+    if (!auth.authenticated) return;
+
+    async function fetchPosts() {
+      try {
+        const res = await fetch('http://localhost:8080/posts', {
+          credentials: 'include',
+        });
+        const data = await res.json();
+        setPosts(data || []);
+      } catch (err) {
+        setPosts([]);
+      } finally {
+        setPostsLoading(false);
+      }
+    }
+
+    fetchPosts();
+  }, [auth.authenticated]);
+
   if (loading || !auth.authenticated) {
-    return null; // or a loading spinner
+    return null;
   }
 
   return (
-    <div
-      style={{
-        maxWidth: 600,
-        color: 'white',
-        margin: '60px auto',
-        textAlign: 'center',
-      }}
-    >
-      <h1>Welcome to 01Forum</h1>
-      <p>Connect, share, and chat with people around the world.</p>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h1 className={styles.heading}>Feed</h1>
+        <button
+          className={styles.createButton}
+          onClick={() => router.push('/posts/create')}
+        >
+          + Create Post
+        </button>
+      </div>
+
+      {postsLoading && <p className={styles.status}>Loading posts...</p>}
+
+      {!postsLoading && posts.length === 0 && (
+        <p className={styles.status}>
+          No posts yet. Be the first to share something.
+        </p>
+      )}
+
+      {posts.map((post) => (
+        <div key={post.id} className={styles.postCard}>
+          <p className={styles.postAuthor}>{post.nickname}</p>
+          <p className={styles.postContent}>{post.content}</p>
+          {post.image && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              className={styles.postImage}
+              src={`http://localhost:8080${post.image}`}
+              alt=""
+            />
+          )}
+        </div>
+      ))}
     </div>
   );
 }
