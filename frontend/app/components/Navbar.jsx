@@ -18,8 +18,8 @@ export default function Navbar() {
         setOpen(false);
       }
     }
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleLogout = async () => {
@@ -31,7 +31,6 @@ export default function Navbar() {
     setOpen(false);
     router.push('/login');
   };
-
   return (
     <header className={styles.navbar}>
       <div className={styles.logo} onClick={() => router.push('/')}>
