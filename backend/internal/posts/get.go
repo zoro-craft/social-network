@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"zone/internal/auth"
 	"zone/internal/database"
 	"zone/internal/utils"
 )
@@ -13,6 +14,8 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
+
+	viewerID, _ := auth.GetUserIDFromSession(r)
 
 	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
 	if err != nil || limit <= 0 {
@@ -37,14 +40,19 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// A post is visible if it's public, or if it's "almost_private"/"private"
+	// and the viewer is logged in. (Follower-only filtering comes later.)
 	query := `
-SELECT p.id, p.title, p.content, p.image, p.privacy, p.user_id, u.nickname, p.created_at	FROM posts p
+		SELECT p.id, p.title, p.content, COALESCE(p.image, ''), p.privacy,
+		       p.user_id, COALESCE(u.nickname, ''), p.created_at
+		FROM posts p
 		JOIN users u ON p.user_id = u.id
+		WHERE (p.privacy = 'public' OR ? > 0)
 	`
-	args := []interface{}{}
+	args := []interface{}{viewerID}
 
 	if beforeStr != "" {
-		query += " WHERE p.id <= ?"
+		query += " AND p.id <= ?"
 		args = append(args, beforeID)
 	}
 
@@ -61,13 +69,8 @@ SELECT p.id, p.title, p.content, p.image, p.privacy, p.user_id, u.nickname, p.cr
 	posts := []Post{}
 	for rows.Next() {
 		var p Post
-		var image *string
-
-		if err :=rows.Scan(&p.ID, &p.Title, &p.Content, &image, &p.Privacy, &p.UserID, &p.Nickname, &p.CreatedAt); err != nil {
+		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.UserID, &p.Nickname, &p.CreatedAt); err != nil {
 			continue
-		}
-		if image != nil {
-			p.Image = *image
 		}
 		posts = append(posts, p)
 	}
@@ -81,36 +84,30 @@ SELECT p.id, p.title, p.content, p.image, p.privacy, p.user_id, u.nickname, p.cr
 
 	utils.RespondJSON(w, http.StatusOK, posts)
 }
-/* 
-func GetPostByIDAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
 
-	idStr := r.PathValue("id")
-	postID, err := strconv.Atoi(idStr)
-	if err != nil || postID <= 0 {
-		utils.HandleError(w, http.StatusBadRequest, "Invalid post id")
-		return
-	}
-
-	var p Post
-	var image *string
-
-	err = database.Database.QueryRow(`
-		SELECT p.id, p.content, p.image, p.privacy, p.user_id, u.nickname, p.created_at
+// GetPostsByUser returns a single user's posts, filtered by what the
+// viewer is allowed to see. viewerID of 0 means not logged in.
+func GetPostsByUser(userID, viewerID int) ([]Post, error) {
+	rows, err := database.Database.Query(`
+		SELECT p.id, p.title, p.content, COALESCE(p.image, ''), p.privacy,
+		       p.user_id, COALESCE(u.nickname, ''), p.created_at
 		FROM posts p
 		JOIN users u ON p.user_id = u.id
-		WHERE p.id = ?
-	`, postID).Scan(&p.ID, &p.Content, &image, &p.Privacy, &p.UserID, &p.Nickname, &p.CreatedAt)
+		WHERE p.user_id = ? AND (p.privacy = 'public' OR ? > 0)
+		ORDER BY p.id DESC
+	`, userID, viewerID)
 	if err != nil {
-		utils.HandleError(w, http.StatusNotFound, "Post not found")
-		return
+		return nil, err
 	}
-	if image != nil {
-		p.Image = *image
-	}
+	defer rows.Close()
 
-	utils.RespondJSON(w, http.StatusOK, p)
-} */
+	result := []Post{}
+	for rows.Next() {
+		var p Post
+		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.UserID, &p.Nickname, &p.CreatedAt); err != nil {
+			continue
+		}
+		result = append(result, p)
+	}
+	return result, rows.Err()
+}

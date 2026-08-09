@@ -2,21 +2,31 @@ package posts
 
 import (
 	"errors"
-	"io"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/gofrs/uuid"
+	"zone/internal/utils"
 )
+
+var allowedPostExtensions = map[string]bool{
+	".jpg":  true,
+	".jpeg": true,
+	".png":  true,
+	".gif":  true,
+}
+
+var errInvalidImageType = errors.New("only JPEG, PNG, and GIF images are allowed")
 
 // savePostImage saves an optional image/GIF attached to the post.
 // Returns an empty string if no file was provided.
 func savePostImage(r *http.Request) (string, error) {
 	file, header, err := r.FormFile("image")
+	if err == http.ErrMissingFile {
+		return "", errors.New("Image is requird")
+	}
 	if err != nil {
-		return "", errors.New("an image is required")
+		return "", err
 	}
 	defer file.Close()
 
@@ -25,26 +35,9 @@ func savePostImage(r *http.Request) (string, error) {
 		return "", errInvalidImageType
 	}
 
-	uploadDir := "./uploads/posts"
-	if err := os.MkdirAll(uploadDir, 0o755); err != nil {
-		return "", err
-	}
-
-	newUUID, err := uuid.NewV4()
+	filename, err := utils.SaveUploadFile(file, header.Filename, "./uploads/posts")
 	if err != nil {
 		return "", err
 	}
-	filename := newUUID.String() + ext
-	fullPath := filepath.Join(uploadDir, filename)
-	dst, err := os.Create(fullPath)
-	if err != nil {
-		return "", err
-	}
-	defer dst.Close()
-
-	if _, err := io.Copy(dst, file); err != nil {
-		return "", err
-	}
-
 	return "/uploads/posts/" + filename, nil
 }
