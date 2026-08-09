@@ -6,7 +6,9 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	"zone/internal/middleware"
 	"zone/internal/posts"
+	"zone/internal/profile"
 	"zone/internal/utils"
 )
 
@@ -26,23 +28,9 @@ func main() {
 
 	mux.HandleFunc("GET /posts", posts.GetPostsAPI)
 	mux.HandleFunc("POST /posts/create", posts.CreatePostAPI)
+	mux.HandleFunc("GET /profile/{id}", profile.GetProfileAPI)
+	mux.HandleFunc("POST /profile/toggle-visibility", profile.ToggleVisibilityAPI)
 
 	log.Println("Server running on :8080")
-	http.ListenAndServe(":8080", corsMiddleware(mux))
-}
-
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
+	http.ListenAndServe(":8080", middleware.CORS(mux))
 }
