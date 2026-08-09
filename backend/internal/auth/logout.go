@@ -9,11 +9,6 @@ import (
 )
 
 func Logout(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/logout" {
-		utils.HandleError(w, http.StatusNotFound, "Page not found")
-		return
-	}
-
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
@@ -28,7 +23,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		_, err := database.Database.Exec("DELETE FROM sessions WHERE id = ?", cookie.Value)
 		if err != nil {
 			log.Printf("Logout: failed to delete session %s: %v", cookie.Value, err)
-		} 
+		}
 	}
 
 	expired := time.Unix(0, 0)

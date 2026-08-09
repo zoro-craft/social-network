@@ -11,12 +11,8 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 )
-func Login(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/login" {
-		utils.HandleError(w, http.StatusNotFound, "Page not found")
-		return
-	}
 
+func Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
@@ -27,11 +23,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	if identifier == "" || password == "" {
 		utils.HandleError(w, http.StatusBadRequest, "Email/username and password are required")
-		return
-	}
-
-	if len(identifier) < 2 || len(identifier) > 50 || len(password) < 6 || len(password) > 21 {
-		utils.HandleError(w, http.StatusBadRequest, "Invalid data form")
 		return
 	}
 
@@ -65,9 +56,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	sessionID := sessionUUID.String()
 	expiration := time.Now().Add(24 * time.Hour)
 
+	// Store the expiry as a UTC string in the same format SQLite's
+	// DATETIME('now') produces so the comparison in GetUserIDFromSession
+	// works regardless of the server's local timezone.
+	expiresAt := expiration.UTC().Format("2006-01-02 15:04:05")
+
 	_, err = database.Database.Exec(
 		"INSERT INTO sessions (id, expires_at, user_id) VALUES (?, ?, ?)",
-		sessionID, expiration, userID,
+		sessionID, expiresAt, userID,
 	)
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Server error")

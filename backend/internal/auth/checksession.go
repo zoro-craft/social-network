@@ -14,14 +14,19 @@ func Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var firstName, nickname string
-	var avatar *string
+	var firstName string
+	var nickname, avatar *string
 	err = database.Database.QueryRow(
 		"SELECT first_name, nickname, avatar FROM users WHERE id = ?", userID,
 	).Scan(&firstName, &nickname, &avatar)
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Server error")
 		return
+	}
+
+	nicknameValue := ""
+	if nickname != nil {
+		nicknameValue = *nickname
 	}
 
 	avatarValue := ""
@@ -31,8 +36,9 @@ func Me(w http.ResponseWriter, r *http.Request) {
 
 	utils.RespondJSON(w, http.StatusOK, map[string]any{
 		"authenticated": true,
+		"id":            userID,
 		"first_name":    firstName,
-		"nickname":      nickname,
+		"nickname":      nicknameValue,
 		"avatar":        avatarValue,
 	})
 }
