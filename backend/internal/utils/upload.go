@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/gofrs/uuid"
 )
@@ -38,34 +39,13 @@ func UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	ext := filepath.Ext(header.Filename)
-	if !allowedExtensions[ext] {
+	if !allowedExtensions[fileExt(header.Filename)] {
 		HandleError(w, http.StatusBadRequest, "Only JPEG, PNG, and GIF files are allowed")
 		return
 	}
 
-	uploadDir := "./uploads/avatars"
-	if err := os.MkdirAll(uploadDir, 0o755); err != nil {
-		HandleError(w, http.StatusInternalServerError, "Could not create upload directory")
-		return
-	}
-
-	newUUID, err := uuid.NewV4()
+	filename, err := SaveUploadFile(file, header.Filename, "./uploads/avatars")
 	if err != nil {
-		HandleError(w, http.StatusInternalServerError, "Server error")
-		return
-	}
-	filename := newUUID.String() + ext
-	fullPath := filepath.Join(uploadDir, filename)
-
-	dst, err := os.Create(fullPath)
-	if err != nil {
-		HandleError(w, http.StatusInternalServerError, "Could not save file")
-		return
-	}
-	defer dst.Close()
-
-	if _, err := io.Copy(dst, file); err != nil {
 		HandleError(w, http.StatusInternalServerError, "Could not save file")
 		return
 	}
@@ -73,4 +53,33 @@ func UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	RespondJSON(w, http.StatusOK, map[string]string{
 		"path": fmt.Sprintf("/uploads/avatars/%s", filename),
 	})
+}
+
+// SaveUploadFile stores a file under dir with a unique UUID name, keeping the
+// original extension. It returns the generated filename.
+func SaveUploadFile(src io.Reader, originalName, dir string) (string, error) {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return "", err
+	}
+
+	newUUID, err := uuid.NewV4()
+	if err != nil {
+		return "", err
+	}
+	filename := newUUID.String() + fileExt(originalName)
+
+	dst, err := os.Create(filepath.Join(dir, filename))
+	if err != nil {
+		return "", err
+	}
+	defer dst.Close()
+
+	if _, err := io.Copy(dst, src); err != nil {
+		return "", err
+	}
+	return filename, nil
+}
+
+func fileExt(name string) string {
+	return strings.ToLower(filepath.Ext(name))
 }
