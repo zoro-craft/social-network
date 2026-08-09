@@ -5,9 +5,9 @@
   justify-content: center;
   background: radial-gradient(
     circle at top,
-    #1a1025 0%,
-    #0d0712 60%,
-    #08050d 100%
+    #101014 0%,
+    #0c0c0f 55%,
+    var(--bg) 100%
   );
   padding: 40px 20px;
 }
@@ -15,18 +15,17 @@
 .card {
   width: 100%;
   max-width: 420px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(168, 85, 247, 0.2);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 40px 32px;
-  backdrop-filter: blur(12px);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.5),
-    0 0 60px rgba(168, 85, 247, 0.08);
+    var(--shadow),
+    0 0 60px rgba(99, 102, 241, 0.05);
 }
 
 .title {
-  color: #f4f0fb;
+  color: var(--text-primary);
   font-size: 28px;
   font-weight: 700;
   margin: 0 0 4px;
@@ -35,7 +34,7 @@
 }
 
 .subtitle {
-  color: #9b8fae;
+  color: var(--text-muted);
   font-size: 14px;
   text-align: center;
   margin: 0 0 28px;
@@ -59,28 +58,30 @@
 .input,
 .textarea {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(168, 85, 247, 0.25);
+  border: 1px solid var(--border-strong);
   border-radius: 10px;
   padding: 12px 14px;
-  color: #f4f0fb;
+  color: var(--text-primary);
   font-size: 14px;
   outline: none;
   transition:
     border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    background 0.2s ease;
   width: 100%;
   font-family: inherit;
 }
 
 .input::placeholder,
 .textarea::placeholder {
-  color: #6b6178;
+  color: var(--text-muted);
 }
 
 .input:focus,
 .textarea:focus {
-  border-color: #a855f7;
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .textarea {
@@ -89,7 +90,7 @@
 }
 
 .fileLabel {
-  color: #b8a9cc;
+  color: var(--text-secondary);
   font-size: 13px;
   display: flex;
   flex-direction: column;
@@ -97,14 +98,14 @@
 }
 
 .fileInput {
-  color: #9b8fae;
+  color: var(--text-muted);
   font-size: 13px;
 }
 
 .fileInput::file-selector-button {
-  background: rgba(168, 85, 247, 0.15);
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  color: #d9c9f0;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  color: var(--text-primary);
   padding: 6px 12px;
   border-radius: 8px;
   cursor: pointer;
@@ -114,11 +115,11 @@
 }
 
 .fileInput::file-selector-button:hover {
-  background: rgba(168, 85, 247, 0.3);
+  background: rgba(99, 102, 241, 0.25);
 }
 
 .button {
-  background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
   border: none;
   border-radius: 10px;
   color: #fff;
@@ -131,12 +132,12 @@
     transform 0.15s ease,
     box-shadow 0.15s ease,
     opacity 0.15s ease;
-  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
+  box-shadow: 0 4px 20px var(--accent-glow);
 }
 
 .button:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 26px rgba(168, 85, 247, 0.45);
+  box-shadow: 0 6px 26px var(--accent-glow);
 }
 
 .button:disabled {
@@ -146,9 +147,9 @@
 }
 
 .error {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-border);
+  color: var(--danger);
   font-size: 13px;
   padding: 10px 12px;
   border-radius: 8px;
@@ -157,14 +158,14 @@
 }
 
 .footerText {
-  color: #9b8fae;
+  color: var(--text-muted);
   font-size: 13px;
   text-align: center;
   margin-top: 22px;
 }
 
 .footerText a {
-  color: #c084fc;
+  color: var(--accent-hover);
   text-decoration: none;
   font-weight: 600;
 }
