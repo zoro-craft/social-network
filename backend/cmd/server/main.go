@@ -6,6 +6,7 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	"zone/internal/posts"
 	"zone/internal/utils"
 )
 
@@ -19,8 +20,13 @@ func main() {
 	mux.HandleFunc("/register", auth.Register)
 	mux.HandleFunc("/login", auth.Login)
 	mux.HandleFunc("/me", auth.Me)
-mux.HandleFunc("/logout",auth.Logout)
-mux.HandleFunc("/upload/avatar",utils.UploadAvatar)
+	mux.HandleFunc("/logout", auth.Logout)
+	mux.HandleFunc("/upload/avatar", utils.UploadAvatar)
+	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
+
+	mux.HandleFunc("GET /posts", posts.GetPostsAPI)
+	mux.HandleFunc("POST /posts/create", posts.CreatePostAPI)
+
 	log.Println("Server running on :8080")
 	http.ListenAndServe(":8080", corsMiddleware(mux))
 }
