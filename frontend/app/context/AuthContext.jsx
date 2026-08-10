@@ -7,6 +7,7 @@ import {
   useState,
   useCallback,
 } from 'react';
+import { API_BASE } from '../lib/api';
 
 const AuthContext = createContext(null);
 
@@ -16,7 +17,7 @@ export function AuthProvider({ children }) {
 
   const refreshAuth = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:8080/me', {
+      const res = await fetch(`${API_BASE}/me`, {
         credentials: 'include',
       });
       if (!res.ok) throw new Error();
@@ -31,26 +32,14 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let cancelled = false;
-
     (async () => {
-      try {
-        const res = await fetch('http://localhost:8080/me', {
-          credentials: 'include',
-        });
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        if (!cancelled) setAuth(data);
-      } catch {
-        if (!cancelled) setAuth({ authenticated: false, nickname: '' });
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+      await refreshAuth();
+      if (cancelled) return;
     })();
-
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [refreshAuth]);
 
   return (
     <AuthContext.Provider value={{ auth, setAuth, loading, refreshAuth }}>
