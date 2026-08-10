@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE } from '../lib/api';
 import Image from 'next/image';
 import styles from '../styles/navbar.module.css';
 
@@ -12,6 +13,11 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
 
+  const goToProfile = () => {
+    setOpen(false);
+    router.push(`/profile/${auth.id}`);
+  };
+
   useEffect(() => {
     function handleClickOutside(e) {
       if (wrapRef.current && !wrapRef.current.contains(e.target)) {
@@ -20,10 +26,11 @@ export default function Navbar() {
     }
 
     document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleLogout = async () => {
-    await fetch('http://localhost:8080/logout', {
+    await fetch(`${API_BASE}/logout`, {
       method: 'POST',
       credentials: 'include',
     });
@@ -31,6 +38,7 @@ export default function Navbar() {
     setOpen(false);
     router.push('/login');
   };
+
   return (
     <header className={styles.navbar}>
       <div className={styles.logo} onClick={() => router.push('/')}>
@@ -46,7 +54,7 @@ export default function Navbar() {
               {auth.avatar ? (
                 <Image
                   className={styles.avatarImg}
-                  src={`http://localhost:8080${auth.avatar}`}
+                  src={`${API_BASE}${auth.avatar}`}
                   alt=""
                   width={28}
                   height={28}
@@ -62,13 +70,7 @@ export default function Navbar() {
 
             {open && (
               <div className={styles.dropdown}>
-                <button
-                  className={styles.dropdownItem}
-                  onClick={() => {
-                    setOpen(false);
-                    router.push('/profile');
-                  }}
-                >
+                <button className={styles.dropdownItem} onClick={goToProfile}>
                   Profile
                 </button>
                 <button
