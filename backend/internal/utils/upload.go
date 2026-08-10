@@ -58,6 +58,7 @@ func UploadAvatar(w http.ResponseWriter, r *http.Request) {
 // SaveUploadFile stores a file under dir with a unique UUID name, keeping the
 // original extension. It returns the generated filename.
 func SaveUploadFile(src io.Reader, originalName, dir string) (string, error) {
+	//creat folder
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return "", err
 	}
