@@ -18,8 +18,6 @@ var allowedPostExtensions = map[string]bool{
 
 var errInvalidImageType = errors.New("only JPEG, PNG, and GIF images are allowed")
 
-// savePostImage saves an optional image/GIF attached to the post.
-// Returns an empty string if no file was provided.
 func savePostImage(r *http.Request) (string, error) {
 	file, header, err := r.FormFile("image")
 	if err == http.ErrMissingFile {

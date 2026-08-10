@@ -85,8 +85,7 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 	utils.RespondJSON(w, http.StatusOK, posts)
 }
 
-// GetPostsByUser returns a single user's posts, filtered by what the
-// viewer is allowed to see. viewerID of 0 means not logged in.
+
 func GetPostsByUser(userID, viewerID int) ([]Post, error) {
 	rows, err := database.Database.Query(`
 		SELECT p.id, p.title, p.content, COALESCE(p.image, ''), p.privacy,
