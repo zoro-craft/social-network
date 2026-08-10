@@ -4,8 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE } from '../lib/api';
-import Image from 'next/image';
 import styles from '../styles/navbar.module.css';
+import Avatar from './Avatar';
 
 export default function Navbar() {
   const router = useRouter();
@@ -16,6 +16,11 @@ export default function Navbar() {
   const goToProfile = () => {
     setOpen(false);
     router.push(`/profile/${auth.id}`);
+  };
+
+  const goToSearch = () => {
+    setOpen(false);
+    router.push('/search');
   };
 
   useEffect(() => {
@@ -44,60 +49,60 @@ export default function Navbar() {
       <div className={styles.logo} onClick={() => router.push('/')}>
         01Forum
       </div>
-      <div className={styles.authButtons}>
-        {auth.authenticated ? (
-          <div className={styles.avatarWrap} ref={wrapRef}>
-            <button
-              className={styles.avatarButton}
-              onClick={() => setOpen(!open)}
-            >
-              {auth.avatar ? (
-                <Image
-                  className={styles.avatarImg}
-                  src={`${API_BASE}${auth.avatar}`}
-                  alt=""
-                  width={28}
-                  height={28}
-                  unoptimized
-                />
-              ) : (
-                <span className={styles.avatarFallback}>
-                  {auth.first_name?.charAt(0).toUpperCase()}
-                </span>
-              )}
-              {auth.first_name}
-            </button>
 
-            {open && (
-              <div className={styles.dropdown}>
-                <button className={styles.dropdownItem} onClick={goToProfile}>
-                  Profile
-                </button>
-                <button
-                  className={`${styles.dropdownItem} ${styles.danger}`}
-                  onClick={handleLogout}
-                >
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <>
-            <button
-              className={`${styles.btn} ${styles.login}`}
-              onClick={() => router.push('/login')}
-            >
-              Login
-            </button>
-            <button
-              className={`${styles.btn} ${styles.register}`}
-              onClick={() => router.push('/register')}
-            >
-              Register
-            </button>
-          </>
+      <div className={styles.navActions}>
+        {auth.authenticated && (
+          <button
+            className={styles.searchButton}
+            onClick={goToSearch}
+            aria-label="Search"
+          >
+            Search
+          </button>
         )}
+
+        <div className={styles.authButtons}>
+          {auth.authenticated ? (
+            <div className={styles.avatarWrap} ref={wrapRef}>
+              <button
+                className={styles.avatarButton}
+                onClick={() => setOpen(!open)}
+              >
+                <Avatar src={auth.avatar} name={auth.first_name} size={28} />
+                {auth.first_name}
+              </button>
+
+              {open && (
+                <div className={styles.dropdown}>
+                  <button className={styles.dropdownItem} onClick={goToProfile}>
+                    Profile
+                  </button>
+                  <button
+                    className={`${styles.dropdownItem} ${styles.danger}`}
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <button
+                className={`${styles.btn} ${styles.login}`}
+                onClick={() => router.push('/login')}
+              >
+                Login
+              </button>
+              <button
+                className={`${styles.btn} ${styles.register}`}
+                onClick={() => router.push('/register')}
+              >
+                Register
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );
