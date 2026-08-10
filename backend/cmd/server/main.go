@@ -9,6 +9,7 @@ import (
 	"zone/internal/middleware"
 	"zone/internal/posts"
 	"zone/internal/profile"
+	"zone/internal/users"
 	"zone/internal/utils"
 )
 
@@ -24,6 +25,7 @@ func main() {
 	mux.HandleFunc("/me", auth.Me)
 	mux.HandleFunc("/logout", auth.Logout)
 	mux.HandleFunc("/upload/avatar", utils.UploadAvatar)
+	mux.HandleFunc("GET /users/search", users.SearchUsersAPI)
 	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
 
 	mux.HandleFunc("GET /posts", posts.GetPostsAPI)
