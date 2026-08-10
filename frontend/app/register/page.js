@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_BASE } from '../lib/api';
 import styles from '../styles/auth.module.css';
 
 export default function RegisterPage() {
@@ -37,7 +38,7 @@ export default function RegisterPage() {
         const avatarForm = new FormData();
         avatarForm.append('avatar', avatarFile);
 
-        const uploadRes = await fetch('http://localhost:8080/upload/avatar', {
+        const uploadRes = await fetch(`${API_BASE}/upload/avatar`, {
           method: 'POST',
           body: avatarForm,
         });
@@ -55,7 +56,7 @@ export default function RegisterPage() {
 
       const body = new URLSearchParams({ ...form, avatar: avatarPath });
 
-      const res = await fetch('http://localhost:8080/register', {
+      const res = await fetch(`${API_BASE}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body,

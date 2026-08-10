@@ -3,6 +3,7 @@
 import { useAuth } from '@/app/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { API_BASE } from '../../lib/api';
 import styles from '../../styles/auth.module.css';
 
 export default function CreatePostPage() {
@@ -30,7 +31,10 @@ export default function CreatePostPage() {
       setError('Title and content are required');
       return;
     }
-
+    if (imageFile == null) {
+      setError('image is requird');
+      return;
+    }
     setLoading(true);
 
     try {
@@ -42,7 +46,7 @@ export default function CreatePostPage() {
         form.append('image', imageFile);
       }
 
-      const res = await fetch('http://localhost:8080/posts/create', {
+      const res = await fetch(`${API_BASE}/posts/create`, {
         method: 'POST',
         credentials: 'include',
         body: form,
@@ -71,7 +75,6 @@ export default function CreatePostPage() {
   if (authLoading || !auth.authenticated) {
     return null;
   }
-
   return (
     <div className={styles.wrapper}>
       <div className={styles.card}>
@@ -107,12 +110,13 @@ export default function CreatePostPage() {
           </select>
 
           <label className={styles.fileLabel}>
-            Image 
+            Image
             <input
               className={styles.fileInput}
               type="file"
               accept="image/jpeg,image/png,image/gif"
               onChange={(e) => setImageFile(e.target.files[0])}
+              required
             />
           </label>
 

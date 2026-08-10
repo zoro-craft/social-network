@@ -3,34 +3,37 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(
-    circle at top,
-    #101014 0%,
-    #0c0c0f 55%,
-    var(--bg) 100%
-  );
   padding: 40px 20px;
 }
 
 .card {
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
   padding: 40px 32px;
-  box-shadow:
-    var(--shadow),
-    0 0 60px rgba(99, 102, 241, 0.05);
+  box-shadow: var(--shadow);
+  animation: cardIn 0.3s ease;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .title {
   color: var(--text-primary);
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
   margin: 0 0 4px;
   text-align: center;
-  letter-spacing: -0.02em;
 }
 
 .subtitle {
@@ -43,7 +46,7 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .row {
@@ -57,17 +60,14 @@
 
 .input,
 .textarea {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border-strong);
-  border-radius: 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
   padding: 12px 14px;
   color: var(--text-primary);
   font-size: 14px;
   outline: none;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease;
   width: 100%;
   font-family: inherit;
 }
@@ -77,11 +77,15 @@
   color: var(--text-muted);
 }
 
+.input:hover:not(:focus),
+.textarea:hover:not(:focus) {
+  border-color: var(--border-strong);
+}
+
 .input:focus,
 .textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
-  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--accent-border);
+  background: var(--bg-hover);
 }
 
 .textarea {
@@ -103,47 +107,43 @@
 }
 
 .fileInput::file-selector-button {
-  background: var(--accent-soft);
-  border: 1px solid var(--accent-border);
+  background: var(--bg-hover);
+  border: 1px solid var(--border-strong);
   color: var(--text-primary);
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 7px 14px;
+  border-radius: 7px;
   cursor: pointer;
   margin-right: 10px;
   font-size: 12px;
-  transition: background 0.2s ease;
+  font-weight: 600;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .fileInput::file-selector-button:hover {
-  background: rgba(99, 102, 241, 0.25);
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
 }
 
 .button {
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+  background: var(--text-primary);
   border: none;
-  border-radius: 10px;
-  color: #fff;
+  border-radius: 8px;
+  color: var(--bg);
   font-size: 15px;
   font-weight: 600;
   padding: 13px;
   cursor: pointer;
   margin-top: 8px;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    opacity 0.15s ease;
-  box-shadow: 0 4px 20px var(--accent-glow);
+  transition: background 0.2s ease, opacity 0.2s ease;
 }
 
 .button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 26px var(--accent-glow);
+  background: var(--accent-hover);
 }
 
 .button:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
 }
 
 .error {
@@ -151,7 +151,7 @@
   border: 1px solid var(--danger-border);
   color: var(--danger);
   font-size: 13px;
-  padding: 10px 12px;
+  padding: 11px 14px;
   border-radius: 8px;
   margin: 0;
   text-align: center;
@@ -165,11 +165,13 @@
 }
 
 .footerText a {
-  color: var(--accent-hover);
+  color: var(--text-secondary);
   text-decoration: none;
   font-weight: 600;
+  transition: color 0.2s ease;
 }
 
 .footerText a:hover {
+  color: var(--text-primary);
   text-decoration: underline;
 }

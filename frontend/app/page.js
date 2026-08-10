@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './context/AuthContext';
+import { API_BASE } from './lib/api';
 import styles from './styles/home.module.css';
-
+import formatDate from './lib/format';
 export default function Home() {
   const router = useRouter();
   const { auth, loading } = useAuth();
@@ -22,7 +23,7 @@ export default function Home() {
 
     async function fetchPosts() {
       try {
-        const res = await fetch('http://localhost:8080/posts', {
+        const res = await fetch(`${API_BASE}/posts`, {
           credentials: 'include',
         });
         const data = await res.json();
@@ -63,16 +64,20 @@ export default function Home() {
 
       {posts.map((post) => (
         <div key={post.id} className={styles.postCard}>
-          <p className={styles.postAuthor}>{post.nickname}</p>
-          <p className={styles.postContent}>{post.content}</p>
+          <p className={styles.postAuthor}>Posted by {post.nickname}</p>
+          <p className={styles.postTitle}>{post.title}</p>
+
           {post.image && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               className={styles.postImage}
-              src={`http://localhost:8080${post.image}`}
+              src={`${API_BASE}${post.image}`}
               alt=""
             />
           )}
+
+          <p className={styles.postContent}>{post.content}</p>
+          <p className={styles.postDate}>{formatDate(post.created_at)}</p>
         </div>
       ))}
     </div>

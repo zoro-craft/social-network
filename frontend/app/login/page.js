@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE } from '../lib/api';
 import styles from '../styles/auth.module.css';
 
 export default function LoginPage() {
@@ -28,7 +29,7 @@ export default function LoginPage() {
     try {
       const body = new URLSearchParams(form);
 
-      const res = await fetch('http://localhost:8080/login', {
+      const res = await fetch(`${API_BASE}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         credentials: 'include',
