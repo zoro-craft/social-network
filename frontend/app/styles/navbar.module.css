@@ -25,6 +25,34 @@
   opacity: 0.8;
 }
 
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.searchButton {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.searchButton:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-border);
+  color: var(--text-primary);
+}
+
 .authButtons {
   display: flex;
   align-items: center;
