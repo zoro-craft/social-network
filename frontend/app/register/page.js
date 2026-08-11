@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_BASE } from '../lib/api';
+import { useToast } from '@/app/context/ToastContext';
+
 import styles from '../styles/auth.module.css';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [error, setError] = useState('');
+  const showToast = useToast();
   const [loading, setLoading] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
 
@@ -28,7 +30,6 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
@@ -46,7 +47,7 @@ export default function RegisterPage() {
         const uploadData = await uploadRes.json();
 
         if (!uploadRes.ok) {
-          setError(uploadData.message || 'Avatar upload failed');
+          showToast(uploadData.message || 'Avatar upload failed');
           setLoading(false);
           return;
         }
@@ -65,14 +66,14 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || 'Registration failed');
+        showToast(data.message || 'Registration failed');
         setLoading(false);
         return;
       }
-
+      showToast('Account created successfully', false);
       router.push('/login');
     } catch (err) {
-      setError('Could not reach the server');
+      showToast('Could not reach the server');
       setLoading(false);
     }
   };
@@ -168,9 +169,6 @@ export default function RegisterPage() {
               onChange={(e) => setAvatarFile(e.target.files[0])}
             />
           </label>
-
-          {error && <p className={styles.error}>{error}</p>}
-
           <button className={styles.button} type="submit" disabled={loading}>
             {loading ? 'Registering...' : 'Register'}
           </button>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/app/context/AuthContext';
+import { useToast } from '@/app/context/ToastContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { API_BASE } from '../../lib/api';
@@ -9,12 +10,12 @@ import styles from '../../styles/auth.module.css';
 export default function CreatePostPage() {
   const router = useRouter();
   const { auth, loading: authLoading } = useAuth();
+  const showToast = useToast();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [privacy, setPrivacy] = useState('public');
   const [imageFile, setImageFile] = useState(null);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -25,16 +26,16 @@ export default function CreatePostPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
 
     if (!title.trim() || !content.trim()) {
-      setError('Title and content are required');
+      showToast('Title and content are required');
       return;
     }
     if (imageFile == null) {
-      setError('image is requird');
+      showToast('Image is required');
       return;
     }
+
     setLoading(true);
 
     try {
@@ -42,9 +43,7 @@ export default function CreatePostPage() {
       form.append('title', title);
       form.append('content', content);
       form.append('privacy', privacy);
-      if (imageFile) {
-        form.append('image', imageFile);
-      }
+      form.append('image', imageFile);
 
       const res = await fetch(`${API_BASE}/posts/create`, {
         method: 'POST',
@@ -60,14 +59,15 @@ export default function CreatePostPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || 'Failed to create post');
+        showToast(data.message || 'Failed to create post');
         setLoading(false);
         return;
       }
+      showToast('Post created successfully!', false);
 
       router.push('/');
     } catch {
-      setError('Could not reach the server');
+      showToast('Could not reach the server');
       setLoading(false);
     }
   };
@@ -75,6 +75,7 @@ export default function CreatePostPage() {
   if (authLoading || !auth.authenticated) {
     return null;
   }
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.card}>
@@ -119,8 +120,6 @@ export default function CreatePostPage() {
               required
             />
           </label>
-
-          {error && <p className={styles.error}>{error}</p>}
 
           <button className={styles.button} type="submit" disabled={loading}>
             {loading ? 'Posting...' : 'Post'}

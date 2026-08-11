@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE } from '../lib/api';
+import { useToast } from '@/app/context/ToastContext';
 import styles from '../styles/auth.module.css';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { refreshAuth } = useAuth();
-
+  const showToast = useToast();
   const [form, setForm] = useState({
     login: '',
     password: '',
@@ -23,7 +23,6 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
@@ -36,18 +35,17 @@ export default function LoginPage() {
         body,
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        setError(data.message || 'Login failed');
+        const data = await res.json();
+        showToast(data.message || 'Login failed');
         setLoading(false);
         return;
       }
-
       await refreshAuth();
+      showToast('login successfully', false);
       router.push('/');
     } catch (err) {
-      setError('Could not reach the server');
+      showToast('Could not reach the server');
       setLoading(false);
     }
   };
@@ -77,9 +75,6 @@ export default function LoginPage() {
             onChange={handleChange}
             required
           />
-
-          {error && <p className={styles.error}>{error}</p>}
-
           <button className={styles.button} type="submit" disabled={loading}>
             {loading ? 'Logging in...' : 'Login'}
           </button>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE } from '../lib/api';
+import { useReactions } from './useReactions';
 import styles from '../styles/home.module.css';
 import formatDate from '../lib/format';
 
@@ -12,6 +13,7 @@ export default function Posts() {
   const { auth, loading } = useAuth();
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
+  const { react } = useReactions(setPosts);
 
   useEffect(() => {
     if (!loading && !auth.authenticated) {
@@ -65,7 +67,10 @@ export default function Posts() {
 
       {posts.map((post) => (
         <div key={post.id} className={styles.postCard}>
-          <p className={styles.postAuthor}>Posted by {post.nickname}</p>
+          <div className={styles.postHeader}>
+            <p className={styles.postAuthor}>Posted by {post.nickname}</p>
+            <p className={styles.postDate}>{formatDate(post.created_at)}</p>
+          </div>
           <p className={styles.postTitle}>{post.title}</p>
 
           {post.image && (
@@ -78,7 +83,25 @@ export default function Posts() {
           )}
 
           <p className={styles.postContent}>{post.content}</p>
-          <p className={styles.postDate}>{formatDate(post.created_at)}</p>
+
+          <div className={styles.reactions}>
+            <button
+              className={`${styles.reactButton} ${
+                post.user_reaction === 'like' ? styles.likeActive : ''
+              }`}
+              onClick={() => react(post.id, 'like')}
+            >
+              👍 {post.like_count || 0}
+            </button>
+            <button
+              className={`${styles.reactButton} ${
+                post.user_reaction === 'dislike' ? styles.dislikeActive : ''
+              }`}
+              onClick={() => react(post.id, 'dislike')}
+            >
+              👎 {post.dislike_count || 0}
+            </button>
+          </div>
         </div>
       ))}
     </div>
