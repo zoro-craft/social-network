@@ -15,8 +15,11 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	viewerID, _ := auth.GetUserIDFromSession(r)
-
+	viewerID, err := auth.GetUserIDFromSession(r)
+	if err!=nil{
+		utils.HandleError(w,401,"you must be login")
+		return
+	}
 	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
 	if err != nil || limit <= 0 {
 		limit = 10
@@ -58,7 +61,6 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 
 	query += " ORDER BY p.id DESC LIMIT ? OFFSET ?"
 	args = append(args, limit, offset)
-
 	rows, err := database.Database.Query(query, args...)
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Database error loading posts")
