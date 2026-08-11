@@ -7,84 +7,39 @@ import {
   useState,
   useCallback,
 } from 'react';
-
+import { usePathname } from 'next/navigation';
 import { API_BASE } from '../lib/api';
 
 const AuthContext = createContext(null);
 
-const defaultAuth = {
-  authenticated: false,
-  nickname: '',
-};
+async function fetchAuth() {
+  try {
+    const res = await fetch(`${API_BASE}/me`, { credentials: 'include' });
+    if (!res.ok) throw new Error();
+    return await res.json();
+  } catch {
+    return { authenticated: false, nickname: '' };
+  }
+}
 
 export function AuthProvider({ children }) {
-  const [auth, setAuth] = useState(defaultAuth);
+  const [auth, setAuth] = useState({ authenticated: false, nickname: '' });
   const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
 
   const refreshAuth = useCallback(async () => {
-    try {
-      const res = await fetch(`${API_BASE}/me`, {
-        credentials: 'include',
-      });
-
-      if (!res.ok) {
-        throw new Error();
-      }
-
-      const data = await res.json();
-      setAuth(data);
-    } catch {
-      setAuth(defaultAuth);
-    } finally {
-      setLoading(false);
-    }
+    const data = await fetchAuth();
+    setAuth(data);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function checkAuth() {
-      try {
-        const res = await fetch(`${API_BASE}/me`, {
-          credentials: 'include',
-        });
-
-        if (!res.ok) {
-          throw new Error();
-        }
-
-        const data = await res.json();
-
-        if (!cancelled) {
-          setAuth(data);
-        }
-      } catch {
-        if (!cancelled) {
-          setAuth(defaultAuth);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    checkAuth();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    refreshAuth();
+  }, [pathname, refreshAuth]);
 
   return (
-    <AuthContext.Provider
-      value={{
-        auth,
-        setAuth,
-        loading,
-        refreshAuth,
-      }}
-    >
+    <AuthContext.Provider value={{ auth, setAuth, loading, refreshAuth }}>
       {children}
     </AuthContext.Provider>
   );
