@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { API_BASE } from '../../lib/api';
 import styles from '../../styles/profile.module.css';
 import { useAuth } from '@/app/context/AuthContext';
+import Avatar from '../../components/Avatar';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -44,18 +45,7 @@ export default function ProfilePage() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        {profile.avatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            className={styles.avatar}
-            src={`${API_BASE}${profile.avatar}`}
-            alt=""
-          />
-        ) : (
-          <div className={styles.avatarFallback}>
-            {profile.first_name.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <Avatar src={profile.avatar} name={profile.first_name} size={90} />
 
         <div>
           <h1 className={styles.name}>
