@@ -17,6 +17,7 @@
   --danger: #e07d7d;
   --danger-soft: rgba(224, 125, 125, 0.1);
   --danger-border: rgba(224, 125, 125, 0.3);
+  --success: #7dc88c;
   --shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
   --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.35);
   --radius: 12px;
