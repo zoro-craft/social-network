@@ -77,6 +77,118 @@
   color: var(--text-primary);
 }
 
+.visibilityButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+    transform 0.1s ease;
+}
+
+.visibilityButton:hover:not(:disabled) {
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+  color: var(--text-primary);
+}
+
+.visibilityButton:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.visibilityButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.requestCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.requestCard:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-elevated);
+}
+
+.requestInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.requestName {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.requestEmail {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.requestActions {
+  display: flex;
+  gap: 10px;
+}
+
+.requestButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+    transform 0.1s ease;
+}
+
+.requestButton:active {
+  transform: scale(0.97);
+}
+
+.acceptButton {
+  background: var(--text-primary);
+  color: var(--bg);
+}
+
+.acceptButton:hover {
+  background: var(--accent-hover);
+}
+
+.declineButton {
+  background: transparent;
+  border-color: var(--danger-border);
+  color: var(--danger);
+}
+
+.declineButton:hover {
+  background: var(--danger-soft);
+  border-color: var(--danger-border);
+}
+
 .status {
   color: var(--text-muted);
   text-align: center;
