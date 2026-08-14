@@ -26,10 +26,11 @@ func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
 	viewerID, _ := auth.GetUserIDFromSession(r)
 
 	var p Profile
-	var nickname, aboutMe, avatar *string
+	var nickname, aboutMe, avatar string
 
 	err = database.Database.QueryRow(`
-		SELECT id, first_name, last_name, email, date_of_birth, nickname, about_me, avatar, is_public
+		SELECT id, first_name, last_name, email, date_of_birth,
+		       COALESCE(nickname, ''), COALESCE(about_me, ''), COALESCE(avatar, ''), is_public
 		FROM users WHERE id = ?
 	`, userID).Scan(&p.ID, &p.FirstName, &p.LastName, &p.Email, &p.DateOfBirth, &nickname, &aboutMe, &avatar, &p.IsPublic)
 	if err != nil {
@@ -37,14 +38,21 @@ func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if nickname != nil {
-		p.Nickname = *nickname
-	}
-	if aboutMe != nil {
-		p.AboutMe = *aboutMe
-	}
-	if avatar != nil {
-		p.Avatar = *avatar
+	p.Nickname = nickname
+	p.AboutMe = aboutMe
+	p.Avatar = avatar
+
+	isOwner := viewerID == p.ID
+	canView := isOwner || p.IsPublic || isFollowing(viewerID, p.ID)
+
+	if !canView {
+		p.Email = ""
+		p.DateOfBirth = ""
+		p.AboutMe = ""
+		p.Restricted = true
+		p.Posts = []posts.Post{}
+		utils.RespondJSON(w, http.StatusOK, p)
+		return
 	}
 
 	p.Posts, err = posts.GetPostsByUser(userID, viewerID)
@@ -54,4 +62,13 @@ func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.RespondJSON(w, http.StatusOK, p)
+}
+
+func isFollowing(viewerID, profileID int) bool {
+	var exists bool
+	database.Database.QueryRow(
+		"SELECT EXISTS(SELECT * FROM followers WHERE follower_id = ? AND followee_id = ? AND status = 'accepted')",
+		viewerID, profileID,
+	).Scan(&exists)
+	return exists
 }
