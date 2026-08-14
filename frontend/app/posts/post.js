@@ -101,6 +101,12 @@ export default function Posts() {
             >
               👎 {post.dislike_count || 0}
             </button>
+            <button
+              className={styles.reactButton}
+              onClick={() => router.push(`/posts/comment/${post.id}`)}
+            >
+              💬 Comment
+            </button>
           </div>
         </div>
       ))}
