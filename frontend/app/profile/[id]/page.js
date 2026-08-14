@@ -5,14 +5,35 @@ import { useParams, useRouter } from 'next/navigation';
 import { API_BASE } from '../../lib/api';
 import styles from '../../styles/profile.module.css';
 import { useAuth } from '@/app/context/AuthContext';
+import { useToast } from '@/app/context/ToastContext';
+import { useVisibility } from './useVisibility';
 import Avatar from '../../components/Avatar';
+import { useFollow } from './useFollow';
 
 export default function ProfilePage() {
   const router = useRouter();
   const { id } = useParams();
   const { auth, loading: authLoading } = useAuth();
+  const showToast = useToast();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [togglingVisibility, setTogglingVisibility] = useState(false);
+
+  const { toggleVisibility } = useVisibility(setProfile);
+  const { status, fetchStatus, follow, unfollow } = useFollow(id);
+
+  useEffect(() => {
+    if (!auth.authenticated || auth.id == id) return;
+    fetchStatus();
+  }, [auth.authenticated, id]);
+
+  const handleFollowClick = async () => {
+    if (status === 'none') {
+      await follow();
+    } else {
+      await unfollow();
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !auth.authenticated) {
@@ -39,8 +60,31 @@ export default function ProfilePage() {
     fetchProfile();
   }, [authLoading, auth.authenticated, router, id]);
 
+  const handleToggleVisibility = async () => {
+    setTogglingVisibility(true);
+    try {
+      const res = await toggleVisibility();
+
+      if (!res.ok) {
+        showToast('Failed to update visibility');
+        return;
+      }
+
+      showToast(
+        profile.is_public ? 'Profile set to private' : 'Profile set to public',
+        false,
+      );
+    } catch {
+      showToast('Could not reach the server');
+    } finally {
+      setTogglingVisibility(false);
+    }
+  };
+
   if (loading) return <p className={styles.status}>Loading...</p>;
   if (!profile) return <p className={styles.status}>User not found</p>;
+
+  const isOwnProfile = auth.id === profile.id;
 
   return (
     <div className={styles.container}>
@@ -49,7 +93,7 @@ export default function ProfilePage() {
 
         <div>
           <h1 className={styles.name}>
-            full name :{profile.first_name} {profile.last_name}
+            {profile.first_name} {profile.last_name}
           </h1>
           {profile.nickname && (
             <p className={styles.nickname}>@{profile.nickname}</p>
@@ -57,31 +101,56 @@ export default function ProfilePage() {
           {profile.about_me && (
             <p className={styles.aboutMe}>{profile.about_me}</p>
           )}
+
+          {isOwnProfile ? (
+            <button
+              className={styles.visibilityButton}
+              onClick={handleToggleVisibility}
+              disabled={togglingVisibility}
+            >
+              {profile.is_public ? '🌐 Public' : '🔒 Private'} — Click to switch
+            </button>
+          ) : (
+            <button
+              className={styles.visibilityButton}
+              onClick={handleFollowClick}
+            >
+              {status === 'accepted' && 'Following'}
+              {status === 'pending' && 'Requested'}
+              {status === 'none' && 'Follow'}
+            </button>
+          )}
         </div>
       </div>
 
       <h2 className={styles.postsTitle}>Posts</h2>
 
-      {profile.posts.length === 0 && (
-        <p className={styles.status}>No posts yet</p>
-      )}
+      {profile.restricted ? (
+        <p className={styles.status}>🔒 This account is private</p>
+      ) : (
+        <>
+          {(!profile.posts || profile.posts.length === 0) && (
+            <p className={styles.status}>No posts yet</p>
+          )}
 
-      <div className={styles.grid}>
-        {profile.posts.map((post) => (
-          <div key={post.id} className={styles.postCard}>
-            {post.image && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                className={styles.postImage}
-                src={`${API_BASE}${post.image}`}
-                alt=""
-              />
-            )}
-            <p className={styles.postTitle}>{post.title}</p>
-            <p className={styles.postContent}>{post.content}</p>
+          <div className={styles.grid}>
+            {(profile.posts || []).map((post) => (
+              <div key={post.id} className={styles.postCard}>
+                {post.image && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    className={styles.postImage}
+                    src={`${API_BASE}${post.image}`}
+                    alt=""
+                  />
+                )}
+                <p className={styles.postTitle}>{post.title}</p>
+                <p className={styles.postContent}>{post.content}</p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
     </div>
   );
 }
