@@ -23,6 +23,11 @@ export default function Navbar() {
     router.push('/search');
   };
 
+  const goToNotifications = () => {
+    setOpen(false);
+    router.push('/notifications');
+  };
+
   useEffect(() => {
     function handleClickOutside(e) {
       if (wrapRef.current && !wrapRef.current.contains(e.target)) {
@@ -52,13 +57,22 @@ export default function Navbar() {
 
       <div className={styles.navActions}>
         {auth.authenticated && (
-          <button
-            className={styles.searchButton}
-            onClick={goToSearch}
-            aria-label="Search"
-          >
-            Search
-          </button>
+          <>
+            <button
+              className={styles.searchButton}
+              onClick={goToSearch}
+              aria-label="Search"
+            >
+              Search
+            </button>
+            <button
+              className={styles.searchButton}
+              onClick={goToNotifications}
+              aria-label="Notifications"
+            >
+              🔔
+            </button>
+          </>
         )}
 
         <div className={styles.authButtons}>
