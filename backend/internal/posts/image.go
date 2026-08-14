@@ -9,15 +9,6 @@ import (
 	"zone/internal/utils"
 )
 
-var allowedPostExtensions = map[string]bool{
-	".jpg":  true,
-	".jpeg": true,
-	".png":  true,
-	".gif":  true,
-}
-
-var errInvalidImageType = errors.New("only JPEG, PNG, and GIF images are allowed")
-
 func savePostImage(r *http.Request) (string, error) {
 	file, header, err := r.FormFile("image")
 	if err == http.ErrMissingFile {
@@ -29,8 +20,8 @@ func savePostImage(r *http.Request) (string, error) {
 	defer file.Close()
 
 	ext := strings.ToLower(filepath.Ext(header.Filename))
-	if !allowedPostExtensions[ext] {
-		return "", errInvalidImageType
+	if !utils.AllowedCommentExtensions[ext] {
+		return "", utils.ErrInvalidImageType
 	}
 
 	filename, err := utils.SaveUploadFile(file, header.Filename, "./uploads/posts")
