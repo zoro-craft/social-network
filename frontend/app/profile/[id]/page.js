@@ -7,8 +7,8 @@ import styles from '../../styles/profile.module.css';
 import { useAuth } from '@/app/context/AuthContext';
 import { useToast } from '@/app/context/ToastContext';
 import { useVisibility } from './useVisibility';
-import Avatar from '../../components/Avatar';
 import { useFollow } from './useFollow';
+import Avatar from '../../components/Avatar';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -89,37 +89,52 @@ export default function ProfilePage() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <Avatar src={profile.avatar} name={profile.first_name} size={90} />
+        <Avatar src={profile.avatar} name={profile.first_name} size={150} />
 
-        <div>
-          <h1 className={styles.name}>
-            {profile.first_name} {profile.last_name}
-          </h1>
-          {profile.nickname && (
-            <p className={styles.nickname}>@{profile.nickname}</p>
-          )}
-          {profile.about_me && (
-            <p className={styles.aboutMe}>{profile.about_me}</p>
-          )}
+        <div className={styles.headerInfo}>
+          <div className={styles.headerTop}>
+            <h1 className={styles.name}>
+              {profile.first_name} {profile.last_name}
+            </h1>
 
-          {isOwnProfile ? (
-            <button
-              className={styles.visibilityButton}
-              onClick={handleToggleVisibility}
-              disabled={togglingVisibility}
-            >
-              {profile.is_public ? '🌐 Public' : '🔒 Private'} — Click to switch
-            </button>
-          ) : (
-            <button
-              className={styles.visibilityButton}
-              onClick={handleFollowClick}
-            >
-              {status === 'accepted' && 'Following'}
-              {status === 'pending' && 'Requested'}
-              {status === 'none' && 'Follow'}
-            </button>
-          )}
+            {isOwnProfile ? (
+              <button
+                className={styles.visibilityButton}
+                onClick={handleToggleVisibility}
+                disabled={togglingVisibility}
+              >
+                {profile.is_public ? '🌐 Public' : '🔒 Private'} 
+              </button>
+            ) : (
+              <button
+                className={styles.visibilityButton}
+                onClick={handleFollowClick}
+              >
+                {status === 'accepted' && 'Following'}
+                {status === 'pending' && 'Requested'}
+                {status === 'none' && 'Follow'}
+              </button>
+            )}
+          </div>
+
+          <div className={styles.stats}>
+            <span>
+              <strong>{profile.followers_count}</strong> followers
+            </span>
+            <span>
+              <strong>{profile.following_count}</strong> following
+            </span>
+          </div>
+
+          <div className={styles.bio}>
+            {profile.nickname && (
+              <span className={styles.nickname}>@{profile.nickname}</span>
+            )}
+
+            {profile.about_me && (
+              <p className={styles.aboutMe}>{profile.about_me}</p>
+            )}
+          </div>
         </div>
       </div>
 
