@@ -16,5 +16,8 @@ type Profile struct {
 	IsPublic   bool `json:"is_public"`
 	Restricted bool `json:"restricted,omitempty"`
 
+	FollowersCount int `json:"followers_count"`
+	FollowingCount int `json:"following_count"`
+
 	Posts []posts.Post `json:"posts"`
 }
