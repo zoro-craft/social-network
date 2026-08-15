@@ -8,8 +8,7 @@ import (
 	"zone/internal/utils"
 )
 
-// GetPendingRequestsAPI lists incoming follow requests waiting for the
-// logged-in user's approval (i.e. their profile is private).
+
 func GetPendingRequestsAPI(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
@@ -23,7 +22,7 @@ func GetPendingRequestsAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := database.Database.Query(`
-		SELECT u.id, COALESCE(u.first_name, ''), COALESCE(u.email, ''), COALESCE(u.avatar, '')
+		SELECT u.id, u.first_name, u.email, COALESCE(u.avatar, '')
 		FROM followers f
 		JOIN users u ON u.id = f.follower_id
 		WHERE f.followee_id = ? AND f.status = 'pending'
