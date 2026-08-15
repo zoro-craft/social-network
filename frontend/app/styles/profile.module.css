@@ -1,104 +1,128 @@
 .container {
-  max-width: 760px;
-  margin: 40px auto;
-  padding: 0 20px;
+  max-width: 935px;
+  margin: 0 auto;
+  padding: 30px 20px 60px;
   color: var(--text-primary);
 }
 
 .header {
   display: flex;
-  align-items: center;
-  gap: 28px;
-  margin-bottom: 40px;
-  padding: 28px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  transition: border-color 0.2s ease, background 0.2s ease;
+  align-items: flex-start;
+  gap: 60px;
+  padding: 24px 0 44px;
+  margin-bottom: 4px;
 }
 
-.header:hover {
-  border-color: var(--border-strong);
-  background: var(--bg-elevated);
+.headerInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 14px;
 }
 
-.avatar {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--border-strong);
-  background: var(--bg-hover);
-}
-
-.avatarFallback {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  background: var(--bg-hover);
-  border: 2px solid var(--border-strong);
+.headerTop {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--text-secondary);
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .name {
-  margin: 0 0 4px;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.2;
   color: var(--text-primary);
+  overflow-wrap: anywhere;
 }
 
 .nickname {
-  margin: 0 0 8px;
+  margin: 0;
   color: var(--text-secondary);
   font-size: 14px;
+  font-weight: 500;
+}
+
+.stats {
+  display: flex;
+  gap: 40px;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.stats strong {
   font-weight: 600;
+}
+
+.bio {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .aboutMe {
   margin: 0;
+  color: var(--text-primary);
+  max-width: 440px;
+}
+
+.avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: none;
+  background: var(--bg-hover);
+}
+
+.avatarFallback {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: var(--bg-hover);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  font-weight: 700;
   color: var(--text-secondary);
-  font-size: 14px;
-  max-width: 420px;
-  line-height: 1.6;
 }
 
 .postsTitle {
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
   border-top: 1px solid var(--border);
-  padding-top: 22px;
-  margin-bottom: 18px;
+  padding-top: 16px;
+  text-align: center;
+  margin: 0 0 4px;
   color: var(--text-primary);
 }
 
 .visibilityButton {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-  padding: 8px 16px;
-  background: var(--bg-hover);
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  color: var(--text-secondary);
-  font-size: 13px;
+  gap: 6px;
+  padding: 7px 16px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: var(--bg);
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease,
-    transform 0.1s ease;
+  transition: background 0.2s ease, opacity 0.2s ease, transform 0.1s ease;
 }
 
 .visibilityButton:hover:not(:disabled) {
-  background: var(--accent-soft);
-  border-color: var(--accent-border);
-  color: var(--text-primary);
+  background: var(--accent-hover);
 }
 
 .visibilityButton:active:not(:disabled) {
@@ -155,14 +179,13 @@
   align-items: center;
   gap: 6px;
   padding: 8px 18px;
-  border-radius: 999px;
-  border: 1px solid transparent;
+  border-radius: 8px;
+  border: none;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease,
-    transform 0.1s ease;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
 }
 
 .requestButton:active {
@@ -170,7 +193,7 @@
 }
 
 .acceptButton {
-  background: var(--text-primary);
+  background: var(--accent);
   color: var(--bg);
 }
 
@@ -180,25 +203,25 @@
 
 .declineButton {
   background: transparent;
-  border-color: var(--danger-border);
+  border: 1px solid var(--danger-border);
   color: var(--danger);
 }
 
 .declineButton:hover {
   background: var(--danger-soft);
-  border-color: var(--danger-border);
 }
 
 .status {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-align: center;
   padding: 40px 0;
+  font-size: 14px;
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+  gap: 4px;
 }
 
 .postCard {
@@ -242,8 +265,29 @@
 @media (max-width: 640px) {
   .header {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 16px;
+    padding-bottom: 28px;
+  }
+
+  .headerInfo {
+    width: 100%;
+    padding-top: 0;
+  }
+
+  .headerTop {
+    justify-content: center;
+  }
+
+  .stats {
+    justify-content: center;
+    gap: 20px;
+    font-size: 14px;
+  }
+
+  .bio {
+    align-items: center;
+    text-align: center;
   }
 
   .grid {
