@@ -42,6 +42,14 @@ func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
 	p.AboutMe = aboutMe
 	p.Avatar = avatar
 
+	database.Database.QueryRow(
+		"SELECT COUNT(*) FROM followers WHERE followee_id = ? AND status = 'accepted'", userID,
+	).Scan(&p.FollowersCount)
+
+	database.Database.QueryRow(
+		"SELECT COUNT(*) FROM followers WHERE follower_id = ? AND status = 'accepted'", userID,
+	).Scan(&p.FollowingCount)
+
 	isOwner := viewerID == p.ID
 	canView := isOwner || p.IsPublic || isFollowing(viewerID, p.ID)
 
