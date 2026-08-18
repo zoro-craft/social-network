@@ -5,6 +5,7 @@ import { useToast } from '@/app/context/ToastContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { API_BASE } from '../../lib/api';
+import Avatar from '../../components/Avatar';
 import styles from '../../styles/auth.module.css';
 
 export default function CreatePostPage() {
@@ -16,6 +17,8 @@ export default function CreatePostPage() {
   const [content, setContent] = useState('');
   const [privacy, setPrivacy] = useState('public');
   const [imageFile, setImageFile] = useState(null);
+  const [followers, setFollowers] = useState([]);
+  const [selectedViewers, setSelectedViewers] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -24,6 +27,22 @@ export default function CreatePostPage() {
     }
   }, [authLoading, auth.authenticated, router]);
 
+  useEffect(() => {
+    if (privacy !== 'private' || !auth.id) return;
+
+    fetch(`${API_BASE}/profile/${auth.id}/followers`, {
+      credentials: 'include',
+    })
+      .then((res) => res.json())
+      .then((data) => setFollowers(data || []));
+  }, [privacy, auth.id]);
+
+  const toggleViewer = (id) => {
+    setSelectedViewers((prev) =>
+      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id],
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -31,8 +50,8 @@ export default function CreatePostPage() {
       showToast('Title and content are required');
       return;
     }
-    if (imageFile == null) {
-      showToast('Image is required');
+    if (privacy === 'private' && selectedViewers.length === 0) {
+      showToast('Select at least one follower');
       return;
     }
 
@@ -43,7 +62,8 @@ export default function CreatePostPage() {
       form.append('title', title);
       form.append('content', content);
       form.append('privacy', privacy);
-      form.append('image', imageFile);
+      if (imageFile) form.append('image', imageFile);
+      selectedViewers.forEach((id) => form.append('viewer_ids', id));
 
       const res = await fetch(`${API_BASE}/posts/create`, {
         method: 'POST',
@@ -63,8 +83,8 @@ export default function CreatePostPage() {
         setLoading(false);
         return;
       }
-      showToast('Post created successfully!', false);
 
+      showToast('Post created successfully!', false);
       router.push('/');
     } catch {
       showToast('Could not reach the server');
@@ -106,18 +126,40 @@ export default function CreatePostPage() {
             onChange={(e) => setPrivacy(e.target.value)}
           >
             <option value="public">Public</option>
-            <option value="almost_private">Almost private</option>
-            <option value="private">Private</option>
+            <option value="almost_private">Almost private (followers)</option>
+            <option value="private">Private (chosen followers)</option>
           </select>
 
+          {privacy === 'private' && (
+            <div className={styles.viewerBox}>
+              <p className={styles.viewerLabel}>
+                Choose who can see this post:
+              </p>
+              {followers.length === 0 && (
+                <p className={styles.viewerEmpty}>No followers yet</p>
+              )}
+              <div className={styles.viewerGrid}>
+                {followers.map((f) => (
+                  <div
+                    key={f.follower_id}
+                    className={`${styles.viewerItem} ${selectedViewers.includes(f.follower_id) ? styles.viewerSelected : ''}`}
+                    onClick={() => toggleViewer(f.follower_id)}
+                  >
+                    <Avatar src={f.avatar} name={f.first_name} size={40} />
+                    <span>{f.first_name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <label className={styles.fileLabel}>
-            Image
+            Image (optional)
             <input
               className={styles.fileInput}
               type="file"
               accept="image/jpeg,image/png,image/gif"
               onChange={(e) => setImageFile(e.target.files[0])}
-              required
             />
           </label>
 
