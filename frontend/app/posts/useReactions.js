@@ -1,8 +1,10 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { API_BASE } from '../lib/api';
 
 export function useReactions(setPosts) {
+  const router = useRouter();
   const react = async (postId, type) => {
     try {
       const res = await fetch(`${API_BASE}/posts/react`, {
@@ -13,7 +15,10 @@ export function useReactions(setPosts) {
       });
 
       const data = await res.json();
-      if (!res.ok) return;
+      if (!res.ok) {
+        router.push('/login')
+        return;
+      }
 
       setPosts((prev) =>
         prev.map((p) =>
