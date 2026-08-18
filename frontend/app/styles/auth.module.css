@@ -67,7 +67,9 @@
   color: var(--text-primary);
   font-size: 14px;
   outline: none;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
   width: 100%;
   font-family: inherit;
 }
@@ -116,7 +118,9 @@
   margin-right: 10px;
   font-size: 12px;
   font-weight: 600;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .fileInput::file-selector-button:hover {
@@ -134,7 +138,9 @@
   padding: 13px;
   cursor: pointer;
   margin-top: 8px;
-  transition: background 0.2s ease, opacity 0.2s ease;
+  transition:
+    background 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .button:hover:not(:disabled) {
@@ -174,4 +180,129 @@
 .footerText a:hover {
   color: var(--text-primary);
   text-decoration: underline;
+}
+
+.viewerBox {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.viewerLabel {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.viewerEmpty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.viewerGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.viewerItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 14px 6px 6px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+  font-size: 13px;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.viewerItem:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-hover);
+}
+
+.viewerSelected {
+  background: #e5e5e5;
+  border-color: #1b1a1a;
+  color: black
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: cardIn 0.2s ease;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modalSubtitle {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.modal .viewerGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.modal .viewerItem {
+  width: 100%;
+  justify-content: flex-start;
+  border-radius: 8px;
+}
+
+.modalButton {
+  background: var(--text-primary);
+  border: none;
+  border-radius: 8px;
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.2s ease;
+}
+
+.modalButton:hover {
+  background: var(--accent-hover);
 }
