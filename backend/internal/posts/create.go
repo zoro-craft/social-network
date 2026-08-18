@@ -2,14 +2,13 @@ package posts
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"zone/internal/auth"
 	"zone/internal/database"
 	"zone/internal/utils"
 )
-
-const maxPostUploadSize = 5 << 20 // 5MB
 
 var allowedPrivacy = map[string]bool{
 	"public":         true,
@@ -29,8 +28,8 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, maxPostUploadSize)
-	if err := r.ParseMultipartForm(maxPostUploadSize); err != nil {
+	r.Body = http.MaxBytesReader(w, r.Body, utils.MaxCommentUploadSize)
+	if err := r.ParseMultipartForm(utils.MaxCommentUploadSize); err != nil {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid form data or file too large")
 		return
 	}
@@ -46,7 +45,7 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "Title is required")
 		return
 	}
-	if len(p.Title) > 100 {
+		if len(p.Title) > 100 {
 		utils.HandleError(w, http.StatusBadRequest, "Title too long")
 		return
 	}
@@ -59,12 +58,17 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "Content too long")
 		return
 	}
-
 	if p.Privacy == "" {
 		p.Privacy = "public"
 	}
 	if !allowedPrivacy[p.Privacy] {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid privacy option")
+		return
+	}
+
+	viewerIDs := r.Form["viewer_ids"]
+	if p.Privacy == "private" && len(viewerIDs) == 0 {
+		utils.HandleError(w, http.StatusBadRequest, "Select at least one follower")
 		return
 	}
 
@@ -74,7 +78,7 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = database.Database.Exec(
+	result, err := database.Database.Exec(
 		"INSERT INTO posts (user_id, title, content, image, privacy) VALUES (?, ?, ?, ?, ?)",
 		p.UserID, p.Title, p.Content, p.Image, p.Privacy,
 	)
@@ -83,5 +87,18 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	postID, _ := result.LastInsertId()
+
+	for _, idStr := range viewerIDs {
+		viewerID, err := strconv.Atoi(idStr)
+		if err == nil {
+			database.Database.Exec(
+				"INSERT OR IGNORE INTO post_viewers (post_id, user_id) VALUES (?, ?)",
+				postID, viewerID,
+			)
+		}
+	}
+
 	utils.RespondJSON(w, http.StatusCreated, map[string]string{"message": "Post created successfully!"})
 }
+
