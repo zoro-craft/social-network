@@ -13,8 +13,7 @@ func GetPostByIDAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	idStr := r.PathValue("id")
-	postID, err := strconv.Atoi(idStr)
+	postID, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil || postID <= 0 {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid post id")
 		return
