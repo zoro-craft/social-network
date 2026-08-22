@@ -30,11 +30,25 @@ export default function CreatePostPage() {
   useEffect(() => {
     if (privacy !== 'private' || !auth.id) return;
 
-    fetch(`${API_BASE}/profile/${auth.id}/followers`, {
-      credentials: 'include',
-    })
-      .then((res) => res.json())
-      .then((data) => setFollowers(data || []));
+    const fetchFollowers = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/profile/${auth.id}/followers`, {
+          credentials: 'include',
+        });
+
+        if (!res.ok) {
+          throw new Error('Failed to fetch followers');
+        }
+
+        const data = await res.json();
+        setFollowers(data || []);
+      } catch (error) {
+        console.error('Error fetching followers:', error);
+        setFollowers([]);
+      }
+    };
+
+    fetchFollowers();
   }, [privacy, auth.id]);
 
   const toggleViewer = (id) => {
