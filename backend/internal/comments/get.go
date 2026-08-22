@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"zone/internal/auth"
 	"zone/internal/database"
+	"zone/internal/posts"
 	"zone/internal/utils"
 )
 
@@ -17,6 +19,13 @@ func GetCommentsAPI(w http.ResponseWriter, r *http.Request) {
 	postID, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil || postID <= 0 {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid post id")
+		return
+	}
+
+	viewerID, _ := auth.GetUserIDFromSession(r)
+
+	if !posts.CanViewPost(postID, viewerID) {
+		utils.HandleError(w, http.StatusNotFound, "Post not found")
 		return
 	}
 
@@ -37,8 +46,8 @@ func GetCommentsAPI(w http.ResponseWriter, r *http.Request) {
 	result := []Comment{}
 	for rows.Next() {
 		var c Comment
-		if err := rows.Scan(&c.ID, &c.PostID, &c.Content, &c.Image, &c.UserID, &c.FirstName, &c.Avatar, &c.CreatedAt); err != nil {
-			continue
+		if rows.Scan(&c.ID, &c.PostID, &c.Content, &c.Image, &c.UserID, &c.FirstName, &c.Avatar, &c.CreatedAt) == nil {
+		continue
 		}
 		result = append(result, c)
 	}

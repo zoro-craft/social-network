@@ -7,6 +7,7 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	"zone/internal/posts"
 	"zone/internal/utils"
 )
 
@@ -28,14 +29,7 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var exists bool
-	if err := database.Database.QueryRow(
-		"SELECT EXISTS(SELECT 1 FROM posts WHERE id = ?)", postID,
-	).Scan(&exists); err != nil {
-		utils.HandleError(w, http.StatusInternalServerError, "Database error")
-		return
-	}
-	if !exists {
+	if !posts.CanViewPost(postID, userID) {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid post")
 		return
 	}
@@ -77,14 +71,13 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	commentID, err := result.LastInsertId()
-	if err != nil {
+		if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Could not get new comment ID")
 		return
 	}
-
 	err = database.Database.QueryRow(`
 		SELECT c.id, c.post_id, c.content, COALESCE(c.image, ''), c.user_id,
-		COALESCE(u.first_name, ''), COALESCE(u.avatar, ''), c.created_at
+		       COALESCE(u.first_name, ''), COALESCE(u.avatar, ''), c.created_at
 		FROM comments c
 		JOIN users u ON c.user_id = u.id
 		WHERE c.id = ?
