@@ -85,27 +85,30 @@ export default function CommentPage() {
     return null;
   }
 
+  if (loading) {
+    return <p className={styles.status}>Loading...</p>;
+  }
+
+  if (!post) {
+    return <p className={styles.status}>Post not found</p>;
+  }
+
   return (
     <div className={styles.container}>
-      {loading && <p className={styles.status}>Loading...</p>}
-      {!loading && !post && <p className={styles.status}>Post not found</p>}
-
-      {post && (
-        <div className={styles.post}>
-          <p className={styles.author}>Posted by {post.nickname}</p>
-          <p className={styles.postTitle}>{post.title}</p>
-          {post.image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              className={styles.postImage}
-              src={`${API_BASE}${post.image}`}
-              alt=""
-            />
-          )}
-          <p className={styles.content}>{post.content}</p>
-          <p className={styles.date}>{formatDate(post.created_at)}</p>
-        </div>
-      )}
+      <div className={styles.post}>
+        <p className={styles.author}>Posted by {post.nickname}</p>
+        <p className={styles.postTitle}>{post.title}</p>
+        {post.image && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            className={styles.postImage}
+            src={`${API_BASE}${post.image}`}
+            alt=""
+          />
+        )}
+        <p className={styles.content}>{post.content}</p>
+        <p className={styles.date}>{formatDate(post.created_at)}</p>
+      </div>
 
       <h2 className={styles.heading}>Comments</h2>
 
@@ -150,7 +153,7 @@ export default function CommentPage() {
         )}
       </form>
 
-      {!loading && comments.length === 0 && (
+      {comments.length === 0 && (
         <p className={styles.status}>No comments yet</p>
       )}
 
@@ -160,8 +163,8 @@ export default function CommentPage() {
             className={styles.commentHeader}
             onClick={() => router.push(`/profile/${c.user_id}`)}
           >
-            <Avatar src={c.avatar} name={c.nickname} size={28} />
-            <p className={styles.commentAuthor}>{c.nickname}</p>
+            <Avatar src={c.avatar} name={c.first_name} size={28} />
+            <p className={styles.commentAuthor}>{c.first_name}</p>
             <p className={styles.commentDate}>{formatDate(c.created_at)}</p>
           </div>
 
