@@ -9,16 +9,19 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+var DB *sql.DB
+
 func InitDB(dbPath string) *sql.DB {
-	db, err := sql.Open("sqlite3", dbPath)
+	var err error
+	DB, err = sql.Open("sqlite3", dbPath)
 	if err != nil {
 		log.Fatal("Failed to open database:", err)
 	}
-	if err = db.Ping(); err != nil {
+	if err = DB.Ping(); err != nil {
 		log.Fatal("Failed to ping database:", err)
 	}
 	log.Println("Connected to database")
-	return db
+	return DB
 }
 
 func MigrateDB(db *sql.DB, pattern string) {
