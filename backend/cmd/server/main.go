@@ -16,7 +16,9 @@ func main() {
 
 	http.HandleFunc("/api/register", auth.RegisterHandler)
 	http.HandleFunc("/api/login", auth.LoginHandler)
-
+	http.HandleFunc("/api/logout", auth.LogoutHandler)
+	http.HandleFunc("/api/session", auth.SessionHandler)
+	
 	log.Println("Server is running on http://localhost:8080")
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
