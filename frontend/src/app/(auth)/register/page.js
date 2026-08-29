@@ -1,7 +1,9 @@
-"use client"; // ضرورية فـ Next.js باش نقدرو نخدمو بـ useState و onSubmit
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { apiRequest } from "../../../utils/api"; 
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -22,32 +24,17 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
+    setLoading(true); 
+    setError("");     
 
     try {
-      const res = await fetch("http://localhost:8080/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      await apiRequest("/api/register", "POST", formData);
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || "Something went wrong!");
-        setLoading(false);
-        return;
-      }
-
-      // يلا كلشي داز مزيان، غنصيفطوه لصفحة Login
       alert("Account created successfully!");
       router.push("/login");
       
     } catch (err) {
-      setError("Failed to connect to the server.");
+      setError(err.message);
       setLoading(false);
     }
   };
@@ -86,7 +73,7 @@ export default function RegisterPage() {
         </form>
 
         <p className="mt-4 text-center text-sm text-gray-600">
-          Already have an account? <a href="/login" className="text-blue-600 hover:underline">Login here</a>
+          Already have an account? <Link href="/login" className="text-blue-600 hover:underline">Login here</Link>
         </p>
       </div>
     </div>

@@ -20,3 +20,7 @@ export async function apiRequest(endpoint, method = "GET", data = null) {
   }
   return result;
 }
+
+export async function logoutUser() {
+  return await apiRequest("/api/logout", "POST");
+}
