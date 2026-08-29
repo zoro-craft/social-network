@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"social-network/pkg/db"
 	"strings"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -58,6 +59,19 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if req.DateOfBirth == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Date of birth is required."})
+		return
+	}
+
+	dob, err := time.Parse("2006-01-02", req.DateOfBirth)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid date of birth format. Must be YYYY-MM-DD."})
+		return
+	}
+
+	if now := time.Now(); dob.After(now.AddDate(-13, 0, 0)) || dob.Before(now.AddDate(-120, 0, 0)) {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "You must be between 13 and 120 years old to register."})
 		return
 	}
 
@@ -120,7 +134,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	_, err = db.DB.Exec(
 		"INSERT INTO users (username, email, password, date_of_birth, first_name, last_name) VALUES (?, ?, ?, ?, ?, ?)",
-		req.Username, req.Email, string(hashedPassword), req.DateOfBirth, req.FirstName, req.LastName,
+		req.Username, req.Email, string(hashedPassword), dob.Format("2006-01-02"), req.FirstName, req.LastName,
 	)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
