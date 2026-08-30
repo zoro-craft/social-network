@@ -46,7 +46,7 @@ export default function LoginPage() {
           <input 
             type="text" 
             name="identify" 
-            placeholder="Username or Email" 
+            placeholder="Nickname or Email" 
             required 
             onChange={handleChange}
             className="w-full p-2 border rounded text-black" 
