@@ -25,12 +25,26 @@ func InitDB(dbPath string) *sql.DB {
 }
 
 func MigrateDB(db *sql.DB, pattern string) {
-	files, _ := filepath.Glob(pattern)
+	files, err := filepath.Glob(pattern)
+	if err != nil || len(files) == 0 {
+		fallbackPattern := filepath.Join("backend", pattern)
+		fallbackFiles, fallbackErr := filepath.Glob(fallbackPattern)
+		if fallbackErr == nil && len(fallbackFiles) > 0 {
+			files = fallbackFiles
+		} else {
+			log.Printf("Warning: No migration files found for pattern: %s (or fallback: %s)\n", pattern, fallbackPattern)
+			return
+		}
+	}
 
 	for _, file := range files {
-		content, _ := os.ReadFile(file)
+		content, err := os.ReadFile(file)
+		if err != nil {
+			log.Printf("Failed to read migration file %s: %v\n", file, err)
+			continue
+		}
 		if _, err := db.Exec(string(content)); err != nil {
-			log.Fatal("Failed to migrate database:", err)
+			log.Fatalf("Failed to migrate database with file %s: %v\n", file, err)
 		}
 		log.Println("Migrated database with file:", file)
 	}

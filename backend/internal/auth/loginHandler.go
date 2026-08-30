@@ -19,8 +19,8 @@ const (
 )
 
 type LoginReq struct {
-	Identifier string `json:"identify"`
-	Password   string `json:"password"`
+	Identify string `json:"identify"`
+	Password string `json:"password"`
 }
 
 type apiResponse struct {
@@ -58,17 +58,18 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var dbID int
-	var dbUsername, dbEmail, dbFirstName, dbLastName string
+	var dbUsername, dbEmail string
 	var dbPasswordHash string
 
-	err = db.DB.QueryRow(
-		"SELECT id, username, email, COALESCE(first_name, ''), COALESCE(last_name, ''), password FROM users WHERE email = ? OR username = ?",
-		req.Identifier, req.Identifier,
-	).Scan(&dbID, &dbUsername, &dbEmail, &dbFirstName, &dbLastName, &dbPasswordHash)
+	err = db.DB.QueryRow(`
+		SELECT id, password, COALESCE(nickname, ''), email FROM users 
+		WHERE email = ? OR (nickname = ? AND nickname != '')
+	`, req.Identify, req.Identify).Scan(&dbID, &dbPasswordHash, &dbUsername, &dbEmail)
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid username/email or password."})
+			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid email/nickname or password"})
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
