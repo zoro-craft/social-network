@@ -46,18 +46,3 @@ func Init() error {
 
 	return nil
 }
-
-// WithTx runs fn inside a database transaction, committing on success and
-// rolling back on error.
-func WithTx(fn func(tx *sql.Tx) error) error {
-	tx, err := Database.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	if err := fn(tx); err != nil {
-		return err
-	}
-	return tx.Commit()
-}

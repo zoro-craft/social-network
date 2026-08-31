@@ -7,7 +7,6 @@ import (
 	"zone/internal/auth"
 	"zone/internal/comments"
 	"zone/internal/followers"
-	"zone/internal/groups/handlers"
 	"zone/internal/middleware"
 	"zone/internal/posts"
 	"zone/internal/profile"
@@ -44,33 +43,5 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("GET /follow/{id}/status", followers.GetFollowStatusAPI)
 	mux.HandleFunc("GET /profile/{id}/followers", followers.GetFollowersAPI)
 	mux.HandleFunc("GET /profile/{id}/following", followers.GetFollowingAPI)
-
-	// Groups
-	mux.HandleFunc("GET /groups", middleware.Auth(handlers.BrowseGroupsHandler))
-	mux.HandleFunc("POST /groups/create", middleware.Auth(handlers.CreateGroupHandler))
-	mux.HandleFunc("GET /groups/{id}", middleware.Auth(handlers.GetGroupHandler))
-	mux.HandleFunc("GET /groups/{id}/members", middleware.Auth(handlers.ListMembersHandler))
-
-	// Invitations
-	mux.HandleFunc("POST /groups/{id}/invite", middleware.Auth(handlers.InviteUserHandler))
-	mux.HandleFunc("GET /invitations", middleware.Auth(handlers.MyInvitationsHandler))
-	mux.HandleFunc("POST /invitations/{id}/{action}", middleware.Auth(handlers.RespondInvitationHandler))
-
-	// Join requests
-	mux.HandleFunc("POST /groups/{id}/request", middleware.Auth(handlers.RequestToJoinHandler))
-	mux.HandleFunc("GET /groups/{id}/requests", middleware.Auth(handlers.GroupRequestsHandler))
-	mux.HandleFunc("POST /groups/{id}/requests/{requestID}/{action}", middleware.Auth(handlers.RespondJoinRequestHandler))
-
-	// Group posts & comments
-	mux.HandleFunc("GET /groups/{id}/posts", middleware.Auth(handlers.GroupPostsHandler))
-	mux.HandleFunc("POST /groups/{id}/posts", middleware.Auth(handlers.CreateGroupPostHandler))
-	mux.HandleFunc("GET /groups/posts/{postID}/comments", middleware.Auth(handlers.GroupCommentsHandler))
-	mux.HandleFunc("POST /groups/posts/{postID}/comments", middleware.Auth(handlers.CreateGroupCommentHandler))
-
-	// Events
-	mux.HandleFunc("GET /groups/{id}/events", middleware.Auth(handlers.EventsListHandler))
-	mux.HandleFunc("POST /groups/{id}/events", middleware.Auth(handlers.CreateEventHandler))
-	mux.HandleFunc("POST /events/{eventID}/respond", middleware.Auth(handlers.RespondEventHandler))
-
 	return middleware.CORS(limiter.Middleware(mux.ServeHTTP))
 }
