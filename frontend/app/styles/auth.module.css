@@ -306,3 +306,42 @@
 .modalButton:hover {
   background: var(--accent-hover);
 }
+
+.preview {
+  position: relative;
+  width: fit-content;
+}
+
+.previewImage {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+  border: 1px solid var(--border);
+}
+
+.previewRemove {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.previewRemove:hover {
+  background: var(--danger-soft);
+  border-color: var(--danger-border);
+  color: var(--danger);
+}
