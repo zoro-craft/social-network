@@ -1,0 +1,308 @@
+.wrapper {
+  min-height: calc(100vh - 70px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 40px 32px;
+  box-shadow: var(--shadow);
+  animation: cardIn 0.3s ease;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.title {
+  color: var(--text-primary);
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  text-align: center;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 14px;
+  text-align: center;
+  margin: 0 0 28px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+}
+
+.row > input {
+  flex: 1;
+}
+
+.input,
+.textarea {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+  width: 100%;
+  font-family: inherit;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.input:hover:not(:focus),
+.textarea:hover:not(:focus) {
+  border-color: var(--border-strong);
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: var(--accent-border);
+  background: var(--bg-hover);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.fileLabel {
+  color: var(--text-secondary);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fileInput {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.fileInput::file-selector-button {
+  background: var(--bg-hover);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+  padding: 7px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  margin-right: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.fileInput::file-selector-button:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+}
+
+.button {
+  background: var(--text-primary);
+  border: none;
+  border-radius: 8px;
+  color: var(--bg);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 13px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition:
+    background 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-border);
+  color: var(--danger);
+  font-size: 13px;
+  padding: 11px 14px;
+  border-radius: 8px;
+  margin: 0;
+  text-align: center;
+}
+
+.footerText {
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+  margin-top: 22px;
+}
+
+.footerText a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.footerText a:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+.viewerBox {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.viewerLabel {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.viewerEmpty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.viewerGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.viewerItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 14px 6px 6px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+  font-size: 13px;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.viewerItem:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-hover);
+}
+
+.viewerSelected {
+  background: #e5e5e5;
+  border-color: #1b1a1a;
+  color: black
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: cardIn 0.2s ease;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modalSubtitle {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.modal .viewerGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.modal .viewerItem {
+  width: 100%;
+  justify-content: flex-start;
+  border-radius: 8px;
+}
+
+.modalButton {
+  background: var(--text-primary);
+  border: none;
+  border-radius: 8px;
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.2s ease;
+}
+
+.modalButton:hover {
+  background: var(--accent-hover);
+}
