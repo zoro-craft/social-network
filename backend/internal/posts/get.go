@@ -22,8 +22,11 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	viewerID, _ := auth.GetUserIDFromSession(r)
-
+	viewerID, err := auth.GetUserIDFromSession(r)
+	if err!=nil{
+			utils.HandleError(w, http.StatusUnauthorized, "You must be logged in")
+		return
+	}
 	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
 	if limit <= 0 || limit > 50 {
 		limit = 10
@@ -32,7 +35,15 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 	if offset < 0 {
 		offset = 0
 	}
-
+	beforeStr := r.URL.Query().Get("before")
+	var beforeID int
+	if beforeStr != "" {
+		beforeID, err = strconv.Atoi(beforeStr)
+		if err != nil || beforeID <= 0 {
+			utils.HandleError(w, http.StatusBadRequest, "Invalid before id")
+			return
+		}
+	}
 	query := postSelect + "WHERE " + visibleCondition + " ORDER BY p.id DESC LIMIT ? OFFSET ?"
 	rows, err := database.Database.Query(query, viewerID, viewerID, viewerID, limit, offset)
 	if err != nil {
@@ -48,7 +59,12 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 			result = append(result, p)
 		}
 	}
-
+	if beforeStr == "" {
+		var maxID int
+		if err := database.Database.QueryRow("SELECT COALESCE(MAX(id), 0) FROM posts").Scan(&maxID); err == nil {
+			w.Header().Set("X-Max-Post-Id", strconv.Itoa(maxID))
+		}
+	}
 	utils.RespondJSON(w, http.StatusOK, result)
 }
 
