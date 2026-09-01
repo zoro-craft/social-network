@@ -29,14 +29,43 @@ func GetCommentsAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := database.Database.Query(`
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	if limit <= 0 || limit > 50 {
+		limit = 10
+	}
+	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+	if offset < 0 {
+		offset = 0
+	}
+
+	beforeStr := r.URL.Query().Get("before")
+	var beforeID int
+	if beforeStr != "" {
+		beforeID, err = strconv.Atoi(beforeStr)
+		if err != nil || beforeID <= 0 {
+			utils.HandleError(w, http.StatusBadRequest, "Invalid before id")
+			return
+		}
+	}
+
+	query := `
 		SELECT c.id, c.post_id, c.content, COALESCE(c.image, ''), c.user_id,
 		       COALESCE(u.first_name, ''), COALESCE(u.avatar, ''), c.created_at
 		FROM comments c
 		JOIN users u ON c.user_id = u.id
 		WHERE c.post_id = ?
-		ORDER BY c.id DESC
-	`, postID)
+	`
+	args := []interface{}{postID}
+
+	if beforeStr != "" {
+		query += " AND c.id <= ?"
+		args = append(args, beforeID)
+	}
+
+	query += " ORDER BY c.id DESC LIMIT ? OFFSET ?"
+	args = append(args, limit, offset)
+
+	rows, err := database.Database.Query(query, args...)
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Database error loading comments")
 		return
@@ -46,10 +75,17 @@ func GetCommentsAPI(w http.ResponseWriter, r *http.Request) {
 	result := []Comment{}
 	for rows.Next() {
 		var c Comment
-		if rows.Scan(&c.ID, &c.PostID, &c.Content, &c.Image, &c.UserID, &c.FirstName, &c.Avatar, &c.CreatedAt) == nil {
-		continue
+		if err := rows.Scan(&c.ID, &c.PostID, &c.Content, &c.Image, &c.UserID, &c.FirstName, &c.Avatar, &c.CreatedAt); err == nil {
+			result = append(result, c)
 		}
-		result = append(result, c)
+	}
+
+	if beforeStr == "" {
+		var maxID int
+		database.Database.QueryRow(
+			"SELECT COALESCE(MAX(id), 0) FROM comments WHERE post_id = ?", postID,
+		).Scan(&maxID)
+		w.Header().Set("X-Max-Comment-Id", strconv.Itoa(maxID))
 	}
 
 	utils.RespondJSON(w, http.StatusOK, result)
