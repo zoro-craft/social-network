@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"zone/internal/auth"
@@ -37,7 +36,6 @@ func CreatGroupeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err = repositories.SaveGroup(groupe)
 	if err != nil {
-		fmt.Println("111")
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
