@@ -17,7 +17,6 @@ export default function CreatePostPage() {
   const [content, setContent] = useState('');
   const [privacy, setPrivacy] = useState('public');
   const [imageFile, setImageFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
   const [followers, setFollowers] = useState([]);
   const [selectedViewers, setSelectedViewers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -60,22 +59,7 @@ export default function CreatePostPage() {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-
-    if (!file) {
-      setImageFile(null);
-      setPreviewUrl(null);
-      return;
-    }
-
-    setImageFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
-  };
-
-  const handleRemoveImage = () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setImageFile(null);
-    setPreviewUrl(null);
+    setImageFile(file || null);
   };
 
   const handleSubmit = async (e) => {
@@ -189,7 +173,7 @@ export default function CreatePostPage() {
           )}
 
           <label className={styles.fileLabel}>
-            Image (optional)
+            Image 
             <input
               className={styles.fileInput}
               type="file"
@@ -197,21 +181,6 @@ export default function CreatePostPage() {
               onChange={handleImageChange}
             />
           </label>
-
-          {previewUrl && (
-            <div className={styles.preview}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className={styles.previewImage} src={previewUrl} alt="" />
-              <button
-                type="button"
-                className={styles.previewRemove}
-                onClick={handleRemoveImage}
-                title="Remove image"
-              >
-                ✕
-              </button>
-            </div>
-          )}
 
           <button className={styles.button} type="submit" disabled={loading}>
             {loading ? 'Posting...' : 'Post'}
