@@ -12,15 +12,22 @@ import styles from '../../../styles/comments.module.css';
 
 export default function CommentPage() {
   const { id } = useParams();
-  const { loading: authLoading, auth } = useAuth();
+  const { auth, loading: authLoading } = useAuth();
   const router = useRouter();
   const showToast = useToast();
 
-  const { post, comments, loading, fetchPostAndComments, addComment } =
-    useComments(id);
+  const {
+    post,
+    comments,
+    loading,
+    loadingMore,
+    hasMore,
+    fetchPostAndComments,
+    loadMoreComments,
+    addComment,
+  } = useComments(id);
   const [content, setContent] = useState('');
   const [imageFile, setImageFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -54,32 +61,17 @@ export default function CommentPage() {
       }
 
       setContent('');
-      setImageFile(null);
-      setPreviewUrl(null);
     } catch {
       showToast('Could not reach the server');
     } finally {
       setSubmitting(false);
     }
   };
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    if (!file) {
-      setImageFile(null);
-      setPreviewUrl(null);
-      return;
-    }
-    setImageFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    setImageFile(file || null);
   };
 
-  const handleRemoveImage = () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setImageFile(null);
-    setPreviewUrl(null);
-  };
 
   if (authLoading || !auth.authenticated) {
     return null;
@@ -122,10 +114,10 @@ export default function CommentPage() {
         />
         <div className={styles.buttonRow}>
           <label
-            className={`${styles.imageLabel}${previewUrl ? ` ${styles.imageActive}` : ''}`}
+            className={styles.imageLabel}
             title="Attach image"
           >
-            📷
+            Image
             <input
               className={styles.imageInput}
               type="file"
@@ -137,20 +129,7 @@ export default function CommentPage() {
             {submitting ? 'Posting...' : 'Post'}
           </button>
         </div>
-        {previewUrl && (
-          <div className={styles.preview}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className={styles.previewImage} src={previewUrl} alt="" />
-            <button
-              type="button"
-              className={styles.previewRemove}
-              onClick={handleRemoveImage}
-              title="Remove image"
-            >
-              ✕
-            </button>
-          </div>
-        )}
+
       </form>
 
       {comments.length === 0 && (
@@ -165,7 +144,7 @@ export default function CommentPage() {
           >
             <Avatar src={c.avatar} name={c.first_name} size={28} />
             <p className={styles.commentAuthor}>{c.first_name}</p>
-            <p className={styles.commentDate}>{formatDate(c.created_at)}</p>
+            <p className={styles.commentDfate}>{formatDate(c.created_at)}</p>
           </div>
 
           <p className={styles.commentContent}>{c.content}</p>
@@ -179,6 +158,16 @@ export default function CommentPage() {
           )}
         </div>
       ))}
+
+      {!loading && hasMore && (
+        <button
+          className={styles.loadMore}
+          onClick={loadMoreComments}
+          disabled={loadingMore}
+        >
+          {loadingMore ? 'Loading...' : 'Load more'}
+        </button>
+      )}
     </div>
   );
 }
