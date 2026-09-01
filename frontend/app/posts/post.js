@@ -8,11 +8,16 @@ import { useReactions } from './useReactions';
 import styles from '../styles/home.module.css';
 import formatDate from '../lib/format';
 
+const PAGE_SIZE = 10;
+
 export default function Posts() {
   const router = useRouter();
   const { auth, loading } = useAuth();
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [snapshotMaxId, setSnapshotMaxId] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
   const { react } = useReactions(setPosts);
 
   useEffect(() => {
@@ -24,22 +29,49 @@ export default function Posts() {
   useEffect(() => {
     if (!auth.authenticated) return;
 
-    async function fetchPosts() {
+    async function fetchFirstPage() {
       try {
-        const res = await fetch(`${API_BASE}/posts`, {
-          credentials: 'include',
-        });
+        const res = await fetch(
+          `${API_BASE}/posts?limit=${PAGE_SIZE}&offset=0`,
+          {
+            credentials: 'include',
+          },
+        );
         const data = await res.json();
+
+        setSnapshotMaxId(res.headers.get('X-Max-Post-Id'));
         setPosts(data || []);
-      } catch (err) {
+        setHasMore((data || []).length === PAGE_SIZE);
+      } catch {
         setPosts([]);
+        setHasMore(false);
       } finally {
         setPostsLoading(false);
       }
     }
 
-    fetchPosts();
+    fetchFirstPage();
   }, [auth.authenticated]);
+
+  const loadMore = async () => {
+    if (!snapshotMaxId || loadingMore) return;
+
+    setLoadingMore(true);
+    try {
+      const res = await fetch(
+        `${API_BASE}/posts?before=${snapshotMaxId}&limit=${PAGE_SIZE}&offset=${posts.length}`,
+        { credentials: 'include' },
+      );
+      const data = await res.json();
+
+      setPosts((prev) => [...prev, ...(data || [])]);
+      setHasMore((data || []).length === PAGE_SIZE);
+    } catch {
+      setHasMore(false);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   if (loading || !auth.authenticated) {
     return null;
@@ -110,6 +142,16 @@ export default function Posts() {
           </div>
         </div>
       ))}
+
+      {!postsLoading && hasMore && (
+        <button
+          className={styles.createButton}
+          onClick={loadMore}
+          disabled={loadingMore}
+        >
+          {loadingMore ? 'Loading...' : 'Load more'}
+        </button>
+      )}
     </div>
   );
 }
