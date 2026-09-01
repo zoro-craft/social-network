@@ -1,0 +1,45 @@
+package handlers
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+
+	"zone/internal/auth"
+	"zone/internal/groups/models"
+	"zone/internal/groups/repositories"
+	"zone/internal/groups/services"
+
+	"zone/internal/utils"
+)
+
+func CreatGroupeHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		utils.HandleError(w, 405, http.StatusText(405))
+		return
+	}
+	user_id, err := auth.GetUserIDFromSession(r)
+	if err != nil {
+		utils.HandleError(w, 401, http.StatusText(401))
+		return
+	}
+
+	var groupe models.Groupe
+	err = json.NewDecoder(r.Body).Decode(&groupe)
+	if err != nil {
+		utils.HandleError(w, 400, http.StatusText(400))
+		return
+	}
+	groupe.Admin = user_id
+	if !services.ValidateGroup(groupe) {
+		utils.HandleError(w, 400, http.StatusText(400))
+		return
+	}
+	err = repositories.SaveGroup(groupe)
+	if err != nil {
+		fmt.Println("111")
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+	utils.RespondJSON(w, http.StatusCreated, map[string]string{"message": " Groupe created successfully!"})
+}
