@@ -63,21 +63,36 @@ func CreateNotification(userID int, invitationID int , msg string) error {
 
 
 
-func InvitationExists(invitationID, userID int) (bool) {
-	var exists bool
+func GetInvitation(invitationID, userID int) (models.GroupInvitation, error) {
+	var invitation models.GroupInvitation
 
 	err := database.Database.QueryRow(`
-		SELECT EXISTS(
-			SELECT 1
-			FROM group_invitations
-			WHERE id = ?
-			AND invited_user_id = ?
-		)
-	`, invitationID, userID).Scan(&exists)
+		SELECT id, group_id, inviter_id, invited_user_id, status, created_at
+		FROM group_invitations
+		WHERE id = ?
+		AND invited_user_id = ?
+	`, invitationID, userID).Scan(
+		&invitation.ID,
+		&invitation.GroupID,
+		&invitation.InviterID,
+		&invitation.InvitedUserID,
+		&invitation.Status,
+		&invitation.CreatedAt,
+	)
 
 	if err != nil {
-		return false
+		return invitation, err
 	}
 
-	return exists
+	return invitation, nil
+}
+
+func UpdateInvitationStatus(invitationID int, status string) error {
+	_, err := database.Database.Exec(`
+		UPDATE group_invitations
+		SET status = ?
+		WHERE id = ?
+	`, status, invitationID)
+
+	return err
 }

@@ -45,3 +45,12 @@ func GroupExists(groupID int) bool {
 
 	return exists
 }
+
+func AddGroupMember(groupID, userID int) error {
+	_, err := database.Database.Exec(`
+		INSERT INTO group_members (group_id, user_id)
+		VALUES (?, ?)
+	`, groupID, userID)
+
+	return err
+}
