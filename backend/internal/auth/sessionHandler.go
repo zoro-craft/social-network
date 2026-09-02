@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"zone/internal/middleware"
 	"zone/internal/database"
+	"zone/internal/middleware"
 )
 
 func GetUserID(r *http.Request) (int, error) {
@@ -30,11 +30,11 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var username, email, firstName, lastName string
+	var username, email, firstName, lastName, avatar string
 	err := database.Database.QueryRow(
-		"SELECT COALESCE(nickname, ''), email, COALESCE(first_name, ''), COALESCE(last_name, '') FROM users WHERE id = ?",
+		"SELECT COALESCE(nickname, ''), email, COALESCE(first_name, ''), COALESCE(last_name, ''), COALESCE(avatar, '') FROM users WHERE id = ?",
 		userID,
-	).Scan(&username, &email, &firstName, &lastName)
+	).Scan(&username, &email, &firstName, &lastName, &avatar)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -54,6 +54,7 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 			"email":      email,
 			"first_name": firstName,
 			"last_name":  lastName,
+			"avatar":     avatar,
 		},
 	})
 }
