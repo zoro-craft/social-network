@@ -8,7 +8,7 @@ import (
 	"zone/internal/utils"
 )
 
-func GetNotifcationHandler(w http.ResponseWriter, r *http.Request) {
+func NotifcationHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		utils.HandleError(w, 405, http.StatusText(405))
 		return

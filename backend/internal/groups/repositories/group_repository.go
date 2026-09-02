@@ -29,3 +29,19 @@ func GetGroupNameByID(groupID int) (string, error) {
 
     return groupName, nil
 }
+
+func GroupExists(groupID int) bool {
+	var exists bool
+
+	err := database.Database.QueryRow(
+		`SELECT EXISTS(
+			SELECT 1 FROM user_groups WHERE id = ?
+		)`,
+		groupID,
+	).Scan(&exists)
+	if err != nil {
+		return false
+	}
+
+	return exists
+}

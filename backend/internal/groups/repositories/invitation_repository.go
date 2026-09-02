@@ -28,21 +28,7 @@ func SaveInvitation(invit models.GroupInvitation) (int, error) {
 	return int(id), nil
 }
 
-func GroupExists(groupID int) bool {
-	var exists bool
 
-	err := database.Database.QueryRow(
-		`SELECT EXISTS(
-			SELECT 1 FROM user_groups WHERE id = ?
-		)`,
-		groupID,
-	).Scan(&exists)
-	if err != nil {
-		return false
-	}
-
-	return exists
-}
 
 func InvitedUserIDExists(InvitedUserID int) bool {
 	var exists bool
@@ -75,3 +61,23 @@ func CreateNotification(userID int, invitationID int , msg string) error {
 	return err
 }
 
+
+
+func InvitationExists(invitationID, userID int) (bool) {
+	var exists bool
+
+	err := database.Database.QueryRow(`
+		SELECT EXISTS(
+			SELECT 1
+			FROM group_invitations
+			WHERE id = ?
+			AND invited_user_id = ?
+		)
+	`, invitationID, userID).Scan(&exists)
+
+	if err != nil {
+		return false
+	}
+
+	return exists
+}

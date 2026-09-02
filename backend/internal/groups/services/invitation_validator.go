@@ -28,3 +28,4 @@ func ValidCreateInvitation(invt models.GroupInvitation, userID int) bool {
 
 	return true
 }
+
