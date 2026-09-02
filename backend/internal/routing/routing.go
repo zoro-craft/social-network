@@ -13,7 +13,7 @@ import (
 	"zone/internal/reactions"
 	"zone/internal/users"
 	"zone/internal/utils"
-	"zone/internal/groups/handlers"
+	// "zone/internal/groups/handlers"
 )
 
 func NewRouter() http.Handler {
@@ -46,9 +46,9 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("GET /profile/{id}/following", followers.GetFollowingAPI)
 
 	// Groupe 
-	mux.HandleFunc("POST /groupe/create" , middleware.Auth(handlers.CreatGroupeHandler))
-	mux.HandleFunc("POST /groupe/{id}/invite" , middleware.Auth(handlers.InvitationsHandler))
-	mux.HandleFunc("GET /groupe/{id}/notifcation" , middleware.Auth(handlers.GetInvitationsHandler))
+	// mux.HandleFunc("POST /groupe/create" , middleware.Auth(handlers.CreatGroupeHandler))
+	// mux.HandleFunc("POST /groupe/{id}/invite" , middleware.Auth(handlers.InvitationsHandler))
+	// mux.HandleFunc("GET /groupe/{id}/notifcation" , middleware.Auth(handlers.GetInvitationsHandler))
 
 	return middleware.CORS(limiter.Middleware(mux.ServeHTTP))
 }
