@@ -51,7 +51,7 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(c.Content) > 1000 {
-		utils.HandleError(w, http.StatusBadRequest, "Content too long")
+		utils.RespondJSON(w, http.StatusBadRequest,map[string]string{"error":"content to long"})
 		return
 	}
 

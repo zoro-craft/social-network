@@ -39,11 +39,14 @@ export default function CommentPage() {
   useEffect(() => {
     if (!auth.authenticated) return;
     fetchPostAndComments();
-  }, [auth.authenticated]);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!content.trim()) return;
+    if (!content.trim()) {
+      showToast('content are required');
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -56,11 +59,12 @@ export default function CommentPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        showToast(data.message || 'Failed to add comment');
+        showToast(data.error || 'Failed to add comment');
         return;
       }
 
       setContent('');
+      showToast('comment add successfully', false);
     } catch {
       showToast('Could not reach the server');
     } finally {
@@ -71,7 +75,6 @@ export default function CommentPage() {
     const file = e.target.files[0];
     setImageFile(file || null);
   };
-
 
   if (authLoading || !auth.authenticated) {
     return null;
@@ -112,24 +115,20 @@ export default function CommentPage() {
           value={content}
           onChange={(e) => setContent(e.target.value)}
         />
+        <label className={styles.fileLabel} title="Attach image">
+          Image
+          <input
+            className={styles.fileInput}
+            type="file"
+            accept="image/jpeg,image/png,image/gif"
+            onChange={handleImageChange}
+          />
+        </label>
         <div className={styles.buttonRow}>
-          <label
-            className={styles.imageLabel}
-            title="Attach image"
-          >
-            Image
-            <input
-              className={styles.imageInput}
-              type="file"
-              accept="image/jpeg,image/png,image/gif"
-              onChange={handleImageChange}
-            />
-          </label>
           <button className={styles.button} type="submit" disabled={submitting}>
             {submitting ? 'Posting...' : 'Post'}
           </button>
         </div>
-
       </form>
 
       {comments.length === 0 && (

@@ -107,31 +107,20 @@
   gap: 10px;
 }
 
-.imageLabel {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  background: var(--bg-elevated);
-  cursor: pointer;
-  font-size: 15px;
-  transition: background 0.15s ease, border-color 0.15s ease;
+.fileLabel {
+  color: var(--text-secondary);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.imageLabel:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-strong);
-}
-
-.imageInput {
+.fileInput {
   color: var(--text-muted);
   font-size: 13px;
 }
 
-.imageInput::file-selector-button {
+.fileInput::file-selector-button {
   background: var(--bg-hover);
   border: 1px solid var(--border-strong);
   color: var(--text-primary);
@@ -144,6 +133,11 @@
   transition:
     background 0.2s ease,
     border-color 0.2s ease;
+}
+
+.fileInput::file-selector-button:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
 }
 
 .imageActive {

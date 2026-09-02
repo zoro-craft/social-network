@@ -7,8 +7,7 @@ import (
 	"zone/internal/auth"
 )
 
-// Auth is a middleware that restricts access to authenticated users.
-// It verifies the user's session token and updates their last seen activity.
+
 func Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, err := auth.GetUserIDFromSession(r)
