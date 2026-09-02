@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../app/context/AuthContext';
 import { API_BASE } from '@/utils/api';
 import styles from '../app/styles/navbar.module.css';
@@ -9,7 +9,6 @@ import Avatar from './Avatar';
 
 export default function Navbar() {
   const router = useRouter();
-  const pathname = usePathname();
   const { auth, setAuth } = useAuth();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
@@ -47,17 +46,13 @@ export default function Navbar() {
     });
     setAuth({ authenticated: false, nickname: '' });
     setOpen(false);
-    window.location.href = '/login';
+    router.push('/login');
   };
-
-  if (pathname === '/login' || pathname === '/register') {
-    return null;
-  }
 
   return (
     <header className={styles.navbar}>
       <div className={styles.logo} onClick={() => router.push('/')}>
-        01-Social-Network
+        01Forum
       </div>
 
       <div className={styles.navActions}>
@@ -82,31 +77,29 @@ export default function Navbar() {
 
         <div className={styles.authButtons}>
           {auth.authenticated ? (
-            <>
-              <div className={styles.avatarWrap} ref={wrapRef}>
-                <button
-                  className={styles.avatarButton}
-                  onClick={() => setOpen(!open)}
-                >
-                  <Avatar src={auth.avatar} name={auth.first_name} size={28} />
-                  {auth.first_name}
-                </button>
-  
-                {open && (
-                  <div className={styles.dropdown}>
-                    <button className={styles.dropdownItem} onClick={goToProfile}>
-                      Profile
-                    </button>
-                  </div>
-                )}
-              </div>
+            <div className={styles.avatarWrap} ref={wrapRef}>
               <button
-                className={`${styles.btn} ${styles.logout}`}
-                onClick={handleLogout}
+                className={styles.avatarButton}
+                onClick={() => setOpen(!open)}
               >
-                Logout
+                <Avatar src={auth.avatar} name={auth.first_name} size={28} />
+                {auth.first_name}
               </button>
-            </>
+
+              {open && (
+                <div className={styles.dropdown}>
+                  <button className={styles.dropdownItem} onClick={goToProfile}>
+                    Profile
+                  </button>
+                  <button
+                    className={`${styles.dropdownItem} ${styles.danger}`}
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <button
