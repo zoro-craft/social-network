@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS  ;
+DROP TABLE IF EXISTS  notifications ;
