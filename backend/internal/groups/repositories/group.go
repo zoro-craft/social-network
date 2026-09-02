@@ -12,3 +12,20 @@ func SaveGroup(groupe models.Groupe) error {
 	)
 	return err
 }
+
+
+func GetGroupNameByID(groupID int) (string, error) {
+    var groupName string
+
+    err := database.Database.QueryRow(`
+        SELECT title
+        FROM user_groups
+        WHERE id = ?
+    `, groupID).Scan(&groupName)
+
+    if err != nil {
+        return "", err
+    }
+
+    return groupName, nil
+}
