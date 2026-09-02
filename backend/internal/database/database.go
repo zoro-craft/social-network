@@ -35,7 +35,6 @@ func Init() error {
 	}
 
 	migrationsPath := "file://" + filepath.Join(baseDir, "migrations", "sqlite")
-	fmt.Println(migrationsPath)
 	m, err := migrate.NewWithDatabaseInstance(migrationsPath, "sqlite3", driver)
 	if err != nil {
 		return fmt.Errorf("can't create migrate instance: %v", err)

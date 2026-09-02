@@ -14,5 +14,8 @@ func main() {
 	}
 
 	log.Println("Server running on :8080")
-	http.ListenAndServe(":8080", routing.NewRouter())
+	err := http.ListenAndServe(":8080", routing.NewRouter())
+	if (err != nil) {
+		log.Fatal(err)
+	}
 }
