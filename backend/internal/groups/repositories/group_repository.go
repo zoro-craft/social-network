@@ -8,7 +8,7 @@ import (
 func SaveGroup(groupe models.Groupe) error {
 	_, err := database.Database.Exec(
 		`INSERT INTO user_groups (creator_id, title, description) VALUES (?, ?, ?)`,
-		groupe.Admin, groupe.Titel, groupe.Description,
+		groupe.Admin, groupe.Title, groupe.Description,
 	)
 	return err
 }
@@ -53,4 +53,49 @@ func AddGroupMember(groupID, userID int) error {
 	`, groupID, userID)
 
 	return err
+}
+
+
+func GetAllGroupsNotMember(userID int) ([]models.Groupe, error) {
+	rows, err := database.Database.Query(`
+		SELECT 
+			g.id,
+			g.creator_id,
+			g.title,
+			g.description
+		FROM user_groups g
+		WHERE NOT EXISTS (
+			SELECT 1
+			FROM group_members gm
+			WHERE gm.group_id = g.id
+			AND gm.user_id = ?
+		)
+		ORDER BY g.id DESC
+	`, userID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groups []models.Groupe
+
+	for rows.Next() {
+		var group models.Groupe
+
+		err := rows.Scan(
+			&group.Id,
+			&group.Admin,
+			&group.Title,
+			&group.Description,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		groups = append(groups, group)
+	}
+
+
+	return groups, nil
 }

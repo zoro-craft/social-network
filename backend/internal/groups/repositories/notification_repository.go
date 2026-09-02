@@ -38,9 +38,6 @@ func GetNotificationsByUserID(userID int) ([]models.Notification, error) {
 		notifications = append(notifications, notification)
 	}
 
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
 
 	return notifications, nil
 }

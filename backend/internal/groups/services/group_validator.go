@@ -8,7 +8,7 @@ import (
 
 // ValidateGroup checks the fields a client is allowed to provide when creating a group.
 func ValidateGroup(groupe models.Groupe) bool {
-	if (len(strings.TrimSpace(groupe.Titel)) <= 0 && len(strings.TrimSpace(groupe.Titel)) >= 10) {
+	if (len(strings.TrimSpace(groupe.Title)) <= 0 && len(strings.TrimSpace(groupe.Title)) >= 10) {
 		return  false
 	}
 
