@@ -4,9 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiRequest } from "../../../utils/api";
+import { useAuth } from "../../../app/context/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { refreshAuth } = useAuth();
+  
   const [formData, setFormData] = useState({
     identify: "", 
     password: "",
@@ -24,11 +27,9 @@ export default function LoginPage() {
     setError("");
 
     try {
-      await apiRequest("/api/login", "POST", formData);
-
-      alert("Logged in successfully!");
-      router.push("/");
-      
+      await apiRequest("/login", "POST", formData);
+      await refreshAuth();
+      router.push("/posts");
     } catch (err) {
       setError(err.message);
       setLoading(false);
@@ -36,42 +37,50 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-96">
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Login</h2>
-        
-        {error && <div className="bg-red-100 text-red-600 p-2 rounded mb-4 text-sm">{error}</div>}
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input 
-            type="text" 
-            name="identify" 
-            placeholder="Nickname or Email" 
-            required 
-            onChange={handleChange}
-            className="w-full p-2 border rounded text-black" 
-          />
-            
-          <input 
-            type="password" 
-            name="password" 
-            placeholder="Password" 
-            required 
-            onChange={handleChange}
-            className="w-full p-2 border rounded text-black" 
-          />
+    <div className="glass-page glass-page-login" style={{ flexDirection: 'column' }}>
+      <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '32px', color: '#fff', background: 'linear-gradient(to right, #fff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.02em', textAlign: 'center' }}>
+        01-Social-Network
+      </h1>
+      <div className="glass-container glass-container-login">
+        <h2>Welcome Back</h2>
+        <p>Sign in with your credentials</p>
 
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700 transition disabled:bg-gray-400">
-            {loading ? "Logging in..." : "Login"}
+        {error && <div className="glass-error">{error}</div>}
+
+        <form onSubmit={handleSubmit}>
+          <div className="glass-input-group">
+            <label>Username / Email</label>
+            <input
+              type="text"
+              className="glass-input"
+              name="identify"
+              placeholder="email or username"
+              required
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="glass-input-group">
+            <label>Password</label>
+            <input
+              type="password"
+              className="glass-input"
+              name="password"
+              placeholder="••••••••"
+              required
+              onChange={handleChange}
+            />
+          </div>
+
+          <button type="submit" className="glass-button" disabled={loading}>
+            {loading ? "Signing in..." : "Sign In"}
           </button>
-        </form>
 
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Don't have an account? <Link href="/register" className="text-blue-600 hover:underline">Register here</Link>
-        </p>
+          <div className="glass-footer">
+            Don&apos;t have an account?
+            <Link href="/register">Register</Link>
+          </div>
+        </form>
       </div>
     </div>
   );

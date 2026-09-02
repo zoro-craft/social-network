@@ -10,7 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"social-network/pkg/db"
+	"zone/internal/database"
 	"strings"
 	"time"
 
@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	emailRegex = regexp.MustCompile(`^[^@\s]+@[^@\s]+\.[^@\s]+$`)
+	authEmailRegex = regexp.MustCompile(`^[^@\s]+@[^@\s]+\.[^@\s]+$`)
 )
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
@@ -30,11 +30,19 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := r.ParseMultipartForm(10 << 20)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid form data or file too large"})
-		return
+	contentType := r.Header.Get("Content-Type")
+	if strings.HasPrefix(contentType, "multipart/form-data") {
+		if err := r.ParseMultipartForm(10 << 20); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid form data or file too large"})
+			return
+		}
+	} else {
+		if err := r.ParseForm(); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid form data"})
+			return
+		}
 	}
 
 	firstName := strings.TrimSpace(r.FormValue("first_name"))
@@ -76,14 +84,14 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !emailRegex.MatchString(email) {
+	if !authEmailRegex.MatchString(email) {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Please enter a valid email address."})
 		return
 	}
 
 	var existingID int
-	err = db.DB.QueryRow("SELECT id FROM users WHERE email = ?", email).Scan(&existingID)
+	err = database.Database.QueryRow("SELECT id FROM users WHERE email = ?", email).Scan(&existingID)
 	if err == nil {
 		w.WriteHeader(http.StatusConflict)
 		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Email already exists"})
@@ -97,7 +105,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	if nickname != "" {
 		var existingNicknameID int
-		err = db.DB.QueryRow("SELECT id FROM users WHERE nickname = ?", nickname).Scan(&existingNicknameID)
+		err = database.Database.QueryRow("SELECT id FROM users WHERE nickname = ?", nickname).Scan(&existingNicknameID)
 		if err == nil {
 			w.WriteHeader(http.StatusConflict)
 			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Nickname already exists"})
@@ -142,23 +150,27 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var avatarPath string
-	file, handler, err := r.FormFile("avatar")
-	if err == nil {
-		defer file.Close()
-		os.MkdirAll("uploads/avatars", os.ModePerm)
-		ext := filepath.Ext(handler.Filename)
-		newFileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
-		filePath := filepath.Join("uploads/avatars", newFileName)
-
-		dst, err := os.Create(filePath)
+	if strings.HasPrefix(contentType, "multipart/form-data") {
+		file, handler, err := r.FormFile("avatar")
 		if err == nil {
-			defer dst.Close()
-			io.Copy(dst, file)
-			avatarPath = "/" + filePath
+			defer file.Close()
+			os.MkdirAll("uploads/avatars", os.ModePerm)
+			ext := filepath.Ext(handler.Filename)
+			newFileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
+			filePath := filepath.Join("uploads/avatars", newFileName)
+
+			dst, err := os.Create(filePath)
+			if err == nil {
+				defer dst.Close()
+				io.Copy(dst, file)
+				avatarPath = "/" + filePath
+			}
 		}
+	} else {
+		avatarPath = strings.TrimSpace(r.FormValue("avatar"))
 	}
 
-	_, err = db.DB.Exec(
+	_, err = database.Database.Exec(
 		"INSERT INTO users (email, password, date_of_birth, first_name, last_name, nickname, about_me, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 		email, string(hashedPassword), dob.Format("2006-01-02"), firstName, lastName, nickname, aboutMe, avatarPath,
 	)

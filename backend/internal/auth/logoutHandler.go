@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"social-network/pkg/db"
+	"zone/internal/database"
 )
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +24,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	if err == nil && cookie.Value != "" {
 
 		query := "DELETE FROM user_sessions WHERE session_token = ?"
-		_, err := db.DB.Exec(query, cookie.Value)
+		_, err := database.Database.Exec(query, cookie.Value)
 
 		if err != nil {
 			log.Println("Error deleting session from DB:", err)

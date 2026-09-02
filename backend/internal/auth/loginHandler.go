@@ -7,9 +7,10 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
-	"social-network/pkg/db"
+	"zone/internal/database"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -49,22 +50,39 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req LoginReq
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid request formatting"})
-		return
+	var identify, password string
+	contentType := r.Header.Get("Content-Type")
+
+	if strings.HasPrefix(contentType, "application/json") {
+		var req LoginReq
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid request formatting"})
+			return
+		}
+		identify = req.Identify
+		password = req.Password
+	} else {
+		if err := r.ParseForm(); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid form data"})
+			return
+		}
+		identify = r.FormValue("login")
+		if identify == "" {
+			identify = r.FormValue("identify")
+		}
+		password = r.FormValue("password")
 	}
 
 	var dbID int
 	var dbUsername, dbEmail string
 	var dbPasswordHash string
 
-	err = db.DB.QueryRow(`
+	err := database.Database.QueryRow(`
 		SELECT id, password, COALESCE(nickname, ''), email FROM users 
 		WHERE email = ? OR (nickname = ? AND nickname != '')
-	`, req.Identify, req.Identify).Scan(&dbID, &dbPasswordHash, &dbUsername, &dbEmail)
+	`, identify, identify).Scan(&dbID, &dbPasswordHash, &dbUsername, &dbEmail)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -78,7 +96,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Verify password
-	err = bcrypt.CompareHashAndPassword([]byte(dbPasswordHash), []byte(req.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(dbPasswordHash), []byte(password))
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid username/email or password."})
@@ -87,7 +105,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Clear old sessions
 	deleteQuery := "DELETE FROM user_sessions WHERE user_id = ?"
-	_, err = db.DB.Exec(deleteQuery, dbID)
+	_, err = database.Database.Exec(deleteQuery, dbID)
 	if err != nil {
 		log.Println("Error deleting old sessions:", err)
 	}
@@ -100,7 +118,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	expirationTime := time.Now().Add(SessionDuration)
-	_, err = db.DB.Exec("INSERT INTO user_sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)", dbID, sessionToken, expirationTime)
+	_, err = database.Database.Exec("INSERT INTO user_sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)", dbID, sessionToken, expirationTime)
 	if err != nil {
 		log.Println("Error saving session to DB:", err)
 		w.WriteHeader(http.StatusInternalServerError)

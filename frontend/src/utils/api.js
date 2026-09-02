@@ -1,3 +1,5 @@
+export const API_BASE = "http://localhost:8080";
+
 export async function apiRequest(endpoint, method = "GET", data = null, isFormData = false) {
   const url = `http://localhost:8080${endpoint}`;
 

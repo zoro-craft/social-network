@@ -17,7 +17,7 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := auth.GetUserIDFromSession(r)
+	userID, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in to comment")
 		return
@@ -71,7 +71,7 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	commentID, err := result.LastInsertId()
-		if err != nil {
+	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Could not get new comment ID")
 		return
 	}

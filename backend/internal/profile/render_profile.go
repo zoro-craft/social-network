@@ -23,7 +23,7 @@ func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	viewerID, _ := auth.GetUserIDFromSession(r)
+	viewerID, _ := auth.GetUserID(r)
 
 	var p Profile
 	var nickname, aboutMe, avatar string

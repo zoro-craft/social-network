@@ -87,7 +87,7 @@ func GetFollowStatusAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	viewerID, err := auth.GetUserIDFromSession(r)
+	viewerID, err := auth.GetUserID(r)
 	if err != nil {
 		utils.RespondJSON(w, http.StatusOK, map[string]string{"status": "none"})
 		return

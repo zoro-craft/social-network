@@ -22,7 +22,7 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	viewerID, err := auth.GetUserIDFromSession(r)
+	viewerID, err := auth.GetUserID(r)
 	if err!=nil{
 			utils.HandleError(w, http.StatusUnauthorized, "You must be logged in")
 		return

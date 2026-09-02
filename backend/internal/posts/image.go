@@ -1,7 +1,6 @@
 package posts
 
 import (
-	"errors"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -12,7 +11,7 @@ import (
 func savePostImage(r *http.Request) (string, error) {
 	file, header, err := r.FormFile("image")
 	if err == http.ErrMissingFile {
-		return "", errors.New("Image is requird")
+		return "", nil
 	}
 	if err != nil {
 		return "", err

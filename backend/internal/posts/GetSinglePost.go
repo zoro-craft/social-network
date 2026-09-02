@@ -20,7 +20,7 @@ func GetPostByIDAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	viewerID, _ := auth.GetUserIDFromSession(r)
+	viewerID, _ := auth.GetUserID(r)
 	var p Post
 	
 	query := `

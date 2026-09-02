@@ -15,7 +15,7 @@ func FollowAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	followerID, err := auth.GetUserIDFromSession(r)
+	followerID, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in")
 		return
@@ -64,7 +64,7 @@ func UnfollowAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	followerID, err := auth.GetUserIDFromSession(r)
+	followerID, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in")
 		return
