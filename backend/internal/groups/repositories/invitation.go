@@ -60,17 +60,34 @@ func InvitedUserIDExists(InvitedUserID int) bool {
 }
 
 
-func CreateNotification(userID int, invitationID int) error {
+func CreateNotification(userID int, invitationID int , msg string) error {
 	_, err := database.Database.Exec(`
 		INSERT INTO notifications
-			(user_id, type, invitation_id, message)
+			(user_id, type, invitation_id , message)
 		VALUES (?, ?, ?, ?)
 	`,
 		userID,
 		"group_invitation",
 		invitationID,
-		"You have been invited to join a group",
+		msg,
 	)
 
 	return err
+}
+
+
+func GetGroupNameByID(groupID int) (string, error) {
+    var groupName string
+
+    err := database.Database.QueryRow(`
+        SELECT title
+        FROM user_groups
+        WHERE id = ?
+    `, groupID).Scan(&groupName)
+
+    if err != nil {
+        return "", err
+    }
+
+    return groupName, nil
 }

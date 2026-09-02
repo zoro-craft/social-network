@@ -8,7 +8,7 @@ import (
 	"zone/internal/utils"
 )
 
-func GetInvitationsHandler(w http.ResponseWriter, r *http.Request) {
+func GetNotifcationHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		utils.HandleError(w, 405, http.StatusText(405))
 		return
@@ -20,11 +20,11 @@ func GetInvitationsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	invitations, err := repositories.GetInvitationsByUserID(userID)
+	notifcation , err := repositories.GetNotificationsByUserID(userID)
 	if err != nil {
 		utils.HandleError(w, 500, "failed to get invitations")
 		return
 	}
 
-	utils.RespondJSON(w, http.StatusOK, invitations)
+	utils.RespondJSON(w, http.StatusOK, notifcation)
 }

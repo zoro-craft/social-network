@@ -5,41 +5,42 @@ import (
 	"zone/internal/groups/models"
 )
 
-func GetInvitationsByUserID(userID int) ([]models.GroupInvitation, error) {
+func GetNotificationsByUserID(userID int) ([]models.Notification, error) {
 	rows, err := database.Database.Query(`
-		SELECT id, group_id, inviter_id, invited_user_id, status, created_at
-		FROM group_invitations
-		WHERE invited_user_id = ?
-		ORDER BY created_at DESC
-	`, userID)
+        SELECT id, user_id, type, invitation_id, message, is_read, created_at
+        FROM notifications
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+    `, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var invitations []models.GroupInvitation
+	var notifications []models.Notification
 
 	for rows.Next() {
-		var invitation models.GroupInvitation
+		var notification models.Notification
 
 		err := rows.Scan(
-			&invitation.ID,
-			&invitation.GroupID,
-			&invitation.InviterID,
-			&invitation.InvitedUserID,
-			&invitation.Status,
-			&invitation.CreatedAt,
+			&notification.ID,
+			&notification.UserID,
+			&notification.Type,
+			&notification.InvitationID,
+			&notification.Message,
+			&notification.IsRead,
+			&notification.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
 		}
 
-		invitations = append(invitations, invitation)
+		notifications = append(notifications, notification)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return invitations, nil
+	return notifications, nil
 }

@@ -309,3 +309,12 @@ A user should only have access to the group's private content and actions if the
 ```
 
 Therefore, membership should be checked both in the **frontend** for the user interface and, more importantly, in the **backend** to prevent unauthorized access.
+
+
+1 . CreatGroupeHandler 
+      validation and save in databse  Admin , title ,  discrption 
+2 . InvitationsHandler  
+    - validation the invitation  and INSERT the groupe_id  , invetr  , invetd , status , time 
+    - creat the notifaction  ISERT the InvitedUserID and  the invitationID  the type  and the message 
+    // to do fix the message  
+3 .  GetInvitationsHandler

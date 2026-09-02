@@ -33,6 +33,7 @@ func InvitationsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// The current user is the inviter
 	invitation.InviterID = userID
+	utils.HandleError(w, 500, "failed to create invitation")
 
 	// Validate the invitation creation
 	if !services.ValidCreateInvitation(invitation, userID) {
@@ -47,10 +48,19 @@ func InvitationsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	groupName, err := repositories.GetGroupNameByID(invitation.GroupID)
+	if err != nil {
+		utils.HandleError(w, 500, "failed to get group")
+		return
+	}
+
+	message := "You are invited to join " + groupName
+
 	// Create notification for the invited user
 	err = repositories.CreateNotification(
 		invitation.InvitedUserID,
 		invitationID,
+		message,
 	)
 	if err != nil {
 		utils.HandleError(w, 500, "failed to create notification")

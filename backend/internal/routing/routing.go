@@ -46,6 +46,9 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("GET /profile/{id}/following", followers.GetFollowingAPI)
 
 	// Groupe 
-	mux.HandleFunc("POST /groupe/creat" , middleware.Auth(handlers.CreatGroupeHandler))
+	mux.HandleFunc("POST /groupe/create" , middleware.Auth(handlers.CreatGroupeHandler))
+	mux.HandleFunc("POST /groupe/{id}/invite" , middleware.Auth(handlers.InvitationsHandler))
+	mux.HandleFunc("GET /groupe/{id}/notifcation" , middleware.Auth(handlers.GetInvitationsHandler))
+
 	return middleware.CORS(limiter.Middleware(mux.ServeHTTP))
 }
