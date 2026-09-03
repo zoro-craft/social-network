@@ -7,13 +7,13 @@ import (
 	"zone/internal/auth"
 	"zone/internal/comments"
 	"zone/internal/followers"
+	"zone/internal/groups/handlers"
 	"zone/internal/middleware"
 	"zone/internal/posts"
 	"zone/internal/profile"
 	"zone/internal/reactions"
 	"zone/internal/users"
 	"zone/internal/utils"
-	// "zone/internal/groups/handlers"
 )
 
 func NewRouter() http.Handler {
@@ -45,10 +45,14 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("GET /profile/{id}/followers", followers.GetFollowersAPI)
 	mux.HandleFunc("GET /profile/{id}/following", followers.GetFollowingAPI)
 
-	// Groupe 
-	// mux.HandleFunc("POST /groupe/create" , middleware.Auth(handlers.CreatGroupeHandler))
-	// mux.HandleFunc("POST /groupe/{id}/invite" , middleware.Auth(handlers.InvitationsHandler))
-	// mux.HandleFunc("GET /groupe/{id}/notifcation" , middleware.Auth(handlers.GetInvitationsHandler))
+	// Group
+	mux.HandleFunc("POST /groups", middleware.Auth(handlers.CreatGroupeHandler))
+	mux.HandleFunc("GET /groups", middleware.Auth(handlers.GetAllGroupsHandler))
+	mux.HandleFunc("POST /groups/{group_id}/join", middleware.Auth(handlers.Join_Request_handler))
+	mux.HandleFunc("POST /groups/{group_id}/invitations", middleware.Auth(handlers.InvitationsHandler))
+	mux.HandleFunc("POST /invitations/{invitation_id}/accept", middleware.Auth(handlers.AcceptInvitationResponse))
+	mux.HandleFunc("POST /invitations/{invitation_id}/reject", middleware.Auth(handlers.AcceptInvitationResponse))
+	mux.HandleFunc("GET /notifications", middleware.Auth(handlers.RejectInvitationResponse))
 
 	return middleware.CORS(limiter.Middleware(mux.ServeHTTP))
 }

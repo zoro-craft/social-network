@@ -99,3 +99,36 @@ func GetAllGroupsNotMember(userID int) ([]models.Groupe, error) {
 
 	return groups, nil
 }
+
+func Alreadymember(group_id int, user_id int) bool {
+	var exists bool
+
+	err := database.Database.QueryRow(`
+		SELECT id
+		FROM group_members
+		WHERE group_id = ? AND user_id = ?
+	`, group_id, user_id).Scan(&exists)
+
+	if err != nil {
+		return false
+	}
+
+	return exists
+}
+
+
+func GetGroupCreator(group_id int) (int, error) {
+	var creatorID int
+
+	err := database.Database.QueryRow(`
+		SELECT creator_id
+		FROM user_groups
+		WHERE id = ?
+	`, group_id).Scan(&creatorID)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return creatorID, nil
+}
