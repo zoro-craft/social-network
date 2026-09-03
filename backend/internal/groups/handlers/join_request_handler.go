@@ -55,16 +55,30 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// get the admin from the group_id
+	// Get the admin from the group_id
 
-	// creator_id, err := repositories.GetGroupCreator(group_id)
-	// if err != nil {
-	// 	utils.HandleError(w, 500, http.StatusText(500))
-	// 	return
-	// }
+	creator_id, err := repositories.GetGroupCreator(group_id)
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+
+	fullname    := repositories.GetUserFullName(user_id) 
 	
-// TO DOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+	msg :=  "New join request for your group" + fullname
+	// creat the notifcation  
+	err  = repositories.CreateNotification(creator_id , "join_request" , nil , msg )
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
 
-	// creat the notfcation 
+	utils.RespondJSON(
+		w,
+		http.StatusCreated,
+		map[string]string{
+			"message": "join request  created successfully!",
+		},
+	)
 
 }

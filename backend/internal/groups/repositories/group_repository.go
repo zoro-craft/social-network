@@ -132,3 +132,19 @@ func GetGroupCreator(group_id int) (int, error) {
 
 	return creatorID, nil
 }
+
+func GetUserFullName(user_id int) string {
+	var fullName string
+
+	err := database.Database.QueryRow(`
+		SELECT full_name
+		FROM users
+		WHERE id = ?
+	`, user_id).Scan(&fullName)
+
+	if err != nil {
+		return ""
+	}
+
+	return fullName
+}

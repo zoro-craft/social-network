@@ -59,7 +59,8 @@ func InvitationsHandler(w http.ResponseWriter, r *http.Request) {
 	// Create notification for the invited user
 	err = repositories.CreateNotification(
 		invitation.InvitedUserID,
-		invitationID,
+		"group_invtation",
+		&invitationID,
 		message,
 	)
 	if err != nil {

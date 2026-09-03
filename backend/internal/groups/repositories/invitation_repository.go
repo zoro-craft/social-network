@@ -46,14 +46,14 @@ func InvitedUserIDExists(InvitedUserID int) bool {
 }
 
 
-func CreateNotification(userID int, invitationID int , msg string) error {
+func CreateNotification(userID int, Type string , invitationID *int , msg string) error {
 	_, err := database.Database.Exec(`
 		INSERT INTO notifications
 			(user_id, type, invitation_id , message)
 		VALUES (?, ?, ?, ?)
 	`,
 		userID,
-		"group_invitation",
+		Type,
 		invitationID,
 		msg,
 	)
