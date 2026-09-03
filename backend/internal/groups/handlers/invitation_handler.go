@@ -57,12 +57,7 @@ func InvitationsHandler(w http.ResponseWriter, r *http.Request) {
 	message := "You are invited to join " + groupName
 
 	// Create notification for the invited user
-	err = repositories.CreateNotification(
-		invitation.InvitedUserID,
-		"group_invtation",
-		&invitationID,
-		message,
-	)
+	err = repositories.CreateNotification( invitation.InvitedUserID , "group_invtation", &invitationID, nil, message)
 	if err != nil {
 		utils.HandleError(w, 500, "failed to create notification")
 		return

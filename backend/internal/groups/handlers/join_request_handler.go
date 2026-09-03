@@ -11,14 +11,6 @@ import (
 	"zone/internal/utils"
 )
 
-// URL : /groups/{group_id}/join"
-
-// frontend  send { group_id } -> handler user_id -> get Admin -> notifcation  -> accept -> addmember
-// 																			   -> reject ->
-
-/* TO DO
-- Check the user isn't already a member
-*/
 
 func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -49,7 +41,7 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = repositories.SaveJoinRequest(group_id, user_id)
+	request_id , err := repositories.SaveJoinRequest(group_id, user_id)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
@@ -67,7 +59,7 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 	
 	msg :=  "New join request for your group" + fullname
 	// creat the notifcation  
-	err  = repositories.CreateNotification(creator_id , "join_request" , nil , msg )
+	err  = repositories.CreateNotification(creator_id , "join_request" , nil , &request_id , msg )
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return

@@ -48,11 +48,16 @@ func NewRouter() http.Handler {
 	// Group
 	mux.HandleFunc("POST /groups", middleware.Auth(handlers.CreatGroupeHandler))
 	mux.HandleFunc("GET /groups", middleware.Auth(handlers.GetAllGroupsHandler))
+	// join request 
 	mux.HandleFunc("POST /groups/{group_id}/join", middleware.Auth(handlers.Join_Request_handler))
+	mux.HandleFunc("POST /join_requests/{request_id}/accept", middleware.Auth(handlers.Accept_Join_Request))
+	// invitation
 	mux.HandleFunc("POST /groups/{group_id}/invitations", middleware.Auth(handlers.InvitationsHandler))
 	mux.HandleFunc("POST /invitations/{invitation_id}/accept", middleware.Auth(handlers.AcceptInvitationResponse))
-	mux.HandleFunc("POST /invitations/{invitation_id}/reject", middleware.Auth(handlers.AcceptInvitationResponse))
-	mux.HandleFunc("GET /notifications", middleware.Auth(handlers.RejectInvitationResponse))
+	mux.HandleFunc("POST /invitations/{invitation_id}/reject", middleware.Auth(handlers.RejectInvitationResponse))
+
+	// notifications
+	mux.HandleFunc("GET /notifications", middleware.Auth(handlers.NotifcationHandler))
 
 	return middleware.CORS(limiter.Middleware(mux.ServeHTTP))
 }

@@ -1,0 +1,1 @@
+ALTER TABLE notifications DROP COLUMN request_id;
