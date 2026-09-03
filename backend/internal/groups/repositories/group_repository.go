@@ -104,9 +104,10 @@ func Alreadymember(group_id int, user_id int) bool {
 	var exists bool
 
 	err := database.Database.QueryRow(`
-		SELECT id
-		FROM group_members
-		WHERE group_id = ? AND user_id = ?
+		SELECT EXISTS(
+			SELECT 1 FROM group_members
+			WHERE group_id = ? AND user_id = ?
+		)
 	`, group_id, user_id).Scan(&exists)
 
 	if err != nil {

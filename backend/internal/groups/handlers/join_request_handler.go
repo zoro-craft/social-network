@@ -55,9 +55,9 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullname    := repositories.GetUserFullName(user_id) 
+	fullname := repositories.GetUserFullName(user_id) 
 	
-	msg :=  "New join request for your group" + fullname
+	msg :=  "New join request for your group " + fullname
 	// creat the notifcation  
 	err  = repositories.CreateNotification(creator_id , "join_request" , nil , &request_id , msg )
 	if err != nil {

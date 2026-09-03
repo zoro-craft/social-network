@@ -33,7 +33,6 @@ func InvitationsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// The current user is the inviter
 	invitation.InviterID = userID
-	utils.HandleError(w, 500, "failed to create invitation")
 
 	// Validate the invitation creation
 	if !services.ValidCreateInvitation(invitation, userID) {
