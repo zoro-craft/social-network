@@ -21,7 +21,7 @@ func ToggleVisibilityAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, err = database.Database.Exec(
-		"UPDATE users SET is_public = NOT is_public WHERE id = ?", userID,
+		"UPDATE users SET is_private = NOT is_private WHERE id = ?", userID,
 	)
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to update profile")
