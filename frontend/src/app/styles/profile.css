@@ -1,0 +1,214 @@
+.profile-wrapper {
+  min-height: 100vh;
+  color: white;
+  font-family: system-ui, -apple-system, sans-serif;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.profile-layout {
+  max-width: 1100px;
+  width: 100%;
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.left-sidebar {
+  flex: 0 0 300px;
+  max-width: 300px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  height: fit-content;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.right-area {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .profile-layout { flex-direction: column; }
+  .left-sidebar { flex: none; max-width: 100%; width: 100%; }
+}
+
+.avatar-container {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.avatar-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 1rem;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.online-dot {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  width: 20px;
+  height: 20px;
+  background-color: #22c55e;
+  border: 4px solid #0f172a;
+  border-radius: 50%;
+}
+
+.user-name { font-size: 1.5rem; font-weight: bold; margin: 0; overflow-wrap: break-word; word-break: break-word; max-width: 100%; }
+.user-handle { color: #22d3ee; margin: 0.2rem 0 1rem 0; font-weight: 500; overflow-wrap: break-word; word-break: break-word; max-width: 100%; }
+.about-me { color: #94a3b8; font-style: italic; font-size: 0.9rem; margin-top: 1rem; overflow-wrap: break-word; word-break: break-word; max-width: 100%; }
+
+.privacy-badge {
+  background: rgba(88, 28, 135, 0.4);
+  color: #d8b4fe;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  padding: 0.2rem 1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-label { color: #94a3b8; font-size: 0.85rem; margin: 0; }
+.stat-value { font-size: 1.5rem; font-weight: bold; margin: 0.2rem 0 0 0; }
+
+.action-btn {
+  width: 100%;
+  padding: 0.6rem;
+  margin-top: 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-follow { background: rgba(6, 182, 212, 0.2); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.5); }
+.btn-follow:hover { background: rgba(6, 182, 212, 0.3); }
+
+.btn-unfollow { background: rgba(255, 255, 255, 0.1); color: white; }
+.btn-unfollow:hover { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+.btn-pending { background: rgba(249, 115, 22, 0.2); color: #fb923c; }
+.btn-edit { background: rgba(51, 65, 85, 0.5); color: white; }
+
+.empty-state { text-align: center; color: #94a3b8; padding: 2rem 0; }
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.privacy-toggle {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255,255,255,0.05);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.form-input {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: rgba(34, 211, 238, 0.5);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.form-file {
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.form-file::file-selector-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  margin-right: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6); /* لون كحل شفاف */
+  backdrop-filter: blur(8px); /* هادا هو لي كيدير الضبابة */
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* باش تجي فوق كلشي */
+  padding: 1rem;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
