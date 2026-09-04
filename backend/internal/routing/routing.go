@@ -36,14 +36,11 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("POST /posts/react", middleware.Auth(reactions.ReactToPost))
 
 	// profile and users routes
-	mux.HandleFunc("GET /profile/{id}", profile.GetProfileAPI)
+	mux.HandleFunc("GET /profile/{id}", middleware.OptionalAuth(profile.GetProfileAPI))
+	mux.HandleFunc("POST /profile/edit", middleware.Auth(profile.EditProfileAPI))
 	mux.HandleFunc("POST /profile/toggle-visibility", middleware.Auth(profile.ToggleVisibilityAPI))
 	mux.HandleFunc("GET /users/search", middleware.Auth(users.SearchUsersAPI))
 	// followers routes
-	mux.HandleFunc("GET /follow/requests", middleware.Auth(followers.GetPendingRequestsAPI))
-	mux.HandleFunc("GET /follow/{id}/status", followers.GetFollowStatusAPI)
-	mux.HandleFunc("GET /profile/{id}/followers", followers.GetFollowersAPI)
-	mux.HandleFunc("GET /profile/{id}/following", followers.GetFollowingAPI)
 	mux.HandleFunc("POST /follow/{id}", middleware.Auth(followers.FollowAPI))
 	mux.HandleFunc("POST /follow/{id}/unfollow", middleware.Auth(followers.UnfollowAPI))
 	mux.HandleFunc("POST /follow/{id}/accept", middleware.Auth(followers.AcceptFollowAPI))
