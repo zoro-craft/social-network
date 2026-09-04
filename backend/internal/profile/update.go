@@ -30,3 +30,73 @@ func ToggleVisibilityAPI(w http.ResponseWriter, r *http.Request) {
 
 	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": "Profile visibility updated"})
 }
+
+func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	userID, err := auth.GetUserID(r)
+	if err != nil {
+		utils.HandleError(w, http.StatusUnauthorized, "Not authenticated")
+		return
+	}
+
+	r.Body = http.MaxBytesReader(w, r.Body, 5<<20)
+	err = r.ParseMultipartForm(5 << 20)
+	if err != nil {
+		utils.HandleError(w, http.StatusBadRequest, "Form too large or invalid")
+		return
+	}
+
+	isPrivate := r.FormValue("is_private") == "on"
+	firstName := r.FormValue("first_name")
+	lastName := r.FormValue("last_name")
+	email := r.FormValue("email")
+	dob := r.FormValue("date_of_birth")
+	nickname := r.FormValue("nickname")
+	aboutMe := r.FormValue("about_me")
+
+	removeAvatar := r.FormValue("remove_avatar") == "on"
+
+	// Determine avatar action: new upload > remove > no change
+	var avatarPath string
+	updateAvatar := false
+
+	file, header, err := r.FormFile("avatar")
+	if err == nil {
+		defer file.Close()
+		filename, saveErr := utils.SaveUploadFile(file, header.Filename, "./uploads/avatars")
+		if saveErr == nil {
+			avatarPath = "/uploads/avatars/" + filename
+			updateAvatar = true
+		}
+	} else if removeAvatar {
+		avatarPath = ""
+		updateAvatar = true
+	}
+
+	if updateAvatar {
+		_, err = database.Database.Exec(`
+			UPDATE users 
+			SET first_name = ?, last_name = ?, email = ?, date_of_birth = ?, nickname = ?, about_me = ?, is_private = ?, avatar = ? 
+			WHERE id = ?`,
+			firstName, lastName, email, dob, nickname, aboutMe, isPrivate, avatarPath, userID,
+		)
+	} else {
+		_, err = database.Database.Exec(`
+			UPDATE users 
+			SET first_name = ?, last_name = ?, email = ?, date_of_birth = ?, nickname = ?, about_me = ?, is_private = ? 
+			WHERE id = ?`,
+			firstName, lastName, email, dob, nickname, aboutMe, isPrivate, userID,
+		)
+	}
+
+	if err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Failed to update profile")
+		return
+	}
+
+	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": "Profile updated successfully"})
+}
