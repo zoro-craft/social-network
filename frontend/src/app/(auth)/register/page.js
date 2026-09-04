@@ -60,10 +60,10 @@ export default function RegisterPage() {
 
   return (
     <div className="glass-page glass-page-register" style={{ flexDirection: 'column' }}>
-      <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '32px', color: '#fff', background: 'linear-gradient(to right, #fff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.02em', textAlign: 'center' }}>
-        01-Social-Network
-      </h1>
-      <div className="glass-container glass-container-register">
+      <div className="glass-container glass-container-register" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '24px', marginTop: '0', color: '#fff', background: 'linear-gradient(to right, #fff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.02em', textAlign: 'center' }}>
+          01-Social-Network
+        </h1>
         <h2>Create Account</h2>
         <p>Join us today</p>
 
@@ -79,6 +79,7 @@ export default function RegisterPage() {
                 name="first_name"
                 placeholder="John"
                 required
+                maxLength={30}
                 onChange={handleChange}
               />
             </div>
@@ -90,6 +91,7 @@ export default function RegisterPage() {
                 name="last_name"
                 placeholder="Doe"
                 required
+                maxLength={30}
                 onChange={handleChange}
               />
             </div>
@@ -104,6 +106,7 @@ export default function RegisterPage() {
                 name="email"
                 placeholder="you@example.com"
                 required
+                maxLength={100}
                 onChange={handleChange}
               />
             </div>
@@ -128,7 +131,8 @@ export default function RegisterPage() {
                 name="password"
                 placeholder="••••••••"
                 required
-                minLength="8"
+                minLength={8}
+                maxLength={50}
                 onChange={handleChange}
               />
             </div>
@@ -139,6 +143,7 @@ export default function RegisterPage() {
                 className="glass-input"
                 name="nickname"
                 placeholder="cooluser42"
+                maxLength={30}
                 onChange={handleChange}
               />
             </div>
@@ -152,6 +157,7 @@ export default function RegisterPage() {
                 name="about_me"
                 rows="1"
                 placeholder="Tell us about yourself..."
+                maxLength={200}
                 onChange={handleChange}
               />
             </div>

@@ -38,10 +38,10 @@ export default function LoginPage() {
 
   return (
     <div className="glass-page glass-page-login" style={{ flexDirection: 'column' }}>
-      <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '32px', color: '#fff', background: 'linear-gradient(to right, #fff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.02em', textAlign: 'center' }}>
-        01-Social-Network
-      </h1>
-      <div className="glass-container glass-container-login">
+      <div className="glass-container glass-container-login" style={{ minHeight: '500px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '24px', marginTop: '0', color: '#fff', background: 'linear-gradient(to right, #fff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.02em', textAlign: 'center' }}>
+          01-Social-Network
+        </h1>
         <h2>Welcome Back</h2>
         <p>Sign in with your credentials</p>
 
