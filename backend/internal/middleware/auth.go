@@ -39,7 +39,23 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), UserIDKey, userID)
+	ctx := context.WithValue(r.Context(), UserIDKey, userID)
 		next.ServeHTTP(w, r.WithContext(ctx))
+	}
+}
+
+func OptionalAuth(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("session_token")
+		if err == nil {
+			var userID int
+			var expiresAt time.Time
+			err = database.Database.QueryRow("SELECT user_id, expires_at FROM user_sessions WHERE session_token = ?", cookie.Value).Scan(&userID, &expiresAt)
+			if err == nil && time.Now().Before(expiresAt) {
+				ctx := context.WithValue(r.Context(), UserIDKey, userID)
+				r = r.WithContext(ctx)
+			}
+		}
+		next.ServeHTTP(w, r)
 	}
 }
