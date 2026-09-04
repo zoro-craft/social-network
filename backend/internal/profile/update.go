@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"fmt"
 	"net/http"
 
 	"zone/internal/auth"
@@ -43,9 +44,10 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 5<<20)
-	err = r.ParseMultipartForm(5 << 20)
+	r.Body = http.MaxBytesReader(w, r.Body, 20<<20)
+	err = r.ParseMultipartForm(20 << 20)
 	if err != nil {
+		fmt.Println("❌ Error in ParseMultipartForm:", err)
 		utils.HandleError(w, http.StatusBadRequest, "Form too large or invalid")
 		return
 	}
