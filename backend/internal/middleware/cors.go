@@ -2,7 +2,6 @@ package middleware
 
 import "net/http"
 
-// CORS allows the frontend dev server to call the API from a different origin.
 func CORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
