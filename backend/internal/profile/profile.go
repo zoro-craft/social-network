@@ -18,8 +18,8 @@ func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
 	requesterID, _ := auth.GetUserID(r)
 
 	var user models.User
-	err := database.Database.QueryRow(`SELECT id, email, first_name, last_name, nickname, avatar, about_me, is_private, created_at FROM users WHERE id = ?`, profileID).Scan(
-		&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.Nickname, &user.Avatar, &user.AboutMe, &user.IsPrivate, &user.CreatedAt,
+	err := database.Database.QueryRow(`SELECT id, email, first_name, last_name, COALESCE(date_of_birth, ''), nickname, avatar, about_me, is_private, created_at FROM users WHERE id = ?`, profileID).Scan(
+		&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.DateOfBirth, &user.Nickname, &user.Avatar, &user.AboutMe, &user.IsPrivate, &user.CreatedAt,
 	)
 	if err != nil {
 		http.Error(w, "User not found", http.StatusNotFound)
