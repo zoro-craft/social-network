@@ -26,11 +26,11 @@ func NewRouter() http.Handler {
 
 	// posts routes
 	mux.HandleFunc("GET /posts", middleware.Auth(posts.GetPostsAPI))
-	mux.HandleFunc("GET /posts/{id}", posts.GetPostByIDAPI)
+	mux.HandleFunc("GET /posts/{id}", middleware.Auth(posts.GetPostByIDAPI))
 	mux.HandleFunc("POST /posts/create", middleware.Auth(posts.CreatePostAPI))
 
 	// comments routes
-	mux.HandleFunc("GET /posts/{id}/comment", comments.GetCommentsAPI)
+	mux.HandleFunc("GET /posts/{id}/comment", middleware.Auth(comments.GetCommentsAPI))
 	mux.HandleFunc("POST /posts/{id}/comment", middleware.Auth(comments.CreateCommentAPI))
 	mux.HandleFunc("POST /posts/react", middleware.Auth(reactions.ReactToPost))
 
