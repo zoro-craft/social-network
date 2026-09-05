@@ -12,7 +12,6 @@ import (
 	"zone/internal/profile"
 	"zone/internal/reactions"
 	"zone/internal/users"
-	"zone/internal/utils"
 )
 
 func NewRouter() http.Handler {
@@ -47,7 +46,6 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("POST /follow/{id}/decline", middleware.Auth(followers.DeclineFollowAPI))
 
 	// media & uploads routes
-	mux.HandleFunc("/upload/avatar", utils.UploadAvatar)
 	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
 
 	// global middleware

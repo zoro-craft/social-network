@@ -28,8 +28,8 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, utils.MaxCommentUploadSize)
-	if err := r.ParseMultipartForm(utils.MaxCommentUploadSize); err != nil {
+	r.Body = http.MaxBytesReader(w, r.Body, utils.MaxUploadSize)
+	if err := r.ParseMultipartForm(utils.MaxUploadSize); err != nil {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid form data or file too large")
 		return
 	}
@@ -72,7 +72,7 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p.Image, err = savePostImage(r)
+	p.Image, err = utils.SaveImage(r, "./uploads/posts", "/uploads/posts/")
 	if err != nil {
 		utils.HandleError(w, http.StatusBadRequest, err.Error())
 		return

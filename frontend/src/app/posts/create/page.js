@@ -1,31 +1,26 @@
 'use client';
 
-import { useAuth } from '@/app/context/AuthContext';
 import { useToast } from '@/app/context/ToastContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useImageInput } from '@/hooks/useImageInput';
 import { API_BASE } from '@/utils/api';
 import Avatar from '@/components/Avatar';
-import styles from '../../styles/auth.module.css';
+import styles from '../../styles/posts.module.css';
 
 export default function CreatePostPage() {
   const router = useRouter();
-  const { auth, loading: authLoading } = useAuth();
+  const { auth, loading: authLoading } = useRequireAuth();
   const showToast = useToast();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [privacy, setPrivacy] = useState('public');
-  const [imageFile, setImageFile] = useState(null);
+  const { file: imageFile, handleChange: handleImageChange } = useImageInput();
   const [followers, setFollowers] = useState([]);
   const [selectedViewers, setSelectedViewers] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!authLoading && !auth.authenticated) {
-      router.push('/login');
-    }
-  }, [authLoading, auth.authenticated, router]);
 
   useEffect(() => {
     if (privacy !== 'private' || !auth.id) return;
@@ -55,11 +50,6 @@ export default function CreatePostPage() {
     setSelectedViewers((prev) =>
       prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id],
     );
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImageFile(file || null);
   };
 
   const handleSubmit = async (e) => {
@@ -117,13 +107,13 @@ export default function CreatePostPage() {
 
   return (
     <div className="glass-page">
-      <div className="glass-container" style={{ maxWidth: '600px' }}>
+      <div className={`glass-container ${styles.container}`}>
         <h2>Create Post</h2>
-        <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: '24px' }}>
+        <p className={styles.subtitle}>
           Share something with your network
         </p>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <form onSubmit={handleSubmit} className={styles.form}>
           <div className="glass-input-group">
             <input
               className="glass-input"
@@ -148,53 +138,44 @@ export default function CreatePostPage() {
 
           <div className="glass-input-group">
             <select
-              className="glass-input"
+              className={`glass-input ${styles.select}`}
               value={privacy}
               onChange={(e) => setPrivacy(e.target.value)}
-              style={{ appearance: 'none' }}
             >
-              <option value="public" style={{ background: '#0f172a' }}>Public</option>
-              <option value="almost_private" style={{ background: '#0f172a' }}>Almost private (followers)</option>
-              <option value="private" style={{ background: '#0f172a' }}>Private (chosen followers)</option>
+              <option value="public" className={styles.option}>Public</option>
+              <option value="almost_private" className={styles.option}>Almost private (followers)</option>
+              <option value="private" className={styles.option}>Private (chosen followers)</option>
             </select>
           </div>
 
           {privacy === 'private' && (
-            <div className="glass-input-group" style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-              <label style={{ display: 'block', marginBottom: '12px', color: 'var(--text-secondary)' }}>
+            <div className={`glass-input-group ${styles.viewerGroup}`}>
+              <label className={styles.viewerLabel}>
                 Choose who can see this post:
               </label>
               {followers.length === 0 && (
-                <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No followers yet</p>
+                <p className={styles.noFollowers}>No followers yet</p>
               )}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '12px' }}>
+              <div className={styles.viewerGrid}>
                 {followers.map((f) => (
                   <div
                     key={f.follower_id}
                     onClick={() => toggleViewer(f.follower_id)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '8px',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      border: selectedViewers.includes(f.follower_id) ? '1px solid var(--accent-border)' : '1px solid var(--border)',
-                      background: selectedViewers.includes(f.follower_id) ? 'var(--accent-soft)' : 'var(--bg-elevated)',
-                      transition: 'all 0.2s ease',
-                      fontSize: '13px',
-                      color: selectedViewers.includes(f.follower_id) ? '#fff' : 'var(--text-secondary)',
-                    }}
+                    className={`${styles.viewerChip} ${
+                      selectedViewers.includes(f.follower_id)
+                        ? styles.viewerChipActive
+                        : styles.viewerChipInactive
+                    }`}
                   >
                     <Avatar src={f.avatar} name={f.first_name} size={32} />
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.first_name}</span>
+                    <span className={styles.viewerName}>{f.first_name}</span>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          <label className="glass-file-label" style={{ marginTop: '8px' }}>
+          <label className={`glass-file-label ${styles.fileLabel}`}>
             Image
             <input
               className="glass-file-input"
@@ -204,7 +185,7 @@ export default function CreatePostPage() {
             />
           </label>
 
-          <button className="glass-button" type="submit" disabled={loading} style={{ marginTop: '12px' }}>
+          <button className={`glass-button ${styles.submitButton}`} type="submit" disabled={loading}>
             {loading ? 'Posting...' : 'Post'}
           </button>
         </form>
