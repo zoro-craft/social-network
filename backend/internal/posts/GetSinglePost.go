@@ -23,11 +23,7 @@ func GetPostByIDAPI(w http.ResponseWriter, r *http.Request) {
 	viewerID, _ := auth.GetUserID(r)
 	var p Post
 	
-	query := `
-		SELECT p.id, p.title, p.content, p.image, p.privacy, p.user_id, u.nickname, p.created_at
-		FROM posts p
-		JOIN users u ON p.user_id = u.id
-		WHERE p.id = ? AND ` + visibleCondition
+	query := postSelect + "WHERE p.id = ? AND " + visibleCondition
 
 	err = database.Database.QueryRow(query, postID, viewerID, viewerID, viewerID).Scan(
 		&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.UserID, &p.Nickname, &p.CreatedAt,

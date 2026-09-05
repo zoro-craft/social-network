@@ -72,7 +72,7 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p.Image, err = savePostImage(r)
+	p.Image, err = utils.SaveImage(r, "./uploads/posts", "/uploads/posts/")
 	if err != nil {
 		utils.HandleError(w, http.StatusBadRequest, err.Error())
 		return

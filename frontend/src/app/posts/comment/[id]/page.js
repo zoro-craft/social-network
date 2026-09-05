@@ -1,18 +1,18 @@
 'use client';
 
-import { useAuth } from '@/app/context/AuthContext';
 import { useToast } from '@/app/context/ToastContext';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useComments } from './useComments';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { API_BASE } from '@/utils/api';
 import formatDate from '@/utils/format';
 import Avatar from '@/components/Avatar';
-import styles from '../../../styles/comments.module.css';
+import styles from '../../../styles/posts.module.css';
 
 export default function CommentPage() {
   const { id } = useParams();
-  const { auth, loading: authLoading } = useAuth();
+  const { auth, loading: authLoading } = useRequireAuth();
   const router = useRouter();
   const showToast = useToast();
 
@@ -29,12 +29,6 @@ export default function CommentPage() {
   const [content, setContent] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (!authLoading && !auth.authenticated) {
-      router.push('/login');
-    }
-  }, [authLoading, auth.authenticated, router]);
 
   useEffect(() => {
     if (!auth.authenticated) return;
@@ -80,7 +74,7 @@ export default function CommentPage() {
   if (loading) {
     return (
       <div className="glass-feed-page">
-        <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
+        <p className={styles.mutedText}>Loading...</p>
       </div>
     );
   }
@@ -88,17 +82,17 @@ export default function CommentPage() {
   if (!post) {
     return (
       <div className="glass-feed-page">
-        <p style={{ color: 'var(--text-muted)' }}>Post not found</p>
+        <p className={styles.mutedText}>Post not found</p>
       </div>
     );
   }
 
   return (
     <div className="glass-feed-page">
-      <div className="glass-post-card" style={{ padding: '32px' }}>
+      <div className={`glass-post-card ${styles.postContainer}`}>
         
         {/* Original Post */}
-        <div style={{ marginBottom: '32px', paddingBottom: '24px', borderBottom: '1px solid var(--border-strong)' }}>
+        <div className={styles.originalPost}>
           <div className="glass-post-header">
             <span className="glass-post-author">Posted by {post.nickname}</span>
             <span>{formatDate(post.created_at)}</span>
@@ -115,9 +109,9 @@ export default function CommentPage() {
           <p className="glass-post-content">{post.content}</p>
         </div>
 
-        <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px', color: '#fff' }}>Comments</h2>
+        <h2 className={styles.commentsHeading}>Comments</h2>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '40px' }}>
+        <form onSubmit={handleSubmit} className={styles.commentForm}>
           <div className="glass-input-group">
             <input
               className="glass-input"
@@ -128,9 +122,9 @@ export default function CommentPage() {
             />
           </div>
           
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'space-between' }}>
-            <label className="glass-file-label" style={{ width: 'auto', flexDirection: 'row', alignItems: 'center' }}>
-              <span style={{ marginRight: '8px' }}>Attach Image:</span>
+          <div className={styles.commentFormRow}>
+            <label className={`glass-file-label ${styles.fileLabelInline}`}>
+              <span>Attach Image:</span>
               <input
                 className="glass-file-input"
                 type="file"
@@ -138,39 +132,34 @@ export default function CommentPage() {
                 onChange={handleImageChange}
               />
             </label>
-            <button className="glass-button" type="submit" disabled={submitting} style={{ width: 'auto', padding: '10px 32px', marginTop: '0' }}>
+            <button className={`glass-button ${styles.submitButtonInline}`} type="submit" disabled={submitting}>
               {submitting ? 'Posting...' : 'Post'}
             </button>
           </div>
         </form>
 
         {comments.length === 0 && (
-          <p style={{ color: 'var(--text-muted)', textAlign: 'center', margin: '40px 0' }}>No comments yet. Be the first!</p>
+          <p className={styles.emptyComments}>No comments yet. Be the first!</p>
         )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div className={styles.commentsList}>
           {comments.map((c) => (
-            <div key={c.id} style={{ 
-              background: 'rgba(255, 255, 255, 0.03)', 
-              padding: '20px', 
-              borderRadius: '16px', 
-              border: '1px solid var(--border)' 
-            }}>
+            <div key={c.id} className={styles.commentCard}>
               <div
                 onClick={() => router.push(`/profile/${c.user_id}`)}
-                style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px', cursor: 'pointer' }}
+                className={styles.commentHeader}
               >
                 <Avatar src={c.avatar} name={c.first_name} size={32} />
-                <span style={{ fontWeight: '600', color: 'var(--text-primary)', fontSize: '14px' }}>{c.first_name}</span>
-                <span style={{ color: 'var(--text-muted)', fontSize: '12px', marginLeft: 'auto' }}>{formatDate(c.created_at)}</span>
+                <span className={styles.commentAuthor}>{c.first_name}</span>
+                <span className={styles.commentDate}>{formatDate(c.created_at)}</span>
               </div>
 
-              <p style={{ fontSize: '14.5px', color: 'var(--text-primary)', marginBottom: c.image ? '16px' : '0', lineHeight: '1.6' }}>{c.content}</p>
+              <p className={`${styles.commentContent} ${c.image ? styles.commentContentWithImage : ''}`}>{c.content}</p>
               
               {c.image && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  style={{ width: '100%', maxHeight: '350px', objectFit: 'cover', borderRadius: '12px', border: '1px solid var(--border)' }}
+                  className={styles.commentImage}
                   src={`${API_BASE}${c.image}`}
                   alt=""
                 />
@@ -181,10 +170,9 @@ export default function CommentPage() {
 
         {!loading && hasMore && (
           <button
-            className="glass-button"
+            className={`glass-button ${styles.loadOlderButton}`}
             onClick={loadMoreComments}
             disabled={loadingMore}
-            style={{ marginTop: '32px', background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-primary)' }}
           >
             {loadingMore ? 'Loading...' : 'Load older comments'}
           </button>

@@ -2,29 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../context/AuthContext';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { API_BASE } from '@/utils/api';
 import { useReactions } from './useReactions';
-import styles from '../styles/home.module.css';
+import styles from '../styles/posts.module.css';
 import formatDate from '@/utils/format';
 
 const PAGE_SIZE = 10;
 
 export default function Posts() {
   const router = useRouter();
-  const { auth, loading } = useAuth();
+  const { auth, loading } = useRequireAuth();
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [snapshotMaxId, setSnapshotMaxId] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const { react } = useReactions(setPosts);
-
-  useEffect(() => {
-    if (!loading && !auth.authenticated) {
-      router.push('/login');
-    }
-  }, [loading, auth.authenticated, router]);
 
   useEffect(() => {
     if (!auth.authenticated) return;
@@ -92,21 +86,20 @@ export default function Posts() {
 
   return (
     <div className="glass-feed-page">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: '600px' }}>
-        <h1 style={{ fontSize: '28px', fontWeight: '600', margin: 0 }}>Feed</h1>
+      <div className={styles.feedHeader}>
+        <h1 className={styles.feedTitle}>Feed</h1>
         <button
-          className="glass-button"
-          style={{ width: 'auto', marginTop: 0, padding: '10px 20px' }}
+          className={`glass-button ${styles.createPostButton}`}
           onClick={() => router.push('/posts/create')}
         >
           + Create Post
         </button>
       </div>
 
-      {postsLoading && <p style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Loading posts...</p>}
+      {postsLoading && <p className={styles.mutedText}>Loading posts...</p>}
 
       {!postsLoading && posts.length === 0 && (
-        <p style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+        <p className={styles.mutedText}>
           No posts yet. Be the first to share something.
         </p>
       )}
@@ -155,8 +148,7 @@ export default function Posts() {
 
       {!postsLoading && hasMore && (
         <button
-          className="glass-button"
-          style={{ maxWidth: '200px' }}
+          className={`glass-button ${styles.loadMoreButton}`}
           onClick={loadMore}
           disabled={loadingMore}
         >

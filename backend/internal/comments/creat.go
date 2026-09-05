@@ -55,7 +55,7 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c.Image, err = saveCommentImage(r)
+	c.Image, err = utils.SaveImage(r, "./uploads/comments", "/uploads/comments/")
 	if err != nil {
 		utils.HandleError(w, http.StatusBadRequest, err.Error())
 		return

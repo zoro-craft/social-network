@@ -10,6 +10,13 @@ import (
 	"zone/internal/utils"
 )
 
+const commentSelect = `
+	SELECT c.id, c.post_id, c.content, COALESCE(c.image, ''), c.user_id,
+	       COALESCE(u.first_name, ''), COALESCE(u.avatar, ''), c.created_at
+	FROM comments c
+	JOIN users u ON c.user_id = u.id
+`
+
 func GetCommentsAPI(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
@@ -48,11 +55,7 @@ func GetCommentsAPI(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	query := `
-		SELECT c.id, c.post_id, c.content, COALESCE(c.image, ''), c.user_id,
-		       COALESCE(u.first_name, ''), COALESCE(u.avatar, ''), c.created_at
-		FROM comments c
-		JOIN users u ON c.user_id = u.id
+	query := commentSelect + `
 		WHERE c.post_id = ?
 	`
 	args := []interface{}{postID}
