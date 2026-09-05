@@ -38,7 +38,7 @@ func NewRouter() http.Handler {
 	// profile and users routes
 	mux.HandleFunc("GET /profile/{id}", middleware.OptionalAuth(profile.GetProfileAPI))
 	mux.HandleFunc("POST /profile/edit", middleware.Auth(profile.EditProfileAPI))
-	mux.HandleFunc("POST /profile/toggle-visibility", middleware.Auth(profile.ToggleVisibilityAPI))
+	mux.HandleFunc("POST /profile/toggle-visibility", middleware.Auth(profile.SwitchStatus))
 	mux.HandleFunc("GET /users/search", middleware.Auth(users.SearchUsersAPI))
 	// followers routes
 	mux.HandleFunc("POST /follow/{id}", middleware.Auth(followers.FollowAPI))

@@ -1,7 +1,6 @@
 package profile
 
 import (
-	"fmt"
 	"net/http"
 
 	"zone/internal/auth"
@@ -9,7 +8,7 @@ import (
 	"zone/internal/utils"
 )
 
-func ToggleVisibilityAPI(w http.ResponseWriter, r *http.Request) {
+func SwitchStatus(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
@@ -47,7 +46,6 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, 20<<20)
 	err = r.ParseMultipartForm(20 << 20)
 	if err != nil {
-		fmt.Println("❌ Error in ParseMultipartForm:", err)
 		utils.HandleError(w, http.StatusBadRequest, "Form too large or invalid")
 		return
 	}
@@ -62,7 +60,7 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 
 	removeAvatar := r.FormValue("remove_avatar") == "on"
 
-	// Determine avatar action: new upload > remove > no change
+	// avatar handling
 	var avatarPath string
 	updateAvatar := false
 

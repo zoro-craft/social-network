@@ -18,7 +18,7 @@ var allowedExtensions = map[string]bool{
 	".gif":  true,
 }
 
-const maxUploadSize = 5 << 20 // 5MB
+const maxUploadSize = 20 << 20 // 20MB
 
 func UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -28,7 +28,7 @@ func UploadAvatar(w http.ResponseWriter, r *http.Request) {
 
 	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
 	if err := r.ParseMultipartForm(maxUploadSize); err != nil {
-		HandleError(w, http.StatusBadRequest, "File too large (max 5MB)")
+		HandleError(w, http.StatusBadRequest, "File too large (max 20MB)")
 		return
 	}
 
@@ -55,8 +55,6 @@ func UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// SaveUploadFile stores a file under dir with a unique UUID name, keeping the
-// original extension. It returns the generated filename.
 func SaveUploadFile(src io.Reader, originalName, dir string) (string, error) {
 	//creat folder
 	if err := os.MkdirAll(dir, 0o755); err != nil {
