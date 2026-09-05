@@ -3,7 +3,7 @@ package utils
 import "errors"
 
 
-const MaxCommentUploadSize = 5 << 20 // 5MB
+const MaxUploadSize = 5 << 20 // 5MB
 
 var AllowedCommentExtensions = map[string]bool{
 	".jpg":  true,
