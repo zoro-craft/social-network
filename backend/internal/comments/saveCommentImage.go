@@ -1,20 +1,19 @@
 package comments
 
 import (
-	"io"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 	"zone/internal/utils"
-
-	"github.com/gofrs/uuid"
 )
 
 func saveCommentImage(r *http.Request) (string, error) {
 	file, header, err := r.FormFile("image")
-	if err != nil {
+	if err == http.ErrMissingFile {
 		return "", nil
+	}
+	if err != nil {
+		return "", err
 	}
 	defer file.Close()
 
@@ -23,27 +22,9 @@ func saveCommentImage(r *http.Request) (string, error) {
 		return "", utils.ErrInvalidImageType
 	}
 
-	uploadDir := "./uploads/comments"
-	if err := os.MkdirAll(uploadDir, 0o755); err != nil {
-		return "", err
-	}
-
-	newUUID, err := uuid.NewV4()
+	filename, err := utils.SaveUploadFile(file, header.Filename, "./uploads/comments")
 	if err != nil {
 		return "", err
 	}
-	filename := newUUID.String() + ext
-	fullPath := filepath.Join(uploadDir, filename)
-
-	dst, err := os.Create(fullPath)
-	if err != nil {
-		return "", err
-	}
-	defer dst.Close()
-
-	if _, err := io.Copy(dst, file); err != nil {
-		return "", err
-	}
-
 	return "/uploads/comments/" + filename, nil
 }

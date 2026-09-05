@@ -34,8 +34,8 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, utils.MaxCommentUploadSize)
-	if err := r.ParseMultipartForm(utils.MaxCommentUploadSize); err != nil {
+	r.Body = http.MaxBytesReader(w, r.Body, utils.MaxUploadSize)
+	if err := r.ParseMultipartForm(utils.MaxUploadSize); err != nil {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid form data or file too large")
 		return
 	}

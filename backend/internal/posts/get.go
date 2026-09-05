@@ -11,7 +11,7 @@ import (
 
 const postSelect = `
 	SELECT p.id, p.title, p.content, COALESCE(p.image, ''), p.privacy,
-	       p.user_id, COALESCE(u.nickname, ''), p.created_at
+	p.user_id, COALESCE(u.nickname, ''), p.created_at
 	FROM posts p
 	JOIN users u ON p.user_id = u.id
 `
