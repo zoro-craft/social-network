@@ -148,7 +148,6 @@ export default function RegisterPage() {
               />
             </div>
           </div>
-
           <div className="glass-row glass-row-align-end">
             <div className="glass-input-group">
               <label>About Me (optional)</label>

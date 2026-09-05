@@ -96,6 +96,32 @@ a {
   color: inherit;
 }
 
+/* ─── Mouse Glow ─── */
+.mouse-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* Big soft circle, centered on the cursor via negative margins */
+  width: 560px;
+  height: 560px;
+  margin: -280px 0 0 -280px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(124, 58, 237, 0.3) 0%,
+    rgba(124, 58, 237, 0.12) 40%,
+    transparent 70%
+  );
+  filter: blur(28px);
+  pointer-events: none;
+  z-index: -1;
+  /* Long ease-out transition: the glow slowly trails behind the mouse */
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+  /* Start off-screen so it doesn't flash at the top-left corner */
+  transform: translate(-200vw, -200vh);
+}
+
 /* ─── Glass Design System (Auth pages) ─── */
 
 .glass-container {
@@ -531,22 +557,4 @@ a {
   background: rgba(124, 58, 237, 0.2);
   border-color: rgba(124, 58, 237, 0.5);
   color: #fff;
-}
-
-/* ─── Glowing Mouse Follower ─── */
-.mouse-glow {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 700px;
-  height: 700px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(124, 58, 237, 0.75), rgba(56, 189, 248, 0.5));
-  filter: blur(160px);
-  z-index: -1;
-  pointer-events: none;
-  margin-top: -350px;
-  margin-left: -350px;
-  transition: transform 0.15s ease-out;
-  will-change: transform;
 }

@@ -7,7 +7,8 @@ export default function MouseGlow() {
   useEffect(() => {
     const handleMove = (e) => {
       if (glowRef.current) {
-        // High-performance DOM update bypassing React state
+        // High-performance DOM update bypassing React state.
+        // The CSS transition on transform makes the glow trail behind the cursor.
         glowRef.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
       }
     };
