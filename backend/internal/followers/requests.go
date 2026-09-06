@@ -15,7 +15,7 @@ func GetPendingRequestsAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := auth.GetUserIDFromSession(r)
+	userID, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in")
 		return

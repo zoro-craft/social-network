@@ -18,13 +18,11 @@ var Database *sql.DB
 func Init() error {
 	_, thisFile, _, _ := runtime.Caller(0)
 	baseDir := filepath.Dir(thisFile)
-
 	var err error
-	Database, err = sql.Open("sqlite3", filepath.Join(baseDir, "forum.db")+"?_foreign_keys=on")
+	Database, err = sql.Open("sqlite3", filepath.Join(baseDir, "social-network.db")+"?_foreign_keys=on")
 	if err != nil {
-		return fmt.Errorf("can't open/create forum.db: %v", err)
+		return fmt.Errorf("can't open/create social-network.db: %v", err)
 	}
-
 	if err := Database.Ping(); err != nil {
 		return fmt.Errorf("can't connect to database: %v", err)
 	}

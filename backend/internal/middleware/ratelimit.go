@@ -12,7 +12,6 @@ type bucket struct {
 	reset time.Time
 }
 
-// RateLimiter stores per-client request counters for a fixed time window.
 type RateLimiter struct {
 	mu      sync.Mutex
 	clients map[string]bucket
@@ -20,7 +19,6 @@ type RateLimiter struct {
 	window  time.Duration
 }
 
-// NewRateLimiter creates a limiter with safe defaults when inputs are invalid.
 func NewRateLimiter(limit int, window time.Duration) *RateLimiter {
 	if limit < 1 {
 		limit = 1
@@ -36,14 +34,12 @@ func NewRateLimiter(limit int, window time.Duration) *RateLimiter {
 	}
 }
 
-// Middleware blocks requests when a client exceeds the allowed requests per window.
 func (rl *RateLimiter) Middleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now()
 		ip := clientIP(r.RemoteAddr)
 
 		rl.mu.Lock()
-		// Start a new window once the previous one expires.
 		b := rl.clients[ip]
 		if now.After(b.reset) {
 			b = bucket{reset: now.Add(rl.window)}

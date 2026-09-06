@@ -23,7 +23,7 @@ func respondToRequest(w http.ResponseWriter, r *http.Request, action string) {
 		return
 	}
 
-	followeeID, err := auth.GetUserIDFromSession(r)
+	followeeID, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in")
 		return

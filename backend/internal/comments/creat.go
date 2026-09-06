@@ -17,7 +17,7 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := auth.GetUserIDFromSession(r)
+	userID, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in to comment")
 		return
@@ -34,8 +34,8 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, utils.MaxCommentUploadSize)
-	if err := r.ParseMultipartForm(utils.MaxCommentUploadSize); err != nil {
+	r.Body = http.MaxBytesReader(w, r.Body, utils.MaxUploadSize)
+	if err := r.ParseMultipartForm(utils.MaxUploadSize); err != nil {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid form data or file too large")
 		return
 	}
@@ -55,7 +55,7 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c.Image, err = saveCommentImage(r)
+	c.Image, err = utils.SaveImage(r, "./uploads/comments", "/uploads/comments/")
 	if err != nil {
 		utils.HandleError(w, http.StatusBadRequest, err.Error())
 		return
@@ -71,7 +71,7 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	commentID, err := result.LastInsertId()
-		if err != nil {
+	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Could not get new comment ID")
 		return
 	}

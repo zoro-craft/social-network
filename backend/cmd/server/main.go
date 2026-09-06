@@ -9,13 +9,15 @@ import (
 )
 
 func main() {
+	// Initialize Posts/Media database
 	if err := database.Init(); err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println("Server running on :8080")
-	err := http.ListenAndServe(":8080", routing.NewRouter())
-	if (err != nil) {
-		log.Fatal(err)
-	}
+
+	// Create central router
+	router := routing.NewRouter()
+
+	log.Println("Server running on http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
