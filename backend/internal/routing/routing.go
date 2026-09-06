@@ -52,6 +52,7 @@ func NewRouter() http.Handler {
 	// media & uploads routes
 	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
 
+	// groups routes
 	mux.HandleFunc("POST /groups", middleware.Auth(handlers.CreatGroupeHandler))
 	mux.HandleFunc("GET /groups", middleware.Auth(handlers.GetAllGroupsHandler))
 	// join request
