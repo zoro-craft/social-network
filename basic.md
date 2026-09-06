@@ -1,7 +1,7 @@
 # Basic React concepts 
 --------------------------------------
 1. Components 
-2. JSX 
+2. c 
 3. Props 
 4. State 
 5. Events
