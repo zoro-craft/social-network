@@ -107,7 +107,7 @@ export default function Posts() {
       {posts.map((post) => (
         <div key={post.id} className="glass-post-card">
           <div className="glass-post-header">
-            <span className="glass-post-author">Posted by {post.nickname}</span>
+            <span className="glass-post-author">Posted by {post.full_name}</span>
             <span>{formatDate(post.created_at)}</span>
           </div>
           <div className="glass-post-title">{post.title}</div>
