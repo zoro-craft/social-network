@@ -4,7 +4,7 @@ import { apiRequest } from "@/utils/api";
 import { useState, useEffect } from "react";
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useRouter } from "next/navigation";
-import GroupCard from '@/components/GroupCard';
+import GroupCard from '@/app/groups/GroupCard';
 import styles from '../styles/groups.module.css';
 
 export default function Groupspage() {
