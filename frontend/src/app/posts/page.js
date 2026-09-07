@@ -125,13 +125,13 @@ export default function Posts() {
 
           <div className="glass-reactions">
             <button
-              className={`glass-react-btn ${post.user_reaction === 'like' ? 'glass-react-active' : ''}`}
+              className={`glass-react-btn ${post.user_reaction === 'like' ? 'glass-react-like' : ''}`}
               onClick={() => react(post.id, 'like')}
             >
               👍 {post.like_count || 0}
             </button>
             <button
-              className={`glass-react-btn ${post.user_reaction === 'dislike' ? 'glass-react-active' : ''}`}
+              className={`glass-react-btn ${post.user_reaction === 'dislike' ? 'glass-react-dislike' : ''}`}
               onClick={() => react(post.id, 'dislike')}
             >
               👎 {post.dislike_count || 0}

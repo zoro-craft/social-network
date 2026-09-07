@@ -1,5 +1,4 @@
 import './globals.css';
-import MouseGlow from '@/components/MouseGlow';
 import { AuthProvider } from '@/app/context/AuthContext';
 import { ToastProvider } from '@/app/context/ToastContext';
 import Navbar from '@/components/Navbar';
@@ -13,7 +12,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <MouseGlow />
         <AuthProvider>
           <ToastProvider>
             <Navbar />

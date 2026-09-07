@@ -6,7 +6,7 @@ import { useToast } from '@/app/context/ToastContext';
 import { useRouter } from 'next/navigation';
 import { API_BASE } from '@/utils/api';
 import Avatar from '@/components/Avatar';
-import styles from '../styles/profile.module.css';
+import styles from '../styles/notifications.module.css';
 
 export default function NotificationsPage() {
   const { auth, loading: authLoading } = useAuth();

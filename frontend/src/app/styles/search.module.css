@@ -7,14 +7,18 @@
 
 .input {
   width: 100%;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: var(--radius);
   color: var(--text-primary);
   padding: 14px 16px;
   font-size: 15px;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .input::placeholder {
@@ -22,8 +26,9 @@
 }
 
 .input:focus {
-  border-color: var(--accent-border);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1), inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .status {
@@ -38,24 +43,40 @@
   margin-top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .resultItem {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(175, 180, 190, 0.07) 45%,
+    rgba(100, 105, 115, 0.1) 100%
+  );
+  backdrop-filter: blur(20px) brightness(1.08);
+  -webkit-backdrop-filter: blur(20px) brightness(1.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
   border-radius: var(--radius);
   padding: 12px 16px;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 .resultItem:hover {
-  border-color: var(--border-strong);
-  background: var(--bg-elevated);
+  transform: translateY(-1px);
+  border-top: 1px solid rgba(255, 255, 255, 0.45);
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 
+    0 12px 32px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
 }
 
 .avatarFallback {
@@ -65,8 +86,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-hover);
-  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   font-size: 16px;
   font-weight: 700;
   color: var(--text-secondary);

@@ -1,13 +1,14 @@
 package profile
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
 	"zone/internal/auth"
 	"zone/internal/database"
 	"zone/internal/models"
+	"zone/internal/posts"
+	"zone/internal/utils"
 )
 
 func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
@@ -36,21 +37,29 @@ func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
 			relation = status
 		}
 	}
+
+	var userPosts []posts.Post
 	if user.IsPrivate && relation != "self" && relation != "accepted" {
 		user.Email = ""
 		user.AboutMe = ""
+		userPosts = []posts.Post{}
+	} else {
+		var err error
+		userPosts, err = posts.GetPostsByUser(profileID, requesterID)
+		if err != nil || userPosts == nil {
+			userPosts = []posts.Post{}
+		}
 	}
 
 	var followersCount, followingCount int
 	database.Database.QueryRow(`SELECT count(*) FROM followers WHERE followee_id = ? AND status = 'accepted'`, user.ID).Scan(&followersCount)
 	database.Database.QueryRow(`SELECT count(*) FROM followers WHERE follower_id = ? AND status = 'accepted'`, user.ID).Scan(&followingCount)
-	response := models.UserProfile{
-		User:      user,
-		Followers: followersCount,
-		Following: followingCount,
-		Relation:  relation,
-	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	utils.RespondJSON(w, http.StatusOK, map[string]interface{}{
+		"user":            user,
+		"relation":        relation,
+		"followers_count": followersCount,
+		"following_count": followingCount,
+		"posts":           userPosts,
+	})
 }

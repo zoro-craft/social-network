@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import "@/app/styles/profile.css";
 
 const BACKEND_URL = "http://localhost:8080";
@@ -86,14 +87,37 @@ export default function ProfilePage() {
           <div className="stats-grid">
             <div className="glass-card stat-item"><p className="stat-label">Followers</p><p className="stat-value">{followers_count || 0}</p></div>
             <div className="glass-card stat-item"><p className="stat-label">Following</p><p className="stat-value">{following_count || 0}</p></div>
-            <div className="glass-card stat-item"><p className="stat-label">Posts</p><p className="stat-value">0</p></div>
+            <div className="glass-card stat-item"><p className="stat-label">Posts</p><p className="stat-value">{profile.posts?.length || 0}</p></div>
           </div>
 
           <div className="glass-card">
-            <h3 style={{ marginTop: 0, marginBottom: "1rem" }}>User Activity</h3>
-            <div className="empty-state">
-              {isPrivateHidden ? <p>🔒 Private account. Follow to see posts.</p> : "No posts yet."}
-            </div>
+            <h3 style={{ marginTop: 0, marginBottom: "1rem" }}>Posts</h3>
+
+            {isPrivateHidden ? (
+              <div className="empty-state">
+                <p>🔒 Private account. Follow to see posts.</p>
+              </div>
+            ) : profile.posts && profile.posts.length > 0 ? (
+              <div className="posts-grid">
+                {profile.posts.map((post) => (
+                  <Link key={post.id} href={`/posts/comment/${post.id}`} className="post-tile">
+                    {post.image ? (
+                      <img src={`${BACKEND_URL}${post.image}`} alt="" className="post-tile-img" />
+                    ) : (
+                      <div className="post-tile-placeholder">
+                        <span className="placeholder-icon">📝</span>
+                        <p className="placeholder-text">{post.content}</p>
+                      </div>
+                    )}
+                    <div className="post-tile-overlay">
+                      <span className="post-tile-title">{post.title || "Untitled"}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state">No posts yet.</div>
+            )}
           </div>
         </div>
       </div>
