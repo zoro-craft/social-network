@@ -1,6 +1,10 @@
 import styles from '@/app/styles/groups.module.css';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+
 
 export default function GroupCard({ group, joining, onJoin }) {
+  // const {auth , loding } = useRequireAuth()
+  // const isCreator = group.admin === auth.
   return (
     <div className={styles.groupCard}>
       <h2 className={styles.groupTitle}>{group.titel}</h2>

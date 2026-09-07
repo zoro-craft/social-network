@@ -19,6 +19,7 @@ export default function Groupspage() {
             try {
                 const res = await apiRequest("/groups");
                 setGroups(res || []);
+                console.log(res)
             } catch {
                 setGroups([]);
             } finally {
@@ -27,6 +28,7 @@ export default function Groupspage() {
         };
         fetchGroups();
     }, [auth.authenticated]);
+    
 
     if (loading || groupsLoading) {
         return (

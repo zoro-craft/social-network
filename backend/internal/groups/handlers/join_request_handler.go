@@ -11,7 +11,6 @@ import (
 	"zone/internal/utils"
 )
 
-
 func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, 405, http.StatusText(405))
@@ -41,7 +40,7 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request_id , err := repositories.SaveJoinRequest(group_id, user_id)
+	request_id, err := repositories.SaveJoinRequest(group_id, user_id)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
@@ -55,11 +54,16 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fullname := repositories.GetUserFullName(user_id) 
-	
-	msg :=  "New join request for your group " + fullname
-	// creat the notifcation  
-	err  = repositories.CreateNotification(creator_id , "join_request" , nil , &request_id , msg )
+	if user_id == creator_id {
+		utils.HandleError(w, 400, http.StatusText(400))
+		return
+	}
+
+	fullname := repositories.GetUserFullName(user_id)
+
+	msg := "New join request for your group " + fullname
+	// creat the notifcation
+	err = repositories.CreateNotification(creator_id, "join_request", nil, &request_id, msg)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
@@ -72,5 +76,4 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 			"message": "join request  created successfully!",
 		},
 	)
-
 }
