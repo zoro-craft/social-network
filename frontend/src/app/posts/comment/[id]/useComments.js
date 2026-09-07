@@ -18,9 +18,12 @@ export function useComments(postId) {
     try {
       const [postRes, commentsRes] = await Promise.all([
         fetch(`${API_BASE}/posts/${postId}`, { credentials: 'include' }),
-        fetch(`${API_BASE}/posts/${postId}/comment?limit=${PAGE_SIZE}&offset=0`, {
-          credentials: 'include',
-        }),
+        fetch(
+          `${API_BASE}/posts/${postId}/comment?limit=${PAGE_SIZE}&offset=0`,
+          {
+            credentials: 'include',
+          },
+        ),
       ]);
 
       setPost(postRes.ok ? await postRes.json() : null);
@@ -88,5 +91,45 @@ export function useComments(postId) {
     return res;
   };
 
-  return { post, comments, loading, loadingMore, hasMore, fetchPostAndComments, loadMoreComments, addComment };
+  // ADDED: Function to handle reactions on this single post
+  const reactToPost = async (type) => {
+    try {
+      const res = await fetch(`${API_BASE}/posts/react`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ post_id: Number(postId), type }),
+      });
+
+      if (res.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      setPost((prev) => ({
+        ...prev,
+        like_count: data.like_count || 0,
+        dislike_count: data.dislike_count || 0,
+        user_reaction: data.user_reaction || null,
+      }));
+    } catch (err) {
+      console.error('Failed to react:', err);
+    }
+  };
+
+  // ADDED: Export reactToPost
+  return {
+    post,
+    comments,
+    loading,
+    loadingMore,
+    hasMore,
+    fetchPostAndComments,
+    loadMoreComments,
+    addComment,
+    reactToPost,
+  };
 }
