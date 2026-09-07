@@ -24,11 +24,14 @@ export default function Navbar() {
   };
 
   const goToNotifications = () => {
-    console.log('goToNotifications');
     setOpen(false);
     router.push('/notifications');
   };
 
+  const goToGroups = () => {
+    setOpen(false)
+    router.push('/groups')
+  }
   
   useEffect(() => {
     function handleClickOutside(e) {
@@ -66,6 +69,13 @@ export default function Navbar() {
               aria-label="Search"
             >
               Search
+            </button>
+              <button
+              className={styles.searchButton}
+              onClick={goToGroups}
+              aria-label="groups"
+            >
+              groups
             </button>
             <button
               className={styles.searchButton}
