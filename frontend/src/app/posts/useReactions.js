@@ -5,6 +5,7 @@ import { API_BASE } from '@/utils/api';
 
 export function useReactions(setPosts) {
   const router = useRouter();
+
   const react = async (postId, type) => {
     try {
       const res = await fetch(`${API_BASE}/posts/react`, {
@@ -14,26 +15,32 @@ export function useReactions(setPosts) {
         body: JSON.stringify({ post_id: postId, type }),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        router.push('/login')
+      if (res.status === 401) {
+        router.push('/login');
         return;
       }
+
+      if (!res.ok) {
+        console.error('Failed to react to post');
+        return;
+      }
+
+      const data = await res.json();
 
       setPosts((prev) =>
         prev.map((p) =>
           p.id === postId
             ? {
                 ...p,
-                like_count: data.like_count,
-                dislike_count: data.dislike_count,
-                user_reaction: data.user_reaction,
+                like_count: data.like_count || 0,
+                dislike_count: data.dislike_count || 0,
+                user_reaction: data.user_reaction || null,
               }
             : p,
         ),
       );
-    } catch {
-      // ignore for now
+    } catch (err) {
+      console.error('Reaction error:', err);
     }
   };
 
