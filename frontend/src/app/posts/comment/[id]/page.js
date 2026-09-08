@@ -94,7 +94,7 @@ export default function CommentPage() {
         {/* Original Post */}
         <div className={styles.originalPost}>
           <div className="glass-post-header">
-            <span className="glass-post-author">Posted by {post.nickname}</span>
+            <span className="glass-post-author">Posted by {post.full_name}</span>
             <span>{formatDate(post.created_at)}</span>
           </div>
           <p className="glass-post-title">{post.title}</p>
