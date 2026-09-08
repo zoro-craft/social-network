@@ -73,6 +73,11 @@ export default function ProfilePage() {
           <h2 className="user-name">{user.first_name} {user.last_name}</h2>
           <p className="user-handle">@{user.nickname || user.first_name}</p>
           <span className="privacy-badge">{user.is_private ? "Private Profile" : "Public Profile"}</span>
+          {user.date_of_birth && (
+            <p style={{ color: "#94a3b8", fontSize: "0.9rem", margin: "0.75rem 0 0" }}>
+              🎂 Born: {user.date_of_birth.split("T")[0]}
+            </p>
+          )}
           {user.about_me && <p className="about-me">{user.about_me}</p>}
 
           {/* Action Button */}
@@ -87,7 +92,14 @@ export default function ProfilePage() {
           <div className="stats-grid">
             <div className="glass-card stat-item"><p className="stat-label">Followers</p><p className="stat-value">{followers_count || 0}</p></div>
             <div className="glass-card stat-item"><p className="stat-label">Following</p><p className="stat-value">{following_count || 0}</p></div>
-            <div className="glass-card stat-item"><p className="stat-label">Posts</p><p className="stat-value">{profile.posts?.length || 0}</p></div>
+            <div className="glass-card stat-item">
+              <p className="stat-label">Joined</p>
+              <p className="stat-value" style={{ fontSize: "1.15rem", whiteSpace: "nowrap" }}>
+                {user.created_at
+                  ? new Date(user.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+                  : "Recently"}
+              </p>
+            </div>
           </div>
 
           <div className="glass-card">
