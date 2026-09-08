@@ -10,7 +10,7 @@ import styles from '../styles/groups.module.css';
 export default function Groupspage() {
     const { auth, loading } = useRequireAuth();
     const [groups, setGroups] = useState([]);
-    const [groupsLoading, setGroupsLoading] = useState(true);
+
     const router = useRouter();
 
     useEffect(() => {
@@ -19,18 +19,15 @@ export default function Groupspage() {
             try {
                 const res = await apiRequest("/groups");
                 setGroups(res || []);
-                console.log(res)
             } catch {
                 setGroups([]);
-            } finally {
-                setGroupsLoading(false);
             }
         };
         fetchGroups();
     }, [auth.authenticated]);
     
 
-    if (loading || groupsLoading) {
+    if (loading) {
         return (
             <div className="glass-feed-page">
                 <p className={styles.mutedText}>Loading groups...</p>
