@@ -10,14 +10,32 @@ import (
 )
 
 const postSelect = `
-  SELECT 
-    p.id, p.title, p.content, COALESCE(p.image, ''), p.privacy,
-    p.user_id,u.full_name, p.created_at,
-    (SELECT COUNT(*) FROM post_reactions WHERE post_id = p.id AND is_like = 1) AS like_count,
-    (SELECT COUNT(*) FROM post_reactions WHERE post_id = p.id AND is_like = 0) AS dislike_count
-  FROM posts p
-  JOIN users u ON p.user_id = u.id
- `
+	SELECT
+		p.id,
+		p.title,
+		p.content,
+		COALESCE(p.image, ''),
+		p.privacy,
+		p.group_id,
+		p.user_id,
+		u.full_name,
+		p.created_at
+`
+
+const reactionSelect = `,
+	(SELECT COUNT(*)
+	 FROM post_reactions
+	 WHERE post_id = p.id AND is_like = 1) AS like_count,
+
+	(SELECT COUNT(*)
+	 FROM post_reactions
+	 WHERE post_id = p.id AND is_like = 0) AS dislike_count
+`
+
+const fromPosts = `
+	FROM posts p
+	JOIN users u ON p.user_id = u.id
+`
 
 func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -35,7 +53,7 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 	if limit <= 0 || limit > 50 {
 		limit = 10
 	}
-	
+
 	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
 	if offset < 0 {
 		offset = 0
@@ -43,6 +61,7 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 
 	beforeStr := r.URL.Query().Get("before")
 	var beforeID int
+
 	if beforeStr != "" {
 		beforeID, err = strconv.Atoi(beforeStr)
 		if err != nil || beforeID <= 0 {
@@ -51,9 +70,10 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	query := postSelect + "WHERE (" + visibleCondition + ")"
-	
-	args := []interface{}{viewerID, viewerID, viewerID}
+	// Home posts + reactions
+	query := postSelect + reactionSelect + fromPosts + " WHERE p.group_id IS NULL AND (" + visibleCondition + ")"
+
+	args := []interface{}{viewerID,viewerID,viewerID,}
 
 	if beforeID > 0 {
 		query += " AND p.id < ?"
@@ -71,33 +91,37 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	result := []Post{}
+
 	for rows.Next() {
-		var p Post	
-		err := rows.Scan(
-			&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, 
-			&p.UserID, &p.Full_name, &p.CreatedAt, 
-			&p.LikeCount, &p.DislikeCount,
-		)
-		
-		if err == nil {
-			result = append(result, p)
-		} else {
-		utils.HandleError(w,http.StatusInternalServerError,"Error scanning post:")
+		var p Post
+
+		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.Full_name, &p.CreatedAt, &p.LikeCount, &p.DislikeCount); err != nil {
+			utils.HandleError(w, http.StatusInternalServerError, "Error scanning post")
+			return
 		}
+
+		result = append(result, p)
+	}
+
+	if err := rows.Err(); err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Error reading posts")
+		return
 	}
 
 	if beforeStr == "" {
 		var maxID int
+
 		if err := database.Database.QueryRow("SELECT COALESCE(MAX(id), 0) FROM posts").Scan(&maxID); err == nil {
 			w.Header().Set("X-Max-Post-Id", strconv.Itoa(maxID))
 		}
 	}
-	
+
 	utils.RespondJSON(w, http.StatusOK, result)
-}	
+}
 
 func GetPostsByUser(userID, viewerID int) ([]Post, error) {
-	query := postSelect + "WHERE p.user_id = ? AND " + visibleCondition + " ORDER BY p.id DESC"
+	query := postSelect + fromPosts + " WHERE p.user_id = ? AND " + visibleCondition + " ORDER BY p.id DESC"
+
 	rows, err := database.Database.Query(query, userID, viewerID, viewerID, viewerID)
 	if err != nil {
 		return nil, err
@@ -105,11 +129,16 @@ func GetPostsByUser(userID, viewerID int) ([]Post, error) {
 	defer rows.Close()
 
 	result := []Post{}
+
 	for rows.Next() {
 		var p Post
-		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.UserID, &p.Full_name, &p.CreatedAt); err == nil {
-			result = append(result, p)
+
+		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.Full_name, &p.CreatedAt); err != nil {
+			return nil, err
 		}
+
+		result = append(result, p)
 	}
+
 	return result, rows.Err()
 }
