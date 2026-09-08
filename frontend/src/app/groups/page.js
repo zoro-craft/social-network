@@ -43,7 +43,7 @@ export default function Groupspage() {
     return (
         <div className="glass-feed-page">
             <div className={styles.header}>
-                <h1 className={styles.title}>Groups</h1>
+                <h1 className={styles.pageTitle}>Groups</h1>
                 <button
                     className={`glass-button ${styles.createButton}`}
                     onClick={() => router.push('/groups/create')}
@@ -58,9 +58,11 @@ export default function Groupspage() {
                 </p>
             )}
 
-            {groups.map((group) => (
-                <GroupCard key={group.id} group={group} />
-            ))}
+            <div className={styles.container}>
+                {groups.map((group) => (
+                    <GroupCard key={group.id} group={group} />
+                ))}
+            </div>
         </div>
     );
 }
