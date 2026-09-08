@@ -28,6 +28,11 @@ export default function Navbar() {
     router.push('/notifications');
   };
 
+  const goToGroups = () => {
+    setOpen(false)
+    router.push('/groups')
+  }
+  
   useEffect(() => {
     function handleClickOutside(e) {
       if (wrapRef.current && !wrapRef.current.contains(e.target)) {
@@ -65,6 +70,13 @@ export default function Navbar() {
             >
               Search
             </button>
+              <button
+              className={styles.searchButton}
+              onClick={goToGroups}
+              aria-label="groups"
+            >
+              groups
+            </button>
             <button
               className={styles.searchButton}
               onClick={goToNotifications}
@@ -74,7 +86,7 @@ export default function Navbar() {
             </button>
           </>
         )}
-
+        
         <div className={styles.authButtons}>
           {auth.authenticated ? (
             <div className={styles.avatarWrap} ref={wrapRef}>

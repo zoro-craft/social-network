@@ -14,6 +14,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+
 	// Create central router
 	router := routing.NewRouter()
 

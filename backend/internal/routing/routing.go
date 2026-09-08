@@ -7,6 +7,7 @@ import (
 	"zone/internal/auth"
 	"zone/internal/comments"
 	"zone/internal/followers"
+	"zone/internal/groups/handlers"
 	"zone/internal/middleware"
 	"zone/internal/posts"
 	"zone/internal/profile"
@@ -26,11 +27,11 @@ func NewRouter() http.Handler {
 
 	// posts routes
 	mux.HandleFunc("GET /posts", middleware.Auth(posts.GetPostsAPI))
-	mux.HandleFunc("GET /posts/{id}", posts.GetPostByIDAPI)
+	mux.HandleFunc("GET /posts/{id}", middleware.Auth(posts.GetPostByIDAPI))
 	mux.HandleFunc("POST /posts/create", middleware.Auth(posts.CreatePostAPI))
 
 	// comments routes
-	mux.HandleFunc("GET /posts/{id}/comment", comments.GetCommentsAPI)
+	mux.HandleFunc("GET /posts/{id}/comment", middleware.Auth(comments.GetCommentsAPI))
 	mux.HandleFunc("POST /posts/{id}/comment", middleware.Auth(comments.CreateCommentAPI))
 	mux.HandleFunc("POST /posts/react", middleware.Auth(reactions.ReactToPost))
 
@@ -48,6 +49,20 @@ func NewRouter() http.Handler {
 	// media & uploads routes
 	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
 
+	// groups routes
+	mux.HandleFunc("POST /groups", middleware.Auth(handlers.CreatGroupeHandler))
+	mux.HandleFunc("GET /groups", middleware.Auth(handlers.GetAllGroupsHandler))
+	// join request
+	mux.HandleFunc("POST /groups/{group_id}/join", middleware.Auth(handlers.Join_Request_handler))
+	mux.HandleFunc("POST /join_requests/{request_id}/accept", middleware.Auth(handlers.Accept_Join_Request))
+	mux.HandleFunc("POST /join_requests/{request_id}/reject", middleware.Auth(handlers.Reject_Join_Request))
+
+	// invitation
+	mux.HandleFunc("POST /groups/{group_id}/invitations", middleware.Auth(handlers.InvitationsHandler))
+	mux.HandleFunc("POST /invitations/{invitation_id}/accept", middleware.Auth(handlers.AcceptInvitationResponse))
+	mux.HandleFunc("POST /invitations/{invitation_id}/reject", middleware.Auth(handlers.RejectInvitationResponse))
+	// notifications
+	mux.HandleFunc("GET /notifications", middleware.Auth(handlers.NotifcationHandler))
 	// global middleware
 	return middleware.CORS(limiter.Middleware(mux.ServeHTTP))
 }
