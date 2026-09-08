@@ -1,6 +1,7 @@
 'use client';
 
 import { apiRequest } from "@/utils/api";
+import Avatar from "@/components/Avatar";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useRequireAuth } from '@/hooks/useRequireAuth';
@@ -52,17 +53,7 @@ export default function userlistpage() {
                     {users.map((user) => (
                         <div key={user.id} className={styles.card}>
                             <div className={styles.cardTop}>
-                                {user.avatar ? (
-                                    <img
-                                        className={styles.avatar}
-                                        src={user.avatar}
-                                        alt={`${user.full_name}'s avatar`}
-                                    />
-                                ) : (
-                                    <div className={styles.avatarPlaceholder}>
-                                        {user.full_name ? user.full_name.charAt(0).toUpperCase() : "?"}
-                                    </div>
-                                )}
+                                <Avatar src={user.avatar} name={user.full_name} size={48} />
                                 <h2 className={styles.name}>{user.full_name}</h2>
                             </div>
                             <button

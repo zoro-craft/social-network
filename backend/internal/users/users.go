@@ -8,6 +8,7 @@ import (
 
 
 type User struct {
+    ID        int    `json:"id"`
     Full_name string `json:"full_name"`
     Avatar    string `json:"avatar,omitempty"`
 }
@@ -28,7 +29,7 @@ func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllUsers() ([]User, error) {
-    rows, err := database.Database.Query(`SELECT full_name, COALESCE(avatar,'') FROM users ORDER BY id`)
+    rows, err := database.Database.Query(`SELECT id, full_name, COALESCE(avatar,'') FROM users ORDER BY id`)
     if err != nil {
         return nil, err
     }
@@ -37,7 +38,7 @@ func GetAllUsers() ([]User, error) {
     var users []User
     for rows.Next() {
         var u User
-        if err := rows.Scan(&u.Full_name, &u.Avatar); err != nil {
+        if err := rows.Scan(&u.ID, &u.Full_name, &u.Avatar); err != nil {
             return nil, err
         }
         users = append(users, u)
