@@ -6,10 +6,10 @@ type Post struct {
 	Content      string `json:"content"`
 	Image        string `json:"image"`
 	Privacy      string `json:"privacy"`
+	GroupID      *int   `json:"group_id,omitempty"`
 	UserID       int    `json:"user_id"`
-	Full_name     string `json:"full_name"`
+	Full_name    string `json:"full_name"`
 	CreatedAt    string `json:"created_at"`
 	LikeCount    int    `json:"like_count"`
 	DislikeCount int    `json:"dislike_count"`
-	UserReaction string `json:"user_reaction,omitempty"` 
 }
