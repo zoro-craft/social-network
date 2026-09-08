@@ -1,8 +1,10 @@
+import { useRouter } from "next/navigation";
 import styles from '@/app/styles/groups.module.css';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 export default function GroupCard({ group, joining, onJoin }) {
   const { auth, loading } = useRequireAuth();
+  const router = useRouter();
 
   // Use creator_id (or group.admin if that's how your database stores it)
   // Optional chaining prevents errors while auth is loading
