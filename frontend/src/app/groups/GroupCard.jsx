@@ -12,26 +12,23 @@ export default function GroupCard({ group, joining, onJoin }) {
     <div className={styles.card}>
       <h2 className={styles.title}>{group.titel}</h2>
 
-      <div className={styles.descriptionBox}>
-        {group.description ? (
-          <p>{group.description}</p>
-        ) : (
-          <p className={styles.mutedText}>No description yet.</p>
-        )}
-      </div>
+      <p className={styles.description}>{group.description}</p>
 
       {/* Hide the button if the user is the creator */}
       {!isCreator && (
         <button
-          className={`${styles.joinBtn} ${
-            joining ? styles.joinBtnSent : ''
-          }`}
+          className={styles.Btn}
           onClick={() => onJoin(group.id)}
-          disabled={joining}
         >
-          {joining ? 'Requesting...' : 'Request to join'}
+        Request to join
         </button>
       )}
+      {isCreator && (
+        <button className={styles.Btn} 
+        onClick={() => router.push(`/groups/${group.id}/invite`)} 
+        > 
+        Invite Member </button>
+         )}
     </div>
   );
 }
