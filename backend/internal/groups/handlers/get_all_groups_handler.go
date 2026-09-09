@@ -10,7 +10,6 @@ import (
 )
 
 func GetAllGroupsHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("im here")
 	if r.Method != http.MethodGet {
 		fmt.Println("1")
 		utils.HandleError(w, 405, http.StatusText(405))

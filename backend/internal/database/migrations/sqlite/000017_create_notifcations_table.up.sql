@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     type TEXT NOT NULL,
+    request_id INTEGER,
     invitation_id INTEGER,
     message TEXT NOT NULL,
     is_read BOOLEAN NOT NULL DEFAULT 0,
