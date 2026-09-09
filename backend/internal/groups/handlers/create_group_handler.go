@@ -36,10 +36,18 @@ func CreatGroupeHandler(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
-	err = repositories.SaveGroup(groupe)
+
+	groupe_Id , err := repositories.SaveGroup(groupe)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
+	
+	err  = repositories.AddGroupMember(groupe_Id, user_id) 
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+
 	utils.RespondJSON(w, http.StatusCreated, map[string]string{"message": " Groupe created successfully!"})
 }

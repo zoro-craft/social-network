@@ -5,12 +5,19 @@ import (
 	"zone/internal/groups/models"
 )
 
-func SaveGroup(groupe models.Groupe) error {
-	_, err := database.Database.Exec(
+func SaveGroup(groupe models.Groupe) (int,error) {
+	result , err := database.Database.Exec(
 		`INSERT INTO user_groups (creator_id, title, description) VALUES (?, ?, ?)`,
 		groupe.Admin, groupe.Title, groupe.Description,
 	)
-	return err
+	if err != nil {
+		return 0, err
+	}
+	groupID, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	return  int(groupID) , err
 }
 
 
@@ -56,7 +63,7 @@ func AddGroupMember(groupID, userID int) error {
 }
 
 
-func GetAllGroupsNotMember(userID int) ([]models.Groupe, error) {
+func GetAllGroups() ([]models.Groupe, error) {
 	rows, err := database.Database.Query(`
 		SELECT 
 			g.id,
@@ -64,14 +71,9 @@ func GetAllGroupsNotMember(userID int) ([]models.Groupe, error) {
 			g.title,
 			g.description
 		FROM user_groups g
-		WHERE NOT EXISTS (
-			SELECT 1
-			FROM group_members gm
-			WHERE gm.group_id = g.id
-			AND gm.user_id = ?
-		)
+		
 		ORDER BY g.id DESC
-	`, userID)
+	`)
 
 	if err != nil {
 		return nil, err

@@ -7,6 +7,7 @@ type Groupe struct {
 	Admin       int    `json:"admin"`
 	Title       string `json:"titel"`
 	Description string `json:"description"`
+	Is_member bool `json:"is_member"`
 }
 
 type GroupInvitation struct {
