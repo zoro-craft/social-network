@@ -13,6 +13,10 @@ export default function Groupspage() {
 
     const router = useRouter();
 
+    const scrollToGroups = () => {
+        document.getElementById('my-groups')?.scrollIntoView({ behavior: 'smooth' });
+    };
+
     useEffect(() => {
         if (!auth.authenticated) return;
         const fetchGroups = async () => {
@@ -29,7 +33,7 @@ export default function Groupspage() {
 
     if (loading) {
         return (
-            <div className="glass-feed-page">
+            <div className={styles.page}>
                 <p className={styles.mutedText}>Loading groups...</p>
             </div>
         );
@@ -38,28 +42,36 @@ export default function Groupspage() {
     if (!auth.authenticated) return null;
 
     return (
-        <div className="glass-feed-page">
+        <main className={styles.page}>
             <div className={styles.header}>
                 <h1 className={styles.pageTitle}>Groups</h1>
-                <button
-                    className={`glass-button ${styles.createButton}`}
-                    onClick={() => router.push('/groups/create')}
-                >
-                    + Create Group
-                </button>
+                <div className={styles.headerActions}>
+                    <button
+                        className={styles.createButton}
+                        onClick={() => router.push('/groups/create')}
+                    >
+                        <span className={styles.buttonIcon} aria-hidden="true">+</span>
+                        Create Group
+                    </button>
+                    <button className={styles.browseButton} onClick={scrollToGroups}>
+                        <span className={styles.globeIcon} aria-hidden="true" />
+                        Browse Groups
+                    </button>
+                </div>
             </div>
 
-            {groups.length === 0 && (
-                <p className={styles.emptyState}>
-                    No groups yet. Create the first one!
-                </p>
-            )}
-
-            <div className={styles.container}>
-                {groups.map((group) => (
-                    <GroupCard key={group.id} group={group} />
-                ))}
-            </div>
-        </div>
+            <section className={styles.groupsSection} id="my-groups">
+                <h2 className={styles.sectionTitle}>My Groups</h2>
+                {groups.length === 0 ? (
+                    <p className={styles.emptyState}>No groups yet. Create the first one!</p>
+                ) : (
+                    <div className={styles.container}>
+                        {groups.map((group) => (
+                            <GroupCard key={group.id} group={group} />
+                        ))}
+                    </div>
+                )}
+            </section>
+        </main>
     );
 }
