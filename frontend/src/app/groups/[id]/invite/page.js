@@ -46,8 +46,6 @@ export default function Userlistpage() {
             }
         );
 
-        console.log("Invitation response:", response);
-
         setInvitedUsers((prev) => {
             const newSet = new Set(prev);
             newSet.add(userID);

@@ -1,96 +1,187 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/app/context/AuthContext';
-import { useToast } from '@/app/context/ToastContext';
-import { useRouter } from 'next/navigation';
-import { API_BASE } from '@/utils/api';
-import Avatar from '@/components/Avatar';
+
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { apiRequest } from '@/utils/api';
+
 import styles from '../styles/notifications.module.css';
 
 export default function NotificationsPage() {
-  const { auth, loading: authLoading } = useAuth();
-  const router = useRouter();
-  const showToast = useToast();
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { auth, loading } = useRequireAuth();
 
-  useEffect(() => {
-    if (!authLoading && !auth.authenticated) {
-      router.push('/login');
-    }
-  }, [authLoading, auth.authenticated, router]);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     if (!auth.authenticated) return;
 
-    async function fetchRequests() {
+    const fetchNotifications = async () => {
       try {
-        const res = await fetch(`${API_BASE}/follow/requests`, {
-          credentials: 'include',
-        });
-        const data = await res.json();
-        setRequests(data || []);
-      } catch {
-        setRequests([]);
-      } finally {
-        setLoading(false);
+        const res = await apiRequest('/notifications');
+        setNotifications(res || []);
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error);
+        setNotifications([]);
       }
-    }
+    };
 
-    fetchRequests();
+    fetchNotifications();
   }, [auth.authenticated]);
 
-  const respond = async (followerId, action) => {
+
+  const handleAcceptInvitation = async (notification) => {
     try {
-      const res = await fetch(`${API_BASE}/follow/${followerId}/${action}`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (res.ok) {
-        setRequests((prev) => prev.filter((r) => r.follower_id !== followerId));
-      } else {
-        showToast('Failed to respond');
-      }
-    } catch {
-      showToast('Could not reach the server');
+      await apiRequest(
+        `/invitations/${notification.invitation_id}/accept`,
+        {
+          method: 'POST',
+        }
+      );
+
+      removeNotification(notification.id);
+    } catch (error) {
+      console.error('Failed to accept invitation:', error);
     }
   };
 
-  if (authLoading || !auth.authenticated) return null;
+  const handleRejectInvitation = async (notification) => {
+    try {
+      await apiRequest(
+        `/invitations/${notification.invitation_id}/reject`,
+        {
+          method: 'POST',
+        }
+      );
+
+      removeNotification(notification.id);
+    } catch (error) {
+      console.error('Failed to reject invitation:', error);
+    }
+  };
+
+  const handleAcceptRequest = async (notification) => {
+    try {
+      await apiRequest(
+        `/join_requests/${notification.request_id}/accept`,
+        {
+          method: 'POST',
+        }
+      );
+
+      removeNotification(notification.id);
+    } catch (error) {
+      console.error('Failed to accept join request:', error);
+    }
+  };
+
+  const handleRejectRequest = async (notification) => {
+    try {
+      await apiRequest(
+        `/join_requests/${notification.request_id}/reject`,
+        {
+          method: 'POST',
+        }
+      );
+
+      removeNotification(notification.id);
+    } catch (error) {
+      console.error('Failed to reject join request:', error);
+    }
+  };
+
+  // Remove notification from UI
+  const removeNotification = (notificationId) => {
+    setNotifications((prev) =>
+      prev.filter((notification) => notification.id !== notificationId)
+    );
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!auth.authenticated) {
+    return null;
+  }
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.name}>Follow Requests</h1>
+      <h1>Notifications</h1>
 
-      {loading && <p className={styles.status}>Loading...</p>}
-      {!loading && requests.length === 0 && (
-        <p className={styles.status}>No pending requests</p>
-      )}
+      {notifications.length === 0 ? (
+        <p className={styles.empty}>
+          No notifications
+        </p>
+      ) : (
+        <div className={styles.notificationList}>
+          {notifications.map((notification) => (
+            <div
+              key={notification.id}
+              className={`${styles.notification} ${
+                notification.is_read
+                  ? styles.read
+                  : styles.unread
+              }`}
+            >
+              <div className={styles.content}>
+                <p>{notification.message}</p>
 
-      {requests.map((req) => (
-        <div key={req.follower_id} className={styles.requestCard}>
-          <Avatar src={req.avatar} name={req.first_name} size={40} />
-          <div className={styles.requestInfo}>
-            <p className={styles.requestName}>{req.first_name}</p>
-            {req.email && <p className={styles.requestEmail}>{req.email}</p>}
-          </div>
-          <div className={styles.requestActions}>
-            <button
-              className={`${styles.requestButton} ${styles.acceptButton}`}
-              onClick={() => respond(req.follower_id, 'accept')}
-            >
-              Accept
-            </button>
-            <button
-              className={`${styles.requestButton} ${styles.declineButton}`}
-              onClick={() => respond(req.follower_id, 'decline')}
-            >
-              Decline
-            </button>
-          </div>
+                <small>
+                  {new Date(
+                    notification.created_at
+                  ).toLocaleString()}
+                </small>
+              </div>
+
+              {notification.type === 'group_invtation' && (
+                <div className={styles.actions}>
+                  <button
+                    onClick={() =>
+                      handleAcceptInvitation(notification)
+                    }
+                  >
+                    Accept
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      handleRejectInvitation(notification)
+                    }
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
+
+              {notification.type === 'join_request' && (
+                <div className={styles.actions}>
+                  <button
+                    onClick={() =>
+                      handleAcceptRequest(notification)
+                    }
+                  >
+                    Accept
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      handleRejectRequest(notification)
+                    }
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
+
+              {notification.type === 'message' && (
+                <span className={styles.messageType}>
+                  Message
+                </span>
+              )}
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }
