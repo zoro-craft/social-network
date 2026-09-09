@@ -142,3 +142,27 @@ func GetPostsByUser(userID, viewerID int) ([]Post, error) {
 
 	return result, rows.Err()
 }
+
+func GetPostsByGroup(groupID int) ([]Post, error) {
+	query := postSelect + fromPosts + " WHERE p.group_id = ? ORDER BY p.id DESC"
+
+	rows, err := database.Database.Query(query, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := []Post{}
+
+	for rows.Next() {
+		var p Post
+
+		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.Full_name, &p.CreatedAt); err != nil {
+			return nil, err
+		}
+
+		result = append(result, p)
+	}
+
+	return result, rows.Err()
+}
