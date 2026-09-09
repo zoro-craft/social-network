@@ -63,6 +63,10 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 			utils.HandleError(w, http.StatusBadRequest, "Group not found")
 			return
 		}
+		if !utils.IsGroupMember(groupID, userID) {
+			utils.HandleError(w, http.StatusForbidden, "You must be a group member to post")
+			return
+		}
 
 		p.GroupID = &groupID
 
