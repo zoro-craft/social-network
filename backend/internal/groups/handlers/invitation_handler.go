@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"zone/internal/auth"
@@ -43,6 +44,10 @@ func InvitationsHandler(w http.ResponseWriter, r *http.Request) {
 	// Save invitation
 	invitationID, err := repositories.SaveInvitation(invitation)
 	if err != nil {
+		if err.Error() == "already invited" {
+			utils.HandleError(w, http.StatusConflict, "already invited")
+			return
+		}
 		utils.HandleError(w, 500, "failed to create invitation")
 		return
 	}
@@ -56,8 +61,15 @@ func InvitationsHandler(w http.ResponseWriter, r *http.Request) {
 	message := "You are invited to join " + groupName
 
 	// Create notification for the invited user
-	err = repositories.CreateNotification( invitation.InvitedUserID , "group_invtation", &invitationID, nil, message)
+	err = repositories.CreateNotification(
+		invitation.InvitedUserID,
+		"group_invtation",
+		&invitationID,
+		nil,
+		message,
+	)
 	if err != nil {
+		fmt.Println("CreateNotification error:", err)
 		utils.HandleError(w, 500, "failed to create notification")
 		return
 	}

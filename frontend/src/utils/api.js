@@ -20,7 +20,6 @@ export async function apiRequest(endpoint, method = "GET", data = null, isFormDa
 
   const res = await fetch(url, options);
   const result = await res.json();
-  console.log(result)
 
   if (!res.ok) {
     throw new Error(result.error || "Something went wrong!");

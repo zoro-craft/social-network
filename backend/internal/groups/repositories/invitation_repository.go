@@ -1,11 +1,29 @@
 package repositories
 
 import (
+	"fmt"
+
 	"zone/internal/database"
 	"zone/internal/groups/models"
 )
 
 func SaveInvitation(invit models.GroupInvitation) (int, error) {
+	var Id int
+	// Check if invitation already exists
+	err := database.Database.QueryRow(`
+		SELECT id
+		FROM group_invitations
+		WHERE group_id = ?
+		AND invited_user_id = ?
+	`,
+		invit.GroupID,
+		invit.InvitedUserID,
+	).Scan(&Id)
+
+	if err == nil {
+		return 0, fmt.Errorf("already invited")
+	}
+
 	result, err := database.Database.Exec(`
 		INSERT INTO group_invitations
 			(group_id, inviter_id, invited_user_id)
@@ -15,20 +33,18 @@ func SaveInvitation(invit models.GroupInvitation) (int, error) {
 		invit.InviterID,
 		invit.InvitedUserID,
 	)
-
 	if err != nil {
 		return 0, err
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
+		fmt.Println("INSERT invitation error:", err)
 		return 0, err
 	}
 
 	return int(id), nil
 }
-
-
 
 func InvitedUserIDExists(InvitedUserID int) bool {
 	var exists bool
@@ -45,11 +61,10 @@ func InvitedUserIDExists(InvitedUserID int) bool {
 	return exists
 }
 
-
 func CreateNotification(userID int, Type string, invitationID *int, requestID *int, msg string) error {
 	_, err := database.Database.Exec(`
 		INSERT INTO notifications
-			(user_id, type, invitation_id, requestID, message)
+			(user_id, type, invitation_id, request_id, message)
 		VALUES (?, ?, ?, ?, ?)
 	`,
 		userID,
@@ -61,8 +76,6 @@ func CreateNotification(userID int, Type string, invitationID *int, requestID *i
 
 	return err
 }
-
-
 
 func GetInvitation(invitationID, userID int) (models.GroupInvitation, error) {
 	var invitation models.GroupInvitation
@@ -80,7 +93,6 @@ func GetInvitation(invitationID, userID int) (models.GroupInvitation, error) {
 		&invitation.Status,
 		&invitation.CreatedAt,
 	)
-
 	if err != nil {
 		return invitation, err
 	}

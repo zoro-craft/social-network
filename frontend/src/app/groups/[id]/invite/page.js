@@ -7,22 +7,25 @@ import { useParams } from "next/navigation";
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import styles from '../../../styles/user.module.css';
 
-export default function userlistpage() {
+export default function Userlistpage() {
     const { auth, loading } = useRequireAuth();
     const { id } = useParams();
-    const [users, setUsers] = useState([])
+    const [users, setUsers] = useState([]);
+    
+    const [invitedUsers, setInvitedUsers] = useState(new Set());
+
     useEffect(() => {
-        if (!auth.authenticated) return
+        if (!auth.authenticated) return;
         const Fetchusers = async () => {
             try {
-                const res = await apiRequest("/users")
-                setUsers(res || [])
+                const res = await apiRequest("/users");
+                setUsers(res || []);
             } catch {
-                setUsers([])
+                setUsers([]);
             }
-        }
+        };
         Fetchusers();
-    }, [auth.authenticated])
+    }, [auth.authenticated]);
 
     if (loading) {
         return (
@@ -33,15 +36,28 @@ export default function userlistpage() {
     }
 
     const inviteUser = async (userID) => {
-        try {
-            await apiRequest(`/groups/${id}/invitations`, "POST", {
+    try {
+        const response = await apiRequest(
+            `/groups/${id}/invitations`,
+            "POST",
+            {
                 group_id: Number(id),
                 invited_user_id: userID,
-            });
-        } catch {
-            // invitation failed
-        }
+            }
+        );
+
+        console.log("Invitation response:", response);
+
+        setInvitedUsers((prev) => {
+            const newSet = new Set(prev);
+            newSet.add(userID);
+            return newSet;
+        });
+
+    } catch (error) {
+        console.error("Invitation error:", error);
     }
+};
 
     return (
         <div className="glass-feed-page">
@@ -50,20 +66,25 @@ export default function userlistpage() {
                 <p className={styles.emptyState}>No users found.</p>
             ) : (
                 <div className={styles.grid}>
-                    {users.map((user) => (
-                        <div key={user.id} className={styles.card}>
-                            <div className={styles.cardTop}>
-                                <Avatar src={user.avatar} name={user.full_name} size={48} />
-                                <h2 className={styles.name}>{user.full_name}</h2>
+                    {users.map((user) => {
+                        const isInvited = invitedUsers.has(user.id);
+
+                        return (
+                            <div key={user.id} className={styles.card}>
+                                <div className={styles.cardTop}>
+                                    <Avatar src={user.avatar} name={user.full_name} size={48} />
+                                    <h2 className={styles.name}>{user.full_name}</h2>
+                                </div>
+                                <button
+                                    className={styles.inviteBtn}
+                                    onClick={() => inviteUser(user.id)}
+                                    disabled={isInvited}
+                                >
+                                    {isInvited ? "... wait the response" : "Invite"}
+                                </button>
                             </div>
-                            <button
-                                className={styles.inviteBtn}
-                                onClick={() => inviteUser(user.id)}
-                            >
-                                Invite
-                            </button>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>
