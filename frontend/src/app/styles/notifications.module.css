@@ -1,116 +1,203 @@
 .container {
-  max-width: 640px;
+  width: 100%;
+  max-width: 850px;
   margin: 40px auto;
   padding: 0 20px;
-  color: var(--text-primary);
 }
 
-.name {
-  font-size: 26px;
+.container h1 {
+  margin-bottom: 25px;
+  font-size: 28px;
   font-weight: 700;
-  letter-spacing: -0.01em;
-  margin: 0 0 28px;
-  color: var(--text-primary);
 }
 
-.status {
-  color: var(--text-muted);
-  font-size: 14px;
+/* Empty state */
+
+.empty {
+  padding: 40px;
   text-align: center;
-  padding: 60px 0;
+  color: #888;
+  background: #f8f8f8;
+  border-radius: 12px;
 }
 
-.requestCard {
+/* Notifications list */
+
+.notificationList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Notification card */
+
+.notification {
   display: flex;
   align-items: center;
-  gap: 16px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.16) 0%,
-    rgba(175, 180, 190, 0.08) 45%,
-    rgba(100, 105, 115, 0.12) 100%
-  );
-  backdrop-filter: blur(24px) brightness(1.1);
-  -webkit-backdrop-filter: blur(24px) brightness(1.1);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-top: 1px solid rgba(255, 255, 255, 0.35);
-  border-left: 1px solid rgba(255, 255, 255, 0.28);
-  box-shadow: 
-    0 16px 40px -4px rgba(0, 0, 0, 0.6),
-    inset 0 1px 1px rgba(255, 255, 255, 0.3),
-    inset 1px 0 1px rgba(255, 255, 255, 0.15);
-  border-radius: var(--radius);
-  padding: 16px 20px;
-  margin-bottom: 14px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  justify-content: space-between;
+  gap: 20px;
+
+  padding: 18px 20px;
+
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+
+  background: #ffffff;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
-.requestCard:hover {
+.notification:hover {
   transform: translateY(-2px);
-  border-top: 1px solid rgba(255, 255, 255, 0.5);
-  border-left: 1px solid rgba(255, 255, 255, 0.38);
-  box-shadow: 
-    0 20px 48px -4px rgba(0, 0, 0, 0.7),
-    inset 0 1px 1px rgba(255, 255, 255, 0.45);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
-.requestInfo {
+/* Unread notification */
+
+.unread {
+  background: #f0f7ff;
+  border-left: 4px solid #2563eb;
+}
+
+/* Read notification */
+
+.read {
+  background: #ffffff;
+}
+
+/* Notification content */
+
+.content {
   flex: 1;
   min-width: 0;
 }
 
-.requestName {
-  margin: 0;
-  font-weight: 600;
+.content p {
+  margin: 0 0 7px;
+
   font-size: 15px;
-  color: var(--text-primary);
+  line-height: 1.5;
+  color: #222;
+
+  word-break: break-word;
 }
 
-.requestEmail {
-  margin: 2px 0 0;
-  font-size: 13px;
-  color: var(--text-muted);
+.content small {
+  font-size: 12px;
+  color: #888;
 }
 
-.requestActions {
+/* Action buttons */
+
+.actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-.requestButton {
+.actions button {
   border: none;
   border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 13px;
+
+  padding: 9px 16px;
+
+  font-size: 14px;
   font-weight: 600;
+
   cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s ease;
+
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
 }
 
-.acceptButton {
-  background: var(--accent);
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+.actions button:hover {
+  transform: translateY(-1px);
 }
 
-.acceptButton:hover {
-  background: var(--accent-hover);
-  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.4);
+.actions button:active {
+  transform: translateY(0);
 }
 
-.declineButton {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-top: 1px solid rgba(255, 255, 255, 0.25);
-  color: rgba(255, 255, 255, 0.85);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+/* Accept */
+
+.actions button:first-child {
+  background: #2563eb;
+  color: white;
 }
 
-.declineButton:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
+.actions button:first-child:hover {
+  background: #1d4ed8;
+}
+
+/* Reject */
+
+.actions button:last-child {
+  background: #f1f1f1;
+  color: #444;
+}
+
+.actions button:last-child:hover {
+  background: #e5e5e5;
+  color: #222;
+}
+
+/* Message notification */
+
+.messageType {
+  flex-shrink: 0;
+
+  padding: 6px 10px;
+
+  border-radius: 20px;
+
+  background: #eef2ff;
+  color: #4f46e5;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Loading */
+
+.container > div:first-child {
+  text-align: center;
+  padding: 40px;
+  color: #777;
+}
+
+/* Responsive */
+
+@media (max-width: 650px) {
+  .container {
+    margin: 25px auto;
+    padding: 0 12px;
+  }
+
+  .container h1 {
+    font-size: 24px;
+  }
+
+  .notification {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .actions button {
+    flex: 1;
+  }
+
+  .messageType {
+    align-self: flex-start;
+  }
 }
 
