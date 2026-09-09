@@ -41,11 +41,41 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 		UserID:  userID,
 	}
 
+//group
+	groupIDStr := strings.TrimSpace(r.FormValue("group_id"))
+
+	if groupIDStr != "" {
+		groupID, err := strconv.Atoi(groupIDStr)
+		if err != nil || groupID <= 0 {
+			utils.HandleError(w, http.StatusBadRequest, "Invalid group id")
+			return
+		}
+
+		// check goup
+		var exists bool
+
+		err = database.Database.QueryRow(
+			"SELECT EXISTS(SELECT 1 FROM user_groups WHERE id = ?)",
+			groupID,
+		).Scan(&exists)
+
+		if err != nil || !exists {
+			utils.HandleError(w, http.StatusBadRequest, "Group not found")
+			return
+		}
+
+		p.GroupID = &groupID
+
+		// group posts are always public
+		p.Privacy = "public"
+	}
+
 	if p.Title == "" {
 		utils.HandleError(w, http.StatusBadRequest, "Title is required")
 		return
 	}
-		if len(p.Title) > 100 {
+
+	if len(p.Title) > 100 {
 		utils.HandleError(w, http.StatusBadRequest, "Title too long")
 		return
 	}
@@ -54,34 +84,43 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "Content is required")
 		return
 	}
+
 	if len(p.Content) > 2000 {
 		utils.HandleError(w, http.StatusBadRequest, "Content too long")
 		return
 	}
-	if p.Privacy == "" {
-		p.Privacy = "public"
-	}
-	if !allowedPrivacy[p.Privacy] {
-		utils.HandleError(w, http.StatusBadRequest, "Invalid privacy option")
-		return
+
+	if p.GroupID == nil {
+		if p.Privacy == "" {
+			p.Privacy = "public"
+		}
+		if !allowedPrivacy[p.Privacy] {
+			utils.HandleError(w, http.StatusBadRequest, "Invalid privacy option")
+			return
+		}
 	}
 
 	viewerIDs := r.Form["viewer_ids"]
-	if p.Privacy == "private" && len(viewerIDs) == 0 {
-		utils.HandleError(w, http.StatusBadRequest, "Select at least one follower")
+
+	if p.GroupID == nil &&
+		p.Privacy == "private" &&
+		len(viewerIDs) == 0 {
+		utils.HandleError(w,http.StatusBadRequest,"Select at least one follower")
 		return
 	}
 
-	p.Image, err = utils.SaveImage(r, "./uploads/posts", "/uploads/posts/")
+	p.Image, err = utils.SaveImage(r,"./uploads/posts","/uploads/posts/",
+	)
+
 	if err != nil {
 		utils.HandleError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-
-	result, err := database.Database.Exec(
-		"INSERT INTO posts (user_id, title, content, image, privacy) VALUES (?, ?, ?, ?, ?)",
-		p.UserID, p.Title, p.Content, p.Image, p.Privacy,
+	// Create post
+	result, err := database.Database.Exec(`INSERT INTO posts (user_id,group_id,title,content,image,privacy)VALUES (?, ?, ?, ?, ?, ?)`,
+	p.UserID,p.GroupID,p.Title,p.Content,p.Image,p.Privacy,
 	)
+
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to create post")
 		return
@@ -89,6 +128,8 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 
 	postID, _ := result.LastInsertId()
 
+//Private viewers
+	if p.GroupID == nil {
 	for _, idStr := range viewerIDs {
 		viewerID, err := strconv.Atoi(idStr)
 		if err == nil {
@@ -99,6 +140,8 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	utils.RespondJSON(w, http.StatusCreated, map[string]string{"message": "Post created successfully!"})
-}
+	}
 
+	utils.RespondJSON(w, http.StatusCreated, map[string]string{"message": "Post created successfully!"})
+
+}
