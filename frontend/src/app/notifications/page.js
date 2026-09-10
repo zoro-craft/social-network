@@ -31,12 +31,7 @@ export default function NotificationsPage() {
 
   const handleAcceptInvitation = async (notification) => {
     try {
-      await apiRequest(
-        `/invitations/${notification.invitation_id}/accept`,
-        {
-          method: 'POST',
-        }
-      );
+      await apiRequest( `/invitations/${notification.invitation_id}/accept`,'POST',);
 
       removeNotification(notification.id);
     } catch (error) {

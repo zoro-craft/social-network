@@ -9,6 +9,7 @@ import (
 	"zone/internal/groups/repositories"
 	"zone/internal/utils"
 )
+
 func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, 405, http.StatusText(405))
@@ -73,6 +74,11 @@ func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
+	err = repositories.DeleteRequestNotification(adminID, requestID)
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
 
 	utils.RespondJSON(w, http.StatusOK, map[string]string{
 		"message": "request accepted successfully!",
@@ -130,6 +136,12 @@ func Reject_Join_Request(w http.ResponseWriter, r *http.Request) {
 		requestID,
 		"rejected",
 	)
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+
+	err = repositories.DeleteRequestNotification(adminID, requestID)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return

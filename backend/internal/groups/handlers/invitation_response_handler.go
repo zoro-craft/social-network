@@ -26,7 +26,7 @@ func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 401, http.StatusText(401))
 		return
 	}
-	parts := strings.Split((r.URL.Path), "/")
+	parts := strings.Split(r.URL.Path, "/")
 
 	if len(parts) < 4 {
 		utils.HandleError(w, 400, http.StatusText(400))
@@ -63,8 +63,16 @@ func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
+	// Remove the invitation notification
+	err = repositories.DeleteInvitationNotification(
+		user_id,
+		invitation_id,
+	)
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
 	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": " invitation accept successfully!"})
-	
 }
 
 func RejectInvitationResponse(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +85,7 @@ func RejectInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 401, http.StatusText(401))
 		return
 	}
-	parts := strings.Split((r.URL.Path), "/")
+	parts := strings.Split(r.URL.Path, "/")
 
 	if len(parts) < 4 {
 		utils.HandleError(w, 400, http.StatusText(400))
@@ -100,6 +108,14 @@ func RejectInvitationResponse(w http.ResponseWriter, r *http.Request) {
 	err = repositories.UpdateInvitationStatus(
 		invitation_id,
 		"rejected",
+	)
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+	err = repositories.DeleteInvitationNotification(
+		user_id,
+		invitation_id,
 	)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))

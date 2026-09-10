@@ -41,3 +41,32 @@ func GetNotificationsByUserID(userID int) ([]models.Notification, error) {
 
 	return notifications, nil
 }
+
+
+func DeleteInvitationNotification(userID int, invitationID int) error {
+	_, err := database.Database.Exec(`
+		DELETE FROM notifications
+		WHERE user_id = ?
+		AND invitation_id = ?
+		AND type = 'group_invtation'
+	`,
+		userID,
+		invitationID,
+	)
+
+	return err
+}
+
+func DeleteRequestNotification(userID int, Requsestid int) error {
+	_, err := database.Database.Exec(`
+		DELETE FROM notifications
+		WHERE user_id = ?
+		AND  request_id = ?
+		AND type = 'join_request'
+	`,
+		userID,
+		Requsestid,
+	)
+
+	return err
+}
