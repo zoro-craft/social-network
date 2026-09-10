@@ -14,13 +14,13 @@ func GetAllGroupsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := auth.GetUserID(r)
+	user_id, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, 401, http.StatusText(401))
 		return
 	}
 
-	groups, err := repositories.GetAllGroups()
+	groups, err := repositories.GetAllGroups(user_id)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
