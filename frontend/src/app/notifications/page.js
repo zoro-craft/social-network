@@ -11,6 +11,7 @@ export default function NotificationsPage() {
   const { auth, loading } = useRequireAuth();
 
   const [notifications, setNotifications] = useState([]);
+  const [followRequests, setFollowRequests] = useState([]);
 
   useEffect(() => {
     if (!auth.authenticated) return;
@@ -25,7 +26,18 @@ export default function NotificationsPage() {
       }
     };
 
+    const fetchFollowRequests = async () => {
+      try {
+        const res = await apiRequest('/follow/requests');
+        setFollowRequests(res || []);
+      } catch (error) {
+        console.error('Failed to fetch follow requests:', error);
+        setFollowRequests([]);
+      }
+    };
+
     fetchNotifications();
+    fetchFollowRequests();
   }, [auth.authenticated]);
 
 
@@ -96,6 +108,17 @@ export default function NotificationsPage() {
     );
   };
 
+  const respondToFollowRequest = async (followerId, action) => {
+    try {
+      await apiRequest(`/follow/${followerId}/${action}`, 'POST');
+      setFollowRequests((prev) =>
+        prev.filter((req) => req.follower_id !== followerId)
+      );
+    } catch (error) {
+      console.error('Failed to respond to follow request:', error);
+    }
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -108,7 +131,51 @@ export default function NotificationsPage() {
     <div className={styles.container}>
       <h1>Notifications</h1>
 
-      {notifications.length === 0 ? (
+      {followRequests.length > 0 && (
+        <>
+          <h1 style={{ marginTop: 35 }}>Follow Requests</h1>
+
+          <div className={styles.notificationList}>
+            {followRequests.map((req) => (
+              <div key={req.follower_id} className={styles.notification}>
+                <div className={styles.content}>
+                  <p>
+                    {req.first_name}
+                    {req.last_name ? ` ${req.last_name}` : ''} wants to
+                    follow you
+                  </p>
+                </div>
+
+                <div className={styles.actions}>
+                  <button
+                    onClick={() =>
+                      respondToFollowRequest(
+                        req.follower_id,
+                        'accept'
+                      )
+                    }
+                  >
+                    Accept
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      respondToFollowRequest(
+                        req.follower_id,
+                        'decline'
+                      )
+                    }
+                  >
+                    Decline
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {notifications.length === 0 && followRequests.length === 0 ? (
         <p className={styles.empty}>
           No notifications
         </p>
