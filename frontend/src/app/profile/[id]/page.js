@@ -81,8 +81,8 @@ const handleFollow = () => {
           <h2 className="user-name">{user.first_name} {user.last_name}</h2>
           <p className="user-handle">@{user.nickname || user.first_name}</p>
           <span className="privacy-badge">{user.is_private ? "Private Profile" : "Public Profile"}</span>
-          {user.date_of_birth && <p style={{ color: "#94a3b8", fontSize: "0.9rem", margin: "10px 0" }}>Born: {user.date_of_birth.split("T")[0]}</p>}
-          {user.about_me && <p className="about-me">{user.about_me}</p>}
+          {!isPrivateHidden && user.date_of_birth && <p style={{ color: "#94a3b8", fontSize: "0.9rem", margin: "10px 0" }}>Born: {user.date_of_birth.split("T")[0]}</p>}
+          {!isPrivateHidden && user.about_me && <p className="about-me">{user.about_me}</p>}
 
           {/* Action Button */}
           {relation === "self" ? <button onClick={() => setIsEditing(true)} className="action-btn btn-edit">Edit Profile</button>
@@ -138,6 +138,7 @@ const handleFollow = () => {
               <input name="last_name" defaultValue={user.last_name} className="form-input" required placeholder="Last Name" />
               <input name="email" type="email" defaultValue={user.email} className="form-input" required placeholder="Email" />
               <input name="date_of_birth" type="date" defaultValue={user.date_of_birth?.split("T")[0]} className="form-input" required />
+              <input name="nickname" defaultValue={user.nickname || ""} className="form-input" maxLength={30} placeholder="Nickname" />
               <textarea name="about_me" defaultValue={user.about_me} className="form-input" placeholder="About me" />
               <label className="privacy-toggle">
                 <input type="checkbox" name="is_private" defaultChecked={!!user.is_private} />
