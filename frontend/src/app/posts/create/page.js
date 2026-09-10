@@ -220,10 +220,10 @@ function CreatePostForm() {
               <div className={styles.viewerGrid}>
                 {followers.map((f) => (
                   <div
-                    key={f.follower_id}
-                    onClick={() => toggleViewer(f.follower_id)}
+                    key={f.id}
+                    onClick={() => toggleViewer(f.id)}
                     className={`${styles.viewerChip} ${
-                      selectedViewers.includes(f.follower_id)
+                      selectedViewers.includes(f.id)
                         ? styles.viewerChipActive
                         : styles.viewerChipInactive
                     }`}
