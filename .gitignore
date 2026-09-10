@@ -1,3 +1,21 @@
 *.db
 node_modules
 .next
+
+# AI / agent tooling
+.agents/
+.claude/
+.opencode/
+.specify/
+.cursor/
+.cursorrules
+.windsurf/
+.codeium/
+.continue/
+.aider*
+.gemini/
+.copilot/
+.github/copilot-instructions.md
+skills-lock.json
+AGENTS.md
+CLAUDE.md
