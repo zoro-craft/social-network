@@ -2,7 +2,7 @@
 
 import { useToast } from '@/app/context/ToastContext';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useComments } from './useComments';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { API_BASE } from '@/utils/api';
@@ -28,6 +28,7 @@ export default function CommentPage() {
   } = useComments(id);
   const [content, setContent] = useState('');
   const [imageFile, setImageFile] = useState(null);
+  const imageInputRef = useRef(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -50,11 +51,15 @@ export default function CommentPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        showToast(data.message || 'Failed to add comment');
+        showToast(data.error || 'Failed to add comment');
         return;
       }
 
       setContent('');
+      setImageFile(null);
+      if (imageInputRef.current) {
+        imageInputRef.current.value = '';
+      }
     } catch {
       showToast('Could not reach the server');
     } finally {
@@ -65,7 +70,6 @@ export default function CommentPage() {
     const file = e.target.files[0];
     setImageFile(file || null);
   };
-
 
   if (authLoading || !auth.authenticated) {
     return null;
@@ -90,11 +94,12 @@ export default function CommentPage() {
   return (
     <div className="glass-feed-page">
       <div className={`glass-post-card ${styles.postContainer}`}>
-        
         {/* Original Post */}
         <div className={styles.originalPost}>
           <div className="glass-post-header">
-            <span className="glass-post-author">Posted by {post.full_name}</span>
+            <span className="glass-post-author">
+              Posted by {post.full_name}
+            </span>
             <span>{formatDate(post.created_at)}</span>
           </div>
           <p className="glass-post-title">{post.title}</p>
@@ -121,7 +126,7 @@ export default function CommentPage() {
               onChange={(e) => setContent(e.target.value)}
             />
           </div>
-          
+
           <div className={styles.commentFormRow}>
             <label className={`glass-file-label ${styles.fileLabelInline}`}>
               <span>Attach Image:</span>
@@ -130,9 +135,14 @@ export default function CommentPage() {
                 type="file"
                 accept="image/jpeg,image/png,image/gif"
                 onChange={handleImageChange}
+                ref={imageInputRef}
               />
             </label>
-            <button className={`glass-button ${styles.submitButtonInline}`} type="submit" disabled={submitting}>
+            <button
+              className={`glass-button ${styles.submitButtonInline}`}
+              type="submit"
+              disabled={submitting}
+            >
               {submitting ? 'Posting...' : 'Post'}
             </button>
           </div>
@@ -151,11 +161,17 @@ export default function CommentPage() {
               >
                 <Avatar src={c.avatar} name={c.first_name} size={32} />
                 <span className={styles.commentAuthor}>{c.first_name}</span>
-                <span className={styles.commentDate}>{formatDate(c.created_at)}</span>
+                <span className={styles.commentDate}>
+                  {formatDate(c.created_at)}
+                </span>
               </div>
 
-              <p className={`${styles.commentContent} ${c.image ? styles.commentContentWithImage : ''}`}>{c.content}</p>
-              
+              <p
+                className={`${styles.commentContent} ${c.image ? styles.commentContentWithImage : ''}`}
+              >
+                {c.content}
+              </p>
+
               {c.image && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
