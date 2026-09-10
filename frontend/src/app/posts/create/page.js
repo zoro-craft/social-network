@@ -1,16 +1,18 @@
 'use client';
 
 import { useToast } from '@/app/context/ToastContext';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useImageInput } from '@/hooks/useImageInput';
 import { API_BASE } from '@/utils/api';
 import Avatar from '@/components/Avatar';
 import styles from '../../styles/posts.module.css';
 
-export default function CreatePostPage() {
+function CreatePostForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const preselectedGroupId = searchParams.get('group_id');
   const { auth, loading: authLoading } = useRequireAuth();
   const showToast = useToast();
 
@@ -22,8 +24,31 @@ export default function CreatePostPage() {
   const [selectedViewers, setSelectedViewers] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const [groups, setGroups] = useState([]);
+  const [selectedGroupId, setSelectedGroupId] = useState(preselectedGroupId || '');
+
   useEffect(() => {
-    if (privacy !== 'private' || !auth.id) return;
+    if (!auth.id) return;
+
+    const fetchGroups = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/groups/my-groups`, {
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setGroups(data || []);
+        }
+      } catch {
+        setGroups([]);
+      }
+    };
+
+    fetchGroups();
+  }, [auth.id]);
+
+  useEffect(() => {
+    if (privacy !== 'private' || !auth.id || selectedGroupId) return;
 
     const fetchFollowers = async () => {
       try {
@@ -44,7 +69,7 @@ export default function CreatePostPage() {
     };
 
     fetchFollowers();
-  }, [privacy, auth.id]);
+  }, [privacy, auth.id, selectedGroupId]);
 
   const toggleViewer = (id) => {
     setSelectedViewers((prev) =>
@@ -59,7 +84,7 @@ export default function CreatePostPage() {
       showToast('Title and content are required');
       return;
     }
-    if (privacy === 'private' && selectedViewers.length === 0) {
+    if (!selectedGroupId && privacy === 'private' && selectedViewers.length === 0) {
       showToast('Select at least one follower');
       return;
     }
@@ -70,7 +95,8 @@ export default function CreatePostPage() {
       const form = new FormData();
       form.append('title', title);
       form.append('content', content);
-      form.append('privacy', privacy);
+      form.append('privacy', selectedGroupId ? 'public' : privacy);
+      if (selectedGroupId) form.append('group_id', selectedGroupId);
       if (imageFile) form.append('image', imageFile);
       selectedViewers.forEach((id) => form.append('viewer_ids', id));
 
@@ -88,13 +114,17 @@ export default function CreatePostPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        showToast(data.message || 'Failed to create post');
+        showToast(data.error || 'Failed to create post');
         setLoading(false);
         return;
       }
 
       showToast('Post created successfully!', false);
-      router.push('/posts');
+      if (selectedGroupId) {
+        router.push(`/groups/${selectedGroupId}`);
+      } else {
+        router.push('/posts');
+      }
     } catch {
       showToast('Could not reach the server');
       setLoading(false);
@@ -105,15 +135,40 @@ export default function CreatePostPage() {
     return null;
   }
 
+  const isGroupPost = !!selectedGroupId;
+
   return (
     <div className="glass-page">
       <div className={`glass-container ${styles.container}`}>
         <h2>Create Post</h2>
         <p className={styles.subtitle}>
-          Share something with your network
+          {isGroupPost ? 'Post to your group' : 'Share something with your network'}
         </p>
 
         <form onSubmit={handleSubmit} className={styles.form}>
+          {groups.length > 0 && (
+            <div className="glass-input-group">
+              <select
+                className={`glass-input ${styles.select}`}
+                value={selectedGroupId}
+                onChange={(e) => {
+                  setSelectedGroupId(e.target.value);
+                  if (e.target.value) {
+                    setPrivacy('public');
+                    setSelectedViewers([]);
+                  }
+                }}
+              >
+                <option value="" className={styles.option}>Post to your feed</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id} className={styles.option}>
+                    Group: {g.titel}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="glass-input-group">
             <input
               className="glass-input"
@@ -136,19 +191,25 @@ export default function CreatePostPage() {
             />
           </div>
 
-          <div className="glass-input-group">
-            <select
-              className={`glass-input ${styles.select}`}
-              value={privacy}
-              onChange={(e) => setPrivacy(e.target.value)}
-            >
-              <option value="public" className={styles.option}>Public</option>
-              <option value="almost_private" className={styles.option}>Almost private (followers)</option>
-              <option value="private" className={styles.option}>Private (chosen followers)</option>
-            </select>
-          </div>
+          {!isGroupPost && (
+            <div className="glass-input-group">
+              <select
+                className={`glass-input ${styles.select}`}
+                value={privacy}
+                onChange={(e) => setPrivacy(e.target.value)}
+              >
+                <option value="public" className={styles.option}>Public</option>
+                <option value="almost_private" className={styles.option}>Almost private (followers)</option>
+                <option value="private" className={styles.option}>Private (chosen followers)</option>
+              </select>
+            </div>
+          )}
 
-          {privacy === 'private' && (
+          {isGroupPost && (
+            <p className={styles.subtitle}>Group posts are always public</p>
+          )}
+
+          {privacy === 'private' && !isGroupPost && (
             <div className={`glass-input-group ${styles.viewerGroup}`}>
               <label className={styles.viewerLabel}>
                 Choose who can see this post:
@@ -191,5 +252,13 @@ export default function CreatePostPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function CreatePostPage() {
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <CreatePostForm />
+    </Suspense>
   );
 }
