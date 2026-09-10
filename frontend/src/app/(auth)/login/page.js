@@ -54,7 +54,6 @@ export default function LoginPage() {
               type="text"
               className="glass-input"
               name="identify"
-              placeholder="email or username"
               required
               onChange={handleChange}
             />
@@ -66,7 +65,6 @@ export default function LoginPage() {
               type="password"
               className="glass-input"
               name="password"
-              placeholder="••••••••"
               required
               onChange={handleChange}
             />
