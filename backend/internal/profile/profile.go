@@ -41,6 +41,7 @@ func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
 	var userPosts []posts.Post
 	if user.IsPrivate && relation != "self" && relation != "accepted" {
 		user.Email = ""
+		user.DateOfBirth = ""
 		user.AboutMe = ""
 		userPosts = []posts.Post{}
 	} else {
