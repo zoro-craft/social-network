@@ -91,36 +91,6 @@ export function useComments(postId) {
     return res;
   };
 
-  // ADDED: Function to handle reactions on this single post
-  const reactToPost = async (type) => {
-    try {
-      const res = await fetch(`${API_BASE}/posts/react`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ post_id: Number(postId), type }),
-      });
-
-      if (res.status === 401) {
-        window.location.href = '/login';
-        return;
-      }
-
-      if (!res.ok) return;
-
-      const data = await res.json();
-      setPost((prev) => ({
-        ...prev,
-        like_count: data.like_count || 0,
-        dislike_count: data.dislike_count || 0,
-        user_reaction: data.user_reaction || null,
-      }));
-    } catch (err) {
-      console.error('Failed to react:', err);
-    }
-  };
-
-  // ADDED: Export reactToPost
   return {
     post,
     comments,
@@ -130,6 +100,5 @@ export function useComments(postId) {
     fetchPostAndComments,
     loadMoreComments,
     addComment,
-    reactToPost,
   };
 }

@@ -33,6 +33,27 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid post")
 		return
 	}
+//group
+	var groupID *int
+	err = database.Database.QueryRow(
+		"SELECT group_id FROM posts WHERE id = ?", postID,
+	).Scan(&groupID)
+	if err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Failed to load post")
+		return
+	}
+
+	if groupID != nil {
+		var isMember bool
+		err = database.Database.QueryRow(
+			"SELECT EXISTS(SELECT * FROM group_members WHERE group_id = ? AND user_id = ?)",
+			*groupID, userID,
+		).Scan(&isMember)
+		if err != nil || !isMember {
+			utils.HandleError(w, http.StatusForbidden, "You must be a group member to comment")
+			return
+		}
+	}
 
 	r.Body = http.MaxBytesReader(w, r.Body, utils.MaxUploadSize)
 	if err := r.ParseMultipartForm(utils.MaxUploadSize); err != nil {
@@ -42,6 +63,7 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 
 	c := Comment{
 		PostID:  postID,
+		GroupID: groupID,
 		UserID:  userID,
 		Content: strings.TrimSpace(r.FormValue("content")),
 	}
@@ -62,8 +84,8 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result, err := database.Database.Exec(
-		"INSERT INTO comments (post_id, user_id, content, image) VALUES (?, ?, ?, ?)",
-		c.PostID, c.UserID, c.Content, c.Image,
+		"INSERT INTO comments (post_id, group_id, user_id, content, image) VALUES (?, ?, ?, ?, ?)",
+		c.PostID, c.GroupID, c.UserID, c.Content, c.Image,
 	)
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to create comment")
@@ -76,12 +98,12 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = database.Database.QueryRow(`
-		SELECT c.id, c.post_id, c.content, COALESCE(c.image, ''), c.user_id,
+		SELECT c.id, c.post_id, c.group_id, c.content, COALESCE(c.image, ''), c.user_id,
 		       COALESCE(u.first_name, ''), COALESCE(u.avatar, ''), c.created_at
 		FROM comments c
 		JOIN users u ON c.user_id = u.id
 		WHERE c.id = ?
-	`, commentID).Scan(&c.ID, &c.PostID, &c.Content, &c.Image, &c.UserID, &c.FirstName, &c.Avatar, &c.CreatedAt)
+	`, commentID).Scan(&c.ID, &c.PostID, &c.GroupID, &c.Content, &c.Image, &c.UserID, &c.FirstName, &c.Avatar, &c.CreatedAt)
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to load created comment")
 		return
