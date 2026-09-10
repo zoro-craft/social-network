@@ -15,17 +15,17 @@ export default function Userlistpage() {
     const [invitedUsers, setInvitedUsers] = useState(new Set());
 
     useEffect(() => {
-        if (!auth.authenticated) return;
+        if (!auth.authenticated || !id ) return;
         const Fetchusers = async () => {
             try {
-                const res = await apiRequest("/users");
+                const res = await apiRequest(`/groups/${id}/users`);
                 setUsers(res || []);
             } catch {
                 setUsers([]);
             }
         };
         Fetchusers();
-    }, [auth.authenticated]);
+    }, [auth.authenticated , id]);
 
     if (loading) {
         return (
