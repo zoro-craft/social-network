@@ -144,7 +144,7 @@ func GetPostsByUser(userID, viewerID int) ([]Post, error) {
 }
 
 func GetPostsByGroup(groupID int) ([]Post, error) {
-	query := postSelect + fromPosts + " WHERE p.group_id = ? ORDER BY p.id DESC"
+	query := postSelect + reactionSelect + fromPosts + " WHERE p.group_id = ? ORDER BY p.id DESC"
 
 	rows, err := database.Database.Query(query, groupID)
 	if err != nil {
@@ -157,7 +157,7 @@ func GetPostsByGroup(groupID int) ([]Post, error) {
 	for rows.Next() {
 		var p Post
 
-		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.Full_name, &p.CreatedAt); err != nil {
+		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.Full_name, &p.CreatedAt, &p.LikeCount, &p.DislikeCount); err != nil {
 			return nil, err
 		}
 
@@ -165,4 +165,36 @@ func GetPostsByGroup(groupID int) ([]Post, error) {
 	}
 
 	return result, rows.Err()
+}
+
+func GetPostsByGroupAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	userID, err := auth.GetUserID(r)
+	if err != nil {
+		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in")
+		return
+	}
+
+	groupID, err := strconv.Atoi(r.PathValue("group_id"))
+	if err != nil || groupID <= 0 {
+		utils.HandleError(w, http.StatusBadRequest, "Invalid group id")
+		return
+	}
+
+	if !utils.IsGroupMember(groupID, userID) {
+		utils.HandleError(w, http.StatusForbidden, "You must be a group member")
+		return
+	}
+
+	posts, err := GetPostsByGroup(groupID)
+	if err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Failed to load group posts")
+		return
+	}
+
+	utils.RespondJSON(w, http.StatusOK, posts)
 }
