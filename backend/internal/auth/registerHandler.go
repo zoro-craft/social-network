@@ -103,6 +103,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var nicknameValue any
 	if nickname != "" {
 		var existingNicknameID int
 		err = database.Database.QueryRow("SELECT id FROM users WHERE nickname = ?", nickname).Scan(&existingNicknameID)
@@ -116,6 +117,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Database error, please try again"})
 			return
 		}
+		nicknameValue = nickname
 	}
 
 	if strings.TrimSpace(password) == "" {
@@ -172,7 +174,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	_, err = database.Database.Exec(
 		"INSERT INTO users (email, password, date_of_birth, first_name, last_name, nickname, about_me, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-		email, string(hashedPassword), dob.Format("2006-01-02"), firstName, lastName, nickname, aboutMe, avatarPath,
+		email, string(hashedPassword), dob.Format("2006-01-02"), firstName, lastName, nicknameValue, aboutMe, avatarPath,
 	)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
