@@ -12,7 +12,6 @@ export default function GroupDetailsPage() {
     const group = {
         titel: 'Design Club',
         description: 'A place for designers to share ideas, feedback, and inspiration.',
-        member_count: 128,
     };
 
     if (loading) {

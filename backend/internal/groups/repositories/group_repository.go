@@ -197,3 +197,25 @@ func GetMyGroups(userID int) ([]models.Groupe, error) {
 
 	return groups, nil
 }
+
+
+func GetGroupbyid(group_id int) (models.Groupe, error) {
+	var group models.Groupe
+
+	err := database.Database.QueryRow(`
+		SELECT id, creator_id, title, description
+		FROM user_groups
+		WHERE id = ?
+	`, group_id).Scan(
+		&group.Id,
+		&group.Admin,
+		&group.Title,
+		&group.Description,
+	)
+
+	if err != nil {
+		return group, err
+	}
+
+	return group, nil
+}
