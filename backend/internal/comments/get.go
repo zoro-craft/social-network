@@ -11,7 +11,7 @@ import (
 )
 
 const commentSelect = `
-	SELECT c.id, c.post_id, c.content, COALESCE(c.image, ''), c.user_id,
+	SELECT c.id, c.post_id, c.group_id, c.content, COALESCE(c.image, ''), c.user_id,
 	       COALESCE(u.first_name, ''), COALESCE(u.avatar, ''), c.created_at
 	FROM comments c
 	JOIN users u ON c.user_id = u.id
@@ -78,7 +78,7 @@ func GetCommentsAPI(w http.ResponseWriter, r *http.Request) {
 	result := []Comment{}
 	for rows.Next() {
 		var c Comment
-		if err := rows.Scan(&c.ID, &c.PostID, &c.Content, &c.Image, &c.UserID, &c.FirstName, &c.Avatar, &c.CreatedAt); err == nil {
+		if err := rows.Scan(&c.ID, &c.PostID, &c.GroupID, &c.Content, &c.Image, &c.UserID, &c.FirstName, &c.Avatar, &c.CreatedAt); err == nil {
 			result = append(result, c)
 		}
 	}
@@ -93,3 +93,27 @@ func GetCommentsAPI(w http.ResponseWriter, r *http.Request) {
 
 	utils.RespondJSON(w, http.StatusOK, result)
 }
+
+func GetCommentsByGroup(groupID int) ([]Comment, error) {
+	query := commentSelect + `
+		WHERE c.group_id = ?
+		ORDER BY c.id DESC
+	`
+
+	rows, err := database.Database.Query(query, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := []Comment{}
+	for rows.Next() {
+		var c Comment
+		if err := rows.Scan(&c.ID, &c.PostID, &c.GroupID, &c.Content, &c.Image, &c.UserID, &c.FirstName, &c.Avatar, &c.CreatedAt); err == nil {
+			result = append(result, c)
+		}
+	}
+
+	return result, rows.Err()
+}
+
