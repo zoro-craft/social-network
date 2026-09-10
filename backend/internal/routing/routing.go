@@ -54,7 +54,7 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("GET /groups", middleware.Auth(handlers.GetAllGroupsHandler))
 	mux.HandleFunc("GET /groups/my-groups", middleware.Auth(handlers.GetMYgroups))
 	mux.HandleFunc("POST /groups/{group_id}", middleware.Auth(handlers.GetGroupInfo))
-	mux.HandleFunc("POSt /groups/{group_id}/users", middleware.Auth(users.GetAllUsersNotmemberHandler))
+	mux.HandleFunc("GET /groups/{group_id}/users", middleware.Auth(users.GetAllUsersNotmemberHandler))
 
 	// join request
 	mux.HandleFunc("POST /groups/{group_id}/join", middleware.Auth(handlers.Join_Request_handler))
