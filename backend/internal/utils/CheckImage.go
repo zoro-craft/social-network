@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const MaxUploadSize = 5 << 20 // 5MB
+const MaxUploadSize = 5 * 1024 * 1024
 
 var AllowedImageExtensions = map[string]bool{
 	".jpg":  true,
