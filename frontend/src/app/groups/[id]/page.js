@@ -3,16 +3,31 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import styles from '@/app/styles/group-details.module.css';
+import { useEffect, useState } from 'react';
+import { apiRequest } from '@/utils/api';
 
 export default function GroupDetailsPage() {
     const { auth, loading } = useRequireAuth();
     const router = useRouter();
     const { id } = useParams();
+    const [group, setGroupInfo] = useState(null);
 
-    const group = {
-        titel: 'Design Club',
-        description: 'A place for designers to share ideas, feedback, and inspiration.',
-    };
+    useEffect(() => {
+        if (!auth.authenticated || !id) return;
+
+        const fetchGroupInfo = async () => {
+            try {
+                const res = await apiRequest(`/groups/${id}`, "POST");
+                setGroupInfo(res);
+
+            } catch (error) {
+                setGroupInfo(null);
+            }
+        };
+
+        fetchGroupInfo();
+    }, [auth.authenticated, id]);
+
 
     if (loading) {
         return (
@@ -23,6 +38,8 @@ export default function GroupDetailsPage() {
     }
 
     if (!auth.authenticated) return null;
+
+    if (!group) return null;
 
     const goTo = (path) => router.push(`/groups/${id}${path}`);
 
@@ -49,11 +66,6 @@ export default function GroupDetailsPage() {
                         <h1 className={styles.title}>{group.titel}</h1>
                         <p className={styles.description}>{group.description}</p>
 
-                        <div className={styles.meta}>
-                            <span className={styles.memberBadge}>
-                                {group.member_count} members
-                            </span>
-                        </div>
                     </div>
                 </header>
 
