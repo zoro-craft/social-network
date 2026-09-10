@@ -1,7 +1,9 @@
 package profile
 
 import (
+	"database/sql"
 	"net/http"
+	"strings"
 
 	"zone/internal/auth"
 	"zone/internal/database"
@@ -55,8 +57,27 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 	lastName := r.FormValue("last_name")
 	email := r.FormValue("email")
 	dob := r.FormValue("date_of_birth")
-	nickname := r.FormValue("nickname")
+	nickname := strings.TrimSpace(r.FormValue("nickname"))
 	aboutMe := r.FormValue("about_me")
+
+	// Empty nickname is stored as NULL so every user can
+	// leave it blank (nickname column has a UNIQUE constraint).
+	var nicknameValue any
+	if nickname != "" {
+		var existingID int
+		err = database.Database.QueryRow(
+			"SELECT id FROM users WHERE nickname = ? AND id != ?",
+			nickname, userID,
+		).Scan(&existingID)
+		if err == nil {
+			utils.HandleError(w, http.StatusConflict, "Nickname already exists")
+			return
+		} else if err != sql.ErrNoRows {
+			utils.HandleError(w, http.StatusInternalServerError, "Failed to update profile")
+			return
+		}
+		nicknameValue = nickname
+	}
 
 	removeAvatar := r.FormValue("remove_avatar") == "on"
 
@@ -82,14 +103,14 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 			UPDATE users 
 			SET first_name = ?, last_name = ?, email = ?, date_of_birth = ?, nickname = ?, about_me = ?, is_private = ?, avatar = ? 
 			WHERE id = ?`,
-			firstName, lastName, email, dob, nickname, aboutMe, isPrivate, avatarPath, userID,
+			firstName, lastName, email, dob, nicknameValue, aboutMe, isPrivate, avatarPath, userID,
 		)
 	} else {
 		_, err = database.Database.Exec(`
 			UPDATE users 
 			SET first_name = ?, last_name = ?, email = ?, date_of_birth = ?, nickname = ?, about_me = ?, is_private = ? 
 			WHERE id = ?`,
-			firstName, lastName, email, dob, nickname, aboutMe, isPrivate, userID,
+			firstName, lastName, email, dob, nicknameValue, aboutMe, isPrivate, userID,
 		)
 	}
 
