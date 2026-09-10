@@ -50,7 +50,6 @@ export default function RegisterPage() {
 
     try {
       await apiRequest("/register", "POST", submitData, true);
-      alert("Account created successfully!");
       router.push("/login");
     } catch (err) {
       setError(err.message);
@@ -77,7 +76,6 @@ export default function RegisterPage() {
                 type="text"
                 className="glass-input"
                 name="first_name"
-                placeholder="John"
                 required
                 maxLength={30}
                 onChange={handleChange}
@@ -89,7 +87,6 @@ export default function RegisterPage() {
                 type="text"
                 className="glass-input"
                 name="last_name"
-                placeholder="Doe"
                 required
                 maxLength={30}
                 onChange={handleChange}
@@ -104,7 +101,6 @@ export default function RegisterPage() {
                 type="email"
                 className="glass-input"
                 name="email"
-                placeholder="you@example.com"
                 required
                 maxLength={100}
                 onChange={handleChange}
@@ -129,7 +125,6 @@ export default function RegisterPage() {
                 type="password"
                 className="glass-input"
                 name="password"
-                placeholder="••••••••"
                 required
                 minLength={8}
                 maxLength={50}
@@ -142,7 +137,6 @@ export default function RegisterPage() {
                 type="text"
                 className="glass-input"
                 name="nickname"
-                placeholder="cooluser42"
                 maxLength={30}
                 onChange={handleChange}
               />
@@ -155,7 +149,6 @@ export default function RegisterPage() {
                 className="glass-textarea"
                 name="about_me"
                 rows="1"
-                placeholder="Tell us about yourself..."
                 maxLength={200}
                 onChange={handleChange}
               />
