@@ -40,10 +40,12 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("POST /profile/toggle-visibility", middleware.Auth(profile.SwitchStatus))
 	mux.HandleFunc("GET /users/search", middleware.Auth(users.SearchUsersAPI))
 	// followers routes
-	mux.HandleFunc("POST /follow/{id}", middleware.Auth(followers.FollowAPI))
+	mux.HandleFunc("GET /profile/{id}/followers", middleware.Auth(followers.GetFollowersAPI))
+	mux.HandleFunc("GET /profile/{id}/following", middleware.Auth(followers.GetFollowingAPI))
+	mux.HandleFunc("POST /follow/{id}", middleware.Auth(followers.ToggleFollowAPI))
 	mux.HandleFunc("POST /follow/{id}/unfollow", middleware.Auth(followers.UnfollowAPI))
-	mux.HandleFunc("POST /follow/{id}/accept", middleware.Auth(followers.AcceptFollowAPI))
-	mux.HandleFunc("POST /follow/{id}/decline", middleware.Auth(followers.DeclineFollowAPI))
+	mux.HandleFunc("GET /follow/requests", middleware.Auth(followers.GetRequestsAPI))
+	mux.HandleFunc("POST /follow/{id}/{action}", middleware.Auth(followers.RespondRequestAPI))
 
 	// media & uploads routes
 	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
