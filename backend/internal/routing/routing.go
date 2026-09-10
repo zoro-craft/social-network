@@ -41,6 +41,7 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("POST /profile/toggle-visibility", middleware.Auth(profile.SwitchStatus))
 	mux.HandleFunc("GET /users/search", middleware.Auth(users.SearchUsersAPI))
 	mux.HandleFunc("GET /users", middleware.Auth(users.GetAllUsersHandler))
+
 	// followers routes
 	mux.HandleFunc("GET /profile/{id}/followers", middleware.Auth(followers.GetFollowersAPI))
 	mux.HandleFunc("GET /profile/{id}/following", middleware.Auth(followers.GetFollowingAPI))
@@ -56,6 +57,9 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("POST /groups", middleware.Auth(handlers.CreatGroupeHandler))
 	mux.HandleFunc("GET /groups", middleware.Auth(handlers.GetAllGroupsHandler))
 	mux.HandleFunc("GET /groups/my-groups", middleware.Auth(handlers.GetMYgroups))
+	mux.HandleFunc("GET /groups/{group_id}/posts", middleware.Auth(posts.GetPostsByGroupAPI))
+	mux.HandleFunc("GET /groups/{group_id}/comments", middleware.Auth(comments.GetCommentsByGroupAPI))
+
 	// join request
 	mux.HandleFunc("POST /groups/{group_id}/join", middleware.Auth(handlers.Join_Request_handler))
 	mux.HandleFunc("POST /join_requests/{request_id}/accept", middleware.Auth(handlers.Accept_Join_Request))
@@ -65,8 +69,10 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("POST /groups/{group_id}/invitations", middleware.Auth(handlers.InvitationsHandler))
 	mux.HandleFunc("POST /invitations/{invitation_id}/accept", middleware.Auth(handlers.AcceptInvitationResponse))
 	mux.HandleFunc("POST /invitations/{invitation_id}/reject", middleware.Auth(handlers.RejectInvitationResponse))
+
 	// notifications
 	mux.HandleFunc("GET /notifications", middleware.Auth(handlers.NotifcationHandler))
+
 	// global middleware
 	return middleware.CORS(limiter.Middleware(mux.ServeHTTP))
 }
