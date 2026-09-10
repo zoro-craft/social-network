@@ -1,28 +1,38 @@
 'use client';
 
-import { apiRequest } from "@/utils/api";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { useRouter } from "next/navigation";
-import GroupCard from '@/app/groups/GroupCard';
-import MyGroupsList from '@/app/groups/MyGroupsList';
-import styles from '../styles/groups.module.css';
+import { apiRequest } from '@/utils/api';
+import GroupCard from './GroupCard';
+import styles from '@/app/styles/groups.module.css';
 
 export default function Groupspage() {
     const { auth, loading } = useRequireAuth();
-    const [groups, setGroups] = useState([]);
-    const [activeTab, setActiveTab] = useState('all');
-
     const router = useRouter();
+
+    const [allGroups, setAllGroups] = useState([]);
+    const [groups, setGroups] = useState([]);
 
     useEffect(() => {
         if (!auth.authenticated) return;
 
         const fetchGroups = async () => {
             try {
-                const res = await apiRequest("/groups");
-                setGroups(res || []);
-            } catch {
+                const res = await apiRequest('/groups');
+
+                const all = res || [];
+
+                // Default: show groups where user is NOT a member
+                const notMember = all.filter(
+                    (group) => group.is_member === false
+                );
+
+                setAllGroups(all);
+                setGroups(notMember);
+            } catch (error) {
+                console.log(error);
+                setAllGroups([]);
                 setGroups([]);
             }
         };
@@ -30,10 +40,30 @@ export default function Groupspage() {
         fetchGroups();
     }, [auth.authenticated]);
 
+    // All Groups
+    const showAllGroups = () => {
+        const notMember = allGroups.filter(
+            (group) => group.is_member === false
+        );
+
+        setGroups(notMember);
+    };
+
+    // My Groups
+    const showMyGroups = () => {
+        const member = allGroups.filter(
+            (group) => group.is_member === true
+        );
+
+        setGroups(member);
+    };
+
     if (loading) {
         return (
             <div className={styles.page}>
-                <p className={styles.mutedText}>Loading groups...</p>
+                <p className={styles.mutedText}>
+                    Loading groups...
+                </p>
             </div>
         );
     }
@@ -43,58 +73,60 @@ export default function Groupspage() {
     return (
         <main className={styles.page}>
             <div className={styles.header}>
-                <h1 className={styles.pageTitle}>Groups</h1>
+                <h1 className={styles.pageTitle}>
+                    Groups
+                </h1>
 
                 <div className={styles.headerActions}>
+
                     <button
                         className={styles.createButton}
                         onClick={() => router.push('/groups/create')}
                     >
-                        <span className={styles.buttonIcon} aria-hidden="true">
+                        <span
+                            className={styles.buttonIcon}
+                            aria-hidden="true"
+                        >
                             +
                         </span>
+
                         Create Group
                     </button>
 
                     <button
                         className={styles.browseButton}
-                        onClick={() => setActiveTab('all')}
+                        onClick={showAllGroups}
                     >
                         All Groups
                     </button>
 
                     <button
                         className={styles.browseButton}
-                        onClick={() => setActiveTab('my')}
+                        onClick={showMyGroups}
                     >
                         My Groups
                     </button>
+
                 </div>
             </div>
 
-            <section className={styles.groupsSection} id="my-groups">
-                <h2 className={styles.sectionTitle}>
-                    {activeTab === 'all' ? 'All Groups' : 'My Groups'}
-                </h2>
+            <section className={styles.groupsSection}>
+                <div className={styles.container}>
 
-                {activeTab === 'all' ? (
-                    groups.length === 0 ? (
+                    {groups.length === 0 ? (
                         <p className={styles.emptyState}>
-                            No groups yet. Create the first one!
+                            No groups found.
                         </p>
                     ) : (
-                        <div className={styles.container}>
-                            {groups.map((group) => (
-                                <GroupCard
-                                    key={group.id}
-                                    group={group}
-                                />
-                            ))}
-                        </div>
-                    )
-                ) : (
-                    <MyGroupsList />
-                )}
+                        groups.map((group) => (
+                            <GroupCard
+                                key={group.id}
+                                group={group}
+                            />
+                        ))
+                    )}
+
+                </div>
             </section>
         </main>
     );

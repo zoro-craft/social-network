@@ -64,6 +64,7 @@ func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": " invitation accept successfully!"})
+	
 }
 
 func RejectInvitationResponse(w http.ResponseWriter, r *http.Request) {
