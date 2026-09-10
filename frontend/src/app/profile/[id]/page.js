@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -8,55 +7,68 @@ import "@/app/styles/profile.css";
 const BACKEND_URL = "http://localhost:8080";
 
 export default function ProfilePage() {
-  const { id: profileId } = useParams();
+  const { id } = useParams();
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [modal, setModal] = useState({ type: null, users: [] });
 
   useEffect(() => {
-    fetch(`${BACKEND_URL}/profile/${profileId}`, { credentials: "include" })
+    fetch(`${BACKEND_URL}/profile/${id}`, { credentials: "include" })
       .then((res) => res.json())
-      .then(setProfile)
-      .catch((err) => console.error("Error fetching profile:", err))
-      .finally(() => setLoading(false));
-  }, [profileId]);
+      .then(setProfile);
+  }, [id]);
 
-  const handleFollowToggle = async () => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/follow/${profileId}`, { method: "POST", credentials: "include" });
-      if (res.ok) {
-        const data = await res.json();
-        setProfile((prev) => ({ ...prev, relation: data.new_status }));
-      }
-    } catch (error) { console.error("Follow action failed:", error); }
+  const fetchApi = async (endpoint, method = "POST", body = null) => {
+    const options = { method, credentials: "include" };
+    if (body && method !== "GET") options.body = body; 
+    
+    const res = await fetch(`${BACKEND_URL}${endpoint}`, options);
+    return res.ok ? res.json() : Promise.reject(await res.json());
   };
 
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    setErrorMsg("");
-    try {
-      const res = await fetch(`${BACKEND_URL}/profile/edit`, {
-        method: "POST",
-        credentials: "include",
-        body: new FormData(e.target),
-      });
-      if (res.ok) return window.location.reload();
+const handleFollow = () => {
+    fetchApi(`/follow/${id}`).then((data) => {
+      const newRelation = data.status || data.new_status || "none";
+      let newCount = profile.followers_count || 0;
       
-      const errData = await res.json().catch(() => null);
-      setErrorMsg([400, 413].includes(res.status) 
-        ? "Image too large. Please upload a smaller one." 
-        : errData?.error || "Failed to update profile.");
-    } catch (error) {
-      setErrorMsg("Network error. Please check your connection.");
-    }
+      if (profile.relation === "accepted" && newRelation !== "accepted") {
+        newCount = Math.max(0, newCount - 1); 
+      } else if (profile.relation !== "accepted" && newRelation === "accepted") {
+        newCount += 1; 
+      }
+
+      setProfile({ 
+        ...profile, 
+        relation: newRelation, 
+        followers_count: newCount 
+      });
+    }).catch(err => console.error("Error toggling follow:", err));
   };
 
-  if (loading) return <div className="profile-wrapper">Loading...</div>;
-  if (!profile) return <div className="profile-wrapper">User not found</div>;
+  const handleEdit = (e) => {
+    e.preventDefault();
+    fetchApi("/profile/edit", "POST", new FormData(e.target))
+      .then(() => window.location.reload())
+      .catch((err) => alert(err.error || "Update failed"));
+  };
 
-  const { user, relation, followers_count, following_count } = profile;
-  const avatarSrc = user.avatar ? `${BACKEND_URL}${user.avatar}` : "/default-avatar.png";
+ const openModal = (type) => {
+    if (profile.user.is_private && profile.relation !== "self" && profile.relation !== "accepted") {
+      return; 
+    }
+    
+    fetchApi(`/profile/${id}/${type}`, "GET")
+      .then((users) => {
+        setModal({ type, users: users || [] });
+      })
+      .catch((err) => {
+        console.error("Error fetching list:", err);
+      });
+  };
+
+  if (!profile) return <div className="profile-wrapper">Loading...</div>;
+
+  const { user, relation, followers_count, following_count, posts } = profile;
   const isPrivateHidden = user.is_private && relation !== "self" && relation !== "accepted";
 
   return (
@@ -65,58 +77,53 @@ export default function ProfilePage() {
         
         {/* Left Sidebar */}
         <div className="glass-card left-sidebar">
-          <div className="avatar-container">
-            <img src={avatarSrc} alt="Avatar" className="avatar-img" />
-            <span className="online-dot"></span>
-          </div>
-          
+          <img src={user.avatar ? `${BACKEND_URL}${user.avatar}` : "/default-avatar.png"} className="avatar-img" alt="Avatar" />
           <h2 className="user-name">{user.first_name} {user.last_name}</h2>
           <p className="user-handle">@{user.nickname || user.first_name}</p>
           <span className="privacy-badge">{user.is_private ? "Private Profile" : "Public Profile"}</span>
+          
+          {user.date_of_birth && <p style={{ color: "#94a3b8", fontSize: "0.9rem", margin: "10px 0" }}>Born: {user.date_of_birth.split("T")[0]}</p>}
           {user.about_me && <p className="about-me">{user.about_me}</p>}
 
           {/* Action Button */}
           {relation === "self" ? <button onClick={() => setIsEditing(true)} className="action-btn btn-edit">Edit Profile</button>
-          : relation === "accepted" ? <button onClick={handleFollowToggle} className="action-btn btn-unfollow">Unfollow</button>
-          : relation === "pending" ? <button onClick={handleFollowToggle} className="action-btn btn-pending">Cancel Request</button>
-          : <button onClick={handleFollowToggle} className="action-btn btn-follow">Follow</button>}
+          : relation === "accepted" ? <button onClick={handleFollow} className="action-btn btn-unfollow">Unfollow</button>
+          : relation === "pending" ? <button onClick={handleFollow} className="action-btn btn-pending">Cancel Request</button>
+          : <button onClick={handleFollow} className="action-btn btn-follow">Follow</button>}
         </div>
 
         {/* Right Area */}
         <div className="right-area">
           <div className="stats-grid">
-            <div className="glass-card stat-item"><p className="stat-label">Followers</p><p className="stat-value">{followers_count || 0}</p></div>
-            <div className="glass-card stat-item"><p className="stat-label">Following</p><p className="stat-value">{following_count || 0}</p></div>
-            <div className="glass-card stat-item"><p className="stat-label">Posts</p><p className="stat-value">{profile.posts?.length || 0}</p></div>
+            <div className="glass-card stat-item" onClick={() => openModal("followers")} style={{ cursor: isPrivateHidden ? "default" : "pointer" }}>
+              <p className="stat-label">Followers</p> 
+              <p className="stat-value">{followers_count || 0}</p>
+            </div>
+            <div className="glass-card stat-item" onClick={() => openModal("following")} style={{ cursor: isPrivateHidden ? "default" : "pointer" }}>
+              <p className="stat-label">Following</p> 
+              <p className="stat-value">{following_count || 0}</p>
+            </div>
+            <div className="glass-card stat-item">
+              <p className="stat-label">Joined</p> 
+              <p className="stat-value">{user.created_at ? user.created_at.split("-")[0] : "Recently"}</p>
+            </div>
           </div>
 
+          {/* Posts Grid */}
           <div className="glass-card">
-            <h3 style={{ marginTop: 0, marginBottom: "1rem" }}>Posts</h3>
-
-            {isPrivateHidden ? (
-              <div className="empty-state">
-                <p>🔒 Private account. Follow to see posts.</p>
-              </div>
-            ) : profile.posts && profile.posts.length > 0 ? (
+            <h3 style={{ marginTop: 0 }}>Posts</h3>
+            {isPrivateHidden ? <p className="empty-state">🔒 Private account.</p> : (
               <div className="posts-grid">
-                {profile.posts.map((post) => (
-                  <Link key={post.id} href={`/posts/comment/${post.id}`} className="post-tile">
-                    {post.image ? (
-                      <img src={`${BACKEND_URL}${post.image}`} alt="" className="post-tile-img" />
+                {posts?.length ? posts.map((p) => (
+                  <Link key={p.id} href={`/posts/comment/${p.id}`} className="post-tile">
+                    {p.image ? (
+                        <img src={`${BACKEND_URL}${p.image}`} className="post-tile-img" alt="" />
                     ) : (
-                      <div className="post-tile-placeholder">
-                        <span className="placeholder-icon">📝</span>
-                        <p className="placeholder-text">{post.content}</p>
-                      </div>
+                        <p className="placeholder-text" style={{padding: "10px", textAlign: "center"}}>{p.title}</p>
                     )}
-                    <div className="post-tile-overlay">
-                      <span className="post-tile-title">{post.title || "Untitled"}</span>
-                    </div>
                   </Link>
-                ))}
+                )) : <p className="empty-state">No posts yet.</p>}
               </div>
-            ) : (
-              <div className="empty-state">No posts yet.</div>
             )}
           </div>
         </div>
@@ -124,39 +131,56 @@ export default function ProfilePage() {
 
       {/* Edit Modal */}
       {isEditing && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="modal-overlay" onClick={() => setIsEditing(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2 style={{ marginTop: 0 }}>Edit Profile</h2>
-            {errorMsg && <div className="error-alert">⚠️ {errorMsg}</div>}
-
-            <form onSubmit={handleEditSubmit} className="edit-form">
-              <div className="form-group privacy-toggle">
-                <label>Private Profile</label>
-                <input type="checkbox" name="is_private" defaultChecked={user.is_private} />
-              </div>
-
-              <input type="text" name="first_name" className="form-input" defaultValue={user.first_name} placeholder="First Name" required maxLength={30} />
-              <input type="text" name="last_name" className="form-input" defaultValue={user.last_name} placeholder="Last Name" required maxLength={30} />
-              <input type="email" name="email" className="form-input" defaultValue={user.email} placeholder="Email" required maxLength={100} />
-              <input type="date" name="date_of_birth" className="form-input" defaultValue={user.date_of_birth?.split("T")[0] || ""} required />
-              <input type="text" name="nickname" className="form-input" defaultValue={user.nickname} placeholder="Nickname (Optional)" maxLength={30} />
-              <textarea name="about_me" className="form-input" defaultValue={user.about_me} placeholder="About Me (Optional)" rows="3" maxLength={200}></textarea>
-
-              <div className="form-group">
-                <label className="stat-label">Avatar / Image (JPEG, PNG, GIF)</label>
-                <input type="file" name="avatar" accept="image/jpeg, image/png, image/gif" className="form-file" />
-                {user.avatar && (
-                  <label className="remove-avatar-label">
-                    <input type="checkbox" name="remove_avatar" /> Remove current avatar
-                  </label>
-                )}
-              </div>
-
-              <div className="modal-actions">
-                <button type="button" onClick={() => setIsEditing(false)} className="action-btn btn-unfollow" style={{ marginTop: 0 }}>Cancel</button>
-                <button type="submit" className="action-btn btn-follow" style={{ marginTop: 0 }}>Save Changes</button>
-              </div>
+            <form onSubmit={handleEdit} className="edit-form">
+              <input name="first_name" defaultValue={user.first_name} className="form-input" required placeholder="First Name" />
+              <input name="last_name" defaultValue={user.last_name} className="form-input" required placeholder="Last Name" />
+              <input name="email" type="email" defaultValue={user.email} className="form-input" required placeholder="Email" />
+              <input name="date_of_birth" type="date" defaultValue={user.date_of_birth?.split("T")[0]} className="form-input" required />
+              <textarea name="about_me" defaultValue={user.about_me} className="form-input" placeholder="About me" />
+              <label className="privacy-toggle">
+                <input type="checkbox" name="is_private" defaultChecked={!!user.is_private} />
+                Private Profile
+              </label>
+              <input type="file" name="avatar" className="form-file" accept="image/*" />
+              <button type="submit" className="action-btn btn-follow">Save</button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Users List Modal (Followers / Following) */}
+      {modal.type && (
+        <div className="modal-overlay" onClick={() => setModal({ type: null, users: [] })}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "400px" }}>
+            <h2 style={{ marginTop: 0, textTransform: "capitalize" }}>{modal.type}</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "15px", maxHeight: "300px", overflowY: "auto" }}>
+              {modal.users?.length ? modal.users.map((u) => {
+                const itemStyle = {textDecoration: "none", display: "flex", alignItems: "center", gap: "10px"};
+                if (user.is_private && relation !== "self") {
+                  return (
+                    <div key={u.id} className="user-handle" style={itemStyle}>
+                      <img src={u.avatar ? `${BACKEND_URL}${u.avatar}` : "/default-avatar.png"} style={{width: 40, height: 40, borderRadius: "50%"}} alt="" />
+                      <div>
+                        <div style={{ color: "white", fontWeight: "bold" }}>{u.first_name} {u.last_name}</div>
+                        <div style={{ color: "#94a3b8", fontSize: "0.8rem" }}>@{u.nickname || u.first_name}</div>
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <Link href={`/profile/${u.id}`} key={u.id} className="user-handle" onClick={() => setModal({type: null})} style={itemStyle}>
+                    <img src={u.avatar ? `${BACKEND_URL}${u.avatar}` : "/default-avatar.png"} style={{width: 40, height: 40, borderRadius: "50%"}} alt="" />
+                    <div>
+                      <div style={{ color: "white", fontWeight: "bold" }}>{u.first_name} {u.last_name}</div>
+                      <div style={{ color: "#94a3b8", fontSize: "0.8rem" }}>@{u.nickname || u.first_name}</div>
+                    </div>
+                  </Link>
+                );
+              }) : <p style={{ color: "#94a3b8", textAlign: "center" }}>No {modal.type} found.</p>}
+            </div>
           </div>
         </div>
       )}
