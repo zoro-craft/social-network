@@ -12,8 +12,6 @@ export default function Userlistpage() {
     const { id } = useParams();
     const [users, setUsers] = useState([]);
     
-    const [invitedUsers, setInvitedUsers] = useState(new Set());
-
     useEffect(() => {
         if (!auth.authenticated || !id ) return;
         const Fetchusers = async () => {
@@ -46,12 +44,6 @@ export default function Userlistpage() {
             }
         );
 
-        setInvitedUsers((prev) => {
-            const newSet = new Set(prev);
-            newSet.add(userID);
-            return newSet;
-        });
-
     } catch (error) {
         console.error("Invitation error:", error);
     }
@@ -65,7 +57,6 @@ export default function Userlistpage() {
             ) : (
                 <div className={styles.grid}>
                     {users.map((user) => {
-                        const isInvited = invitedUsers.has(user.id);
 
                         return (
                             <div key={user.id} className={styles.card}>
@@ -76,9 +67,8 @@ export default function Userlistpage() {
                                 <button
                                     className={styles.inviteBtn}
                                     onClick={() => inviteUser(user.id)}
-                                    disabled={isInvited}
                                 >
-                                    {isInvited ? "... wait the response" : "Invite"}
+                                    Invite
                                 </button>
                             </div>
                         );
