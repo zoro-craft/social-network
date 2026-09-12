@@ -3,7 +3,6 @@ package reactions
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
 	"net/http"
 	"zone/internal/auth"
 	"zone/internal/database"
@@ -75,14 +74,12 @@ func ReactToPost(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 	if err != nil {
-		log.Printf("ReactToPost: %v", err)
 		utils.HandleError(w, http.StatusInternalServerError, "Could not save reaction")
 		return
 	}
 
 	resp, err := getReactionSummary(req.PostID, userID)
 	if err != nil {
-		log.Printf("ReactToPost summary: %v", err)
 		utils.HandleError(w, http.StatusInternalServerError, "Could not load reaction counts")
 		return
 	}
