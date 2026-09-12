@@ -6,7 +6,6 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useRouter } from "next/navigation";
 import GroupCard from '@/app/groups/GroupCard';
 import MyGroupsList from '@/app/groups/MyGroupsList';
-import styles from '../styles/groups.module.css';
 
 export default function Groupspage() {
     const { auth, loading } = useRequireAuth();
@@ -32,8 +31,8 @@ export default function Groupspage() {
 
     if (loading) {
         return (
-            <div className={styles.page}>
-                <p className={styles.mutedText}>Loading groups...</p>
+            <div className="glass-group-page">
+                <p className="glass-muted-text">Loading groups...</p>
             </div>
         );
     }
@@ -41,30 +40,30 @@ export default function Groupspage() {
     if (!auth.authenticated) return null;
 
     return (
-        <main className={styles.page}>
-            <div className={styles.header}>
-                <h1 className={styles.pageTitle}>Groups</h1>
+        <main className="glass-group-page">
+            <div className="glass-group-header">
+                <h1 className="glass-groups-title">Groups</h1>
 
-                <div className={styles.headerActions}>
+                <div className="glass-header-actions">
                     <button
-                        className={styles.createButton}
+                        className="glass-btn-create"
                         onClick={() => router.push('/groups/create')}
                     >
-                        <span className={styles.buttonIcon} aria-hidden="true">
+                        <span className="glass-btn-icon" aria-hidden="true">
                             +
                         </span>
                         Create Group
                     </button>
 
                     <button
-                        className={styles.browseButton}
+                        className="glass-btn-browse"
                         onClick={() => setActiveTab('all')}
                     >
                         All Groups
                     </button>
 
                     <button
-                        className={styles.browseButton}
+                        className="glass-btn-browse"
                         onClick={() => setActiveTab('my')}
                     >
                         My Groups
@@ -72,18 +71,18 @@ export default function Groupspage() {
                 </div>
             </div>
 
-            <section className={styles.groupsSection} id="my-groups">
-                <h2 className={styles.sectionTitle}>
+            <section className="glass-groups-section" id="my-groups">
+                <h2 className="glass-section-title">
                     {activeTab === 'all' ? 'All Groups' : 'My Groups'}
                 </h2>
 
                 {activeTab === 'all' ? (
                     groups.length === 0 ? (
-                        <p className={styles.emptyState}>
+                        <p className="glass-empty-state">
                             No groups yet. Create the first one!
                         </p>
                     ) : (
-                        <div className={styles.container}>
+                        <div className="glass-groups-grid">
                             {groups.map((group) => (
                                 <GroupCard
                                     key={group.id}
