@@ -5,7 +5,6 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { apiRequest } from '@/utils/api';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import styles from '../../styles/posts.module.css';
 
 export default function CreatGroup() {
   const { auth, loading: authLoading } = useRequireAuth();
@@ -44,11 +43,11 @@ export default function CreatGroup() {
 
   return (
     <div className="glass-page">
-      <div className={`glass-container ${styles.container}`}>
+      <div className="glass-container glass-container-lg">
         <h2>Create Group</h2>
-        <p className={styles.subtitle}>Start a new community</p>
+        <p className="glass-subtitle">Start a new community</p>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit} className="glass-form">
           <div className="glass-input-group">
             <input
               className="glass-input"
@@ -72,7 +71,7 @@ export default function CreatGroup() {
           </div>
 
           <button
-            className={`glass-button ${styles.submitButton}`}
+            className="glass-button"
             type="submit"
             disabled={loading}
           >
