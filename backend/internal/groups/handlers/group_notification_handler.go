@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"zone/internal/auth"
@@ -20,8 +21,9 @@ func NotifcationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notifcation , err := repositories.GetNotificationsByUserID(userID)
+	notifcation, err := repositories.GetNotificationsByUserID(userID)
 	if err != nil {
+		fmt.Println(err)
 		utils.HandleError(w, 500, "failed to get invitations")
 		return
 	}

@@ -1,11 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { apiRequest } from '@/utils/api'; 
-import { handleAcceptInvitation , handleRejectInvitation , handleAcceptRequest , handleRejectRequest } from './utils';
-import styles from '../styles/notifications.module.css';
 
+import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { apiRequest } from '@/utils/api';
+
+import {
+  handleAcceptInvitation,
+  handleRejectInvitation,
+  handleAcceptRequest,
+  handleRejectRequest,
+} from './utils';
+
+import styles from '../styles/notifications.module.css';
 
 export default function NotificationsPage() {
   const { auth, loading } = useRequireAuth();
@@ -28,6 +35,13 @@ export default function NotificationsPage() {
     fetchNotifications();
   }, [auth.authenticated]);
 
+  // Remove notification from UI
+  const removeNotification = (notificationId) => {
+    setNotifications((prev) =>
+      prev.filter((notification) => notification.id !== notificationId)
+    );
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -35,6 +49,7 @@ export default function NotificationsPage() {
   if (!auth.authenticated) {
     return null;
   }
+
   return (
     <div className={styles.container}>
       <h1>Notifications</h1>
@@ -46,50 +61,75 @@ export default function NotificationsPage() {
       ) : (
         <div className={styles.notificationList}>
           {notifications.map((notification) => (
-            <div key={notification.id} className={styles.notification} >
+            <div
+              key={notification.id}
+              className={styles.notification}
+            >
               <div className={styles.content}>
                 <p>{notification.message}</p>
               </div>
+
+              {/* Group Invitation */}
               {notification.type === 'group_invtation' && (
                 <div className={styles.actions}>
                   <button
-                    onClick={() =>
-                      handleAcceptInvitation(notification)
-                    }
+                    onClick={async () => {
+                      const success =
+                        await handleAcceptInvitation(notification);
+
+                      if (success) {
+                        removeNotification(notification.id);
+                      }
+                    }}
                   >
                     Accept
                   </button>
 
                   <button
-                    onClick={() =>
-                      handleRejectInvitation(notification)
-                    }
+                    onClick={async () => {
+                      const success =
+                        await handleRejectInvitation(notification);
+
+                      if (success) {
+                        removeNotification(notification.id);
+                      }
+                    }}
                   >
                     Reject
                   </button>
                 </div>
               )}
 
+              {/* Join Request */}
               {notification.type === 'join_request' && (
                 <div className={styles.actions}>
                   <button
-                    onClick={() =>
-                      handleAcceptRequest(notification)
-                    }
+                    onClick={async () => {
+                      const success =
+                        await handleAcceptRequest(notification);
+
+                      if (success) {
+                        removeNotification(notification.id);
+                      }
+                    }}
                   >
                     Accept
                   </button>
 
                   <button
-                    onClick={() =>
-                      handleRejectRequest(notification)
-                    }
+                    onClick={async () => {
+                      const success =
+                        await handleRejectRequest(notification);
+
+                      if (success) {
+                        removeNotification(notification.id);
+                      }
+                    }}
                   >
                     Reject
                   </button>
                 </div>
               )}
-
             </div>
           ))}
         </div>
@@ -97,3 +137,4 @@ export default function NotificationsPage() {
     </div>
   );
 }
+

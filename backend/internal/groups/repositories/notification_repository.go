@@ -7,7 +7,7 @@ import (
 
 func GetNotificationsByUserID(userID int) ([]models.Notification, error) {
 	rows, err := database.Database.Query(`
-        SELECT id, user_id, type, invitation_id, message, is_read, created_at
+        SELECT id, user_id, type,  COALESCE(invitation_id, 0) , COALESCE(request_id, 0),  message, is_read, created_at
         FROM notifications
         WHERE user_id = ?
         ORDER BY created_at DESC
@@ -27,6 +27,7 @@ func GetNotificationsByUserID(userID int) ([]models.Notification, error) {
 			&notification.UserID,
 			&notification.Type,
 			&notification.InvitationID,
+			&notification.RequestID,
 			&notification.Message,
 			&notification.IsRead,
 			&notification.CreatedAt,
@@ -38,13 +39,12 @@ func GetNotificationsByUserID(userID int) ([]models.Notification, error) {
 		notifications = append(notifications, notification)
 	}
 
-
 	return notifications, nil
 }
 
-
 func DeleteInvitationNotification(userID int, invitationID int) error {
-	_, err := database.Database.Exec(`
+	_, err := database.Database.Exec(
+		`
 		DELETE FROM notifications
 		WHERE user_id = ?
 		AND invitation_id = ?
@@ -58,7 +58,8 @@ func DeleteInvitationNotification(userID int, invitationID int) error {
 }
 
 func DeleteRequestNotification(userID int, Requsestid int) error {
-	_, err := database.Database.Exec(`
+	_, err := database.Database.Exec(
+		`
 		DELETE FROM notifications
 		WHERE user_id = ?
 		AND  request_id = ?

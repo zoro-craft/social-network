@@ -1,6 +1,7 @@
 import { useRouter } from "next/navigation";
 import styles from '@/app/styles/groups.module.css';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { apiRequest } from "@/utils/api";
 
 export default function GroupCard({ group }) {
     const { auth, loading } = useRequireAuth();
@@ -9,14 +10,20 @@ export default function GroupCard({ group }) {
     if (loading) return null;
 
     const isMember = group.is_member;
-
+    const join = async () => {
+        if (!auth.authenticated) return
+        try {
+            await apiRequest(`/groups/${group.id}/join`, 'POST')
+        } catch (error) {
+            console.log('faild to request to join to groupe', error)
+        }
+    }
     const enterGroup = () => {
         router.push(`/groups/${group.id}`);
     };
 
     return (
         <div className={styles.card}>
-
             <div className={styles.groupIcon} aria-hidden="true">
                 <span className={styles.personOne} />
                 <span className={styles.personTwo} />
@@ -32,6 +39,7 @@ export default function GroupCard({ group }) {
                 </p>
             </div>
 
+
             {isMember ? (
                 <button
                     className={styles.actionButton}
@@ -42,6 +50,7 @@ export default function GroupCard({ group }) {
             ) : (
                 <button
                     className={styles.actionButton}
+                    onClick={join}
                 >
                     Request to join
                 </button>

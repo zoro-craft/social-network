@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -11,6 +12,7 @@ import (
 )
 
 func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("221221")
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, 405, http.StatusText(405))
 		return
@@ -86,6 +88,7 @@ func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
 }
 
 func Reject_Join_Request(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("333333")
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, 405, http.StatusText(405))
 		return
