@@ -8,7 +8,6 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { API_BASE } from '@/utils/api';
 import formatDate from '@/utils/format';
 import Avatar from '@/components/Avatar';
-import styles from '../../../styles/posts.module.css';
 
 export default function CommentPage() {
   const { id } = useParams();
@@ -78,7 +77,7 @@ export default function CommentPage() {
   if (loading) {
     return (
       <div className="glass-feed-page">
-        <p className={styles.mutedText}>Loading...</p>
+        <p className="glass-muted-text">Loading...</p>
       </div>
     );
   }
@@ -86,16 +85,16 @@ export default function CommentPage() {
   if (!post) {
     return (
       <div className="glass-feed-page">
-        <p className={styles.mutedText}>Post not found</p>
+        <p className="glass-muted-text">Post not found</p>
       </div>
     );
   }
 
   return (
     <div className="glass-feed-page">
-      <div className={`glass-post-card ${styles.postContainer}`}>
+      <div className="glass-post-card glass-post-container">
         {/* Original Post */}
-        <div className={styles.originalPost}>
+        <div className="glass-original-post">
           <div className="glass-post-header">
             <span className="glass-post-author">
               Posted by {post.full_name}
@@ -114,9 +113,9 @@ export default function CommentPage() {
           <p className="glass-post-content">{post.content}</p>
         </div>
 
-        <h2 className={styles.commentsHeading}>Comments</h2>
+        <h2 className="glass-comments-heading">Comments</h2>
 
-        <form onSubmit={handleSubmit} className={styles.commentForm}>
+        <form onSubmit={handleSubmit} className="glass-comment-form">
           <div className="glass-input-group">
             <input
               className="glass-input"
@@ -127,8 +126,8 @@ export default function CommentPage() {
             />
           </div>
 
-          <div className={styles.commentFormRow}>
-            <label className={`glass-file-label ${styles.fileLabelInline}`}>
+          <div className="glass-comment-form-row">
+            <label className="glass-file-label glass-file-label-inline">
               <span>Attach Image:</span>
               <input
                 className="glass-file-input"
@@ -139,7 +138,7 @@ export default function CommentPage() {
               />
             </label>
             <button
-              className={`glass-button ${styles.submitButtonInline}`}
+              className="glass-button glass-button-inline"
               type="submit"
               disabled={submitting}
             >
@@ -149,25 +148,25 @@ export default function CommentPage() {
         </form>
 
         {comments.length === 0 && (
-          <p className={styles.emptyComments}>No comments yet. Be the first!</p>
+          <p className="glass-muted-text glass-empty-comments">No comments yet. Be the first!</p>
         )}
 
-        <div className={styles.commentsList}>
+        <div className="glass-comments-list">
           {comments.map((c) => (
-            <div key={c.id} className={styles.commentCard}>
+            <div key={c.id} className="glass-comment-card">
               <div
                 onClick={() => router.push(`/profile/${c.user_id}`)}
-                className={styles.commentHeader}
+                className="glass-comment-header"
               >
                 <Avatar src={c.avatar} name={c.first_name} size={32} />
-                <span className={styles.commentAuthor}>{c.first_name}</span>
-                <span className={styles.commentDate}>
+                <span className="glass-comment-author">{c.first_name}</span>
+                <span className="glass-comment-date">
                   {formatDate(c.created_at)}
                 </span>
               </div>
 
               <p
-                className={`${styles.commentContent} ${c.image ? styles.commentContentWithImage : ''}`}
+                className={`glass-comment-content ${c.image ? 'glass-comment-content-with-image' : ''}`}
               >
                 {c.content}
               </p>
@@ -175,7 +174,7 @@ export default function CommentPage() {
               {c.image && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  className={styles.commentImage}
+                  className="glass-comment-image"
                   src={`${API_BASE}${c.image}`}
                   alt=""
                 />
@@ -186,7 +185,7 @@ export default function CommentPage() {
 
         {!loading && hasMore && (
           <button
-            className={`glass-button ${styles.loadOlderButton}`}
+            className="glass-button glass-load-more"
             onClick={loadMoreComments}
             disabled={loadingMore}
           >
