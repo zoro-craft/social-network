@@ -1,0 +1,192 @@
+
+@media (max-width: 900px) {
+  .glass-group-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-layout {
+    flex-direction: column;
+  }
+
+  .left-sidebar {
+    flex: none;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .glass-group-page {
+    padding: 28px 20px 36px;
+  }
+
+  .glass-header-card {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .glass-group-icon--lg {
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .glass-navbar {
+    padding: 0 14px;
+  }
+
+  .glass-nav-search {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .glass-nav-actions {
+    gap: 4px;
+  }
+
+  .glass-page {
+    padding: 24px 16px;
+  }
+
+  .glass-container {
+    padding: 28px 24px;
+  }
+
+  .glass-container-register {
+    max-width: 480px;
+    padding: 24px 20px;
+  }
+
+  .glass-row {
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 0;
+  }
+
+  .glass-row .glass-input-group {
+    margin-bottom: 12px;
+  }
+
+  .glass-container h2 {
+    font-size: 22px;
+  }
+
+  .glass-container p {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .glass-feed-page {
+    padding: 28px 16px;
+  }
+
+  .glass-feed-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .glass-create-post-button {
+    width: 100%;
+  }
+
+  .glass-feed-title {
+    text-align: center;
+  }
+
+  .glass-post-card {
+    padding: 18px;
+  }
+
+  .glass-input,
+  .glass-textarea {
+    padding: 11px 12px;
+    font-size: 14px;
+  }
+
+  .glass-button {
+    padding: 11px 16px;
+  }
+
+  .glass-group-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .glass-header-actions {
+    width: 100%;
+  }
+
+  .glass-groups-title {
+    font-size: 26px;
+  }
+
+  .glass-groups-grid,
+  .glass-invite-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .glass-group-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .glass-comment-form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .glass-file-label-inline {
+    margin-bottom: 8px;
+  }
+
+  .glass-notifications-page {
+    padding: 24px 14px;
+  }
+
+  .glass-notification-card {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .glass-notification-actions {
+    width: 100%;
+  }
+
+  .glass-notification-actions button {
+    flex: 1;
+  }
+
+  .glass-message-type {
+    align-self: flex-start;
+  }
+
+  .glass-search-page {
+    padding: 24px 16px;
+  }
+
+  .profile-wrapper {
+    padding: 1.25rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .posts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .glass-post-container {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .glass-invite-top,
+  .glass-group-info {
+    text-align: center;
+  }
+}
