@@ -1,0 +1,127 @@
+
+.glass-notifications-page {
+  width: 100%;
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.glass-notifications-page h1 {
+  margin: 0 0 24px;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.glass-notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.glass-notification-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: transform var(--transition), box-shadow var(--transition),
+    border-color var(--transition);
+}
+
+.glass-notification-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.glass-notification-unread {
+  border-left: 3px solid var(--accent);
+  background: var(--bg-elevated);
+}
+
+.glass-notification-read {
+  opacity: 0.75;
+}
+
+.glass-notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.glass-notification-content p {
+  margin: 0 0 6px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.glass-notification-content small {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.glass-notification-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.glass-notification-actions button {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  transition: background var(--transition), transform 0.15s ease,
+    border-color var(--transition);
+}
+
+.glass-notification-actions button:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-border);
+  transform: translateY(-1px);
+}
+
+.glass-notification-actions button:active {
+  transform: translateY(0);
+}
+
+.glass-notification-actions button:first-child {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--bg);
+}
+
+.glass-notification-actions button:first-child:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.glass-notification-empty {
+  padding: 48px 0;
+  text-align: center;
+  color: var(--text-muted);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+}
+
+.glass-message-type {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  border: 1px solid var(--border-strong);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
