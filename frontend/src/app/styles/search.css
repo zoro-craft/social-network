@@ -1,0 +1,77 @@
+
+.glass-search-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  color: var(--text-primary);
+}
+
+.glass-search-input {
+  width: 100%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  padding: 14px 16px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition),
+    background var(--transition);
+}
+
+.glass-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.glass-search-input:focus {
+  background: var(--bg-hover);
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.glass-search-status {
+  color: var(--text-muted);
+  font-size: 14px;
+  text-align: center;
+  padding: 32px 0;
+  margin: 0;
+}
+
+.glass-search-results {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.glass-search-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition),
+    transform 0.15s ease, box-shadow var(--transition);
+}
+
+.glass-search-item:hover {
+  transform: translateY(-1px);
+  background: var(--bg-elevated);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.glass-search-item img {
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+}
+
+.glass-search-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
