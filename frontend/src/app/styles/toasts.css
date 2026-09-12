@@ -1,0 +1,33 @@
+/* ═══════════════════════════════════════════════════════════════
+   TOASTS — global toast notifications
+   ═══════════════════════════════════════════════════════════════ */
+
+.glass-toast {
+  position: fixed;
+  top: calc(var(--nav-height) + 24px);
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 18px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  pointer-events: none;
+  max-width: 340px;
+  animation: toastIn 0.25s ease;
+}
+
+.glass-toast-error {
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-border);
+  color: var(--danger);
+}
+
+.glass-toast-success {
+  background: rgba(125, 200, 140, 0.12);
+  border: 1px solid rgba(125, 200, 140, 0.35);
+  color: var(--success);
+}

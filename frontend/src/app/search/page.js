@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import debounce from 'lodash/debounce';
 import { API_BASE } from '@/utils/api';
 import Avatar from '@/components/Avatar';
-import styles from '../styles/search.module.css';
 import { useAuth } from '@/app/context/AuthContext';
 
 export default function SearchPage() {
@@ -59,9 +58,9 @@ export default function SearchPage() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className="glass-search-page">
       <input
-        className={styles.input}
+        className="glass-search-input"
         type="text"
         placeholder="Search by name..."
         value={query}
@@ -69,21 +68,21 @@ export default function SearchPage() {
         autoFocus
       />
 
-      {loading && <p className={styles.status}>Searching...</p>}
+      {loading && <p className="glass-search-status">Searching...</p>}
 
       {!loading && query && results.length === 0 && (
-        <p className={styles.status}>No users found</p>
+        <p className="glass-search-status">No users found</p>
       )}
 
-      <div className={styles.results}>
+      <div className="glass-search-results">
         {results.map((user) => (
           <div
             key={user.id}
-            className={styles.resultItem}
+            className="glass-search-item"
             onClick={() => router.push(`/profile/${user.id}`)}
           >
             <Avatar src={user.avatar} name={user.full_name} size={40} />
-            <p className={styles.name}>{user.full_name}</p>
+            <p className="glass-search-name">{user.full_name}</p>
           </div>
         ))}
       </div>

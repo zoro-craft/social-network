@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../app/context/AuthContext';
 import { API_BASE } from '@/utils/api';
-import styles from '../app/styles/navbar.module.css';
 import Avatar from './Avatar';
 
 export default function Navbar() {
@@ -55,30 +54,30 @@ export default function Navbar() {
   };
 
   return (
-    <header className={styles.navbar}>
-      <div className={styles.logo} onClick={() => router.push('/')}>
+    <header className="glass-navbar">
+      <div className="glass-logo" onClick={() => router.push('/')}>
         01Forum
       </div>
 
-      <div className={styles.navActions}>
+      <div className="glass-nav-actions">
         {auth.authenticated && (
           <>
             <button
-              className={styles.searchButton}
+              className="glass-nav-search"
               onClick={goToSearch}
               aria-label="Search"
             >
               Search
             </button>
               <button
-              className={styles.searchButton}
+              className="glass-nav-search"
               onClick={goToGroups}
               aria-label="groups"
             >
               groups
             </button>
             <button
-              className={styles.searchButton}
+              className="glass-nav-search"
               onClick={goToNotifications}
               aria-label="Notifications"
             >
@@ -87,11 +86,11 @@ export default function Navbar() {
           </>
         )}
         
-        <div className={styles.authButtons}>
+        <div className="glass-auth-buttons">
           {auth.authenticated ? (
-            <div className={styles.avatarWrap} ref={wrapRef}>
+            <div className="glass-avatar-wrap" ref={wrapRef}>
               <button
-                className={styles.avatarButton}
+                className="glass-avatar-button"
                 onClick={() => setOpen(!open)}
               >
                 <Avatar src={auth.avatar} name={auth.first_name} size={28} />
@@ -99,12 +98,12 @@ export default function Navbar() {
               </button>
 
               {open && (
-                <div className={styles.dropdown}>
-                  <button className={styles.dropdownItem} onClick={goToProfile}>
+                <div className="glass-dropdown">
+                  <button className="glass-dropdown-item" onClick={goToProfile}>
                     Profile
                   </button>
                   <button
-                    className={`${styles.dropdownItem} ${styles.danger}`}
+                    className="glass-dropdown-item glass-nav-danger"
                     onClick={handleLogout}
                   >
                     Logout
@@ -115,13 +114,13 @@ export default function Navbar() {
           ) : (
             <>
               <button
-                className={`${styles.btn} ${styles.login}`}
+                className="glass-btn"
                 onClick={() => router.push('/login')}
               >
                 Login
               </button>
               <button
-                className={`${styles.btn} ${styles.register}`}
+                className="glass-btn glass-btn-register"
                 onClick={() => router.push('/register')}
               >
                 Register
