@@ -1,0 +1,129 @@
+
+.glass-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: var(--nav-height);
+  padding: 0 24px;
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.glass-logo {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+  transition: color var(--transition), opacity var(--transition);
+}
+
+.glass-logo:hover {
+  color: var(--accent-hover);
+  opacity: 0.9;
+}
+
+.glass-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.glass-nav-search {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition),
+    border-color var(--transition);
+}
+
+.glass-nav-search:hover {
+  background: var(--accent-soft);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+.glass-auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.glass-avatar-wrap {
+  position: relative;
+}
+
+.glass-avatar-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 12px 4px 4px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.glass-avatar-button:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.glass-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 180px;
+  padding: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  animation: dropIn 0.2s ease;
+}
+
+.glass-dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.glass-dropdown-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.glass-nav-danger {
+  color: var(--danger);
+}
+
+.glass-nav-danger:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
