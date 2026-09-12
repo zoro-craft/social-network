@@ -24,20 +24,22 @@ export default function GroupCard({ group }) {
 
     return (
         <div className={styles.card}>
-            <img
-                className={styles.groupIcon}
-                src="/group-avatar.jpeg"
-                alt={`${group.titel} avatar`}
-            />
+            <div className={styles.cardTop}>
+                <img
+                    className={styles.groupIcon}
+                    src="/group-avatar.jpeg"
+                    alt={`${group.titel} avatar`}
+                />
 
-            <div className={styles.groupInfo}>
-                <h3 className={styles.title}>
-                    {group.titel}
-                </h3>
+                <div className={styles.groupInfo}>
+                    <h3 className={styles.title}>
+                        {group.titel}
+                    </h3>
 
-                <p className={styles.description}>
-                    {group.description}
-                </p>
+                    <p className={styles.description}>
+                        {group.description}
+                    </p>
+                </div>
             </div>
 
 

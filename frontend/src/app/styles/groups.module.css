@@ -19,9 +19,9 @@
 .avatar {
   width: 48px;
   height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
   flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .profileInfo {
@@ -130,12 +130,12 @@
 }
 
 .globeIcon {
+  position: relative;
+  box-sizing: border-box;
   width: 16px;
   height: 16px;
-  box-sizing: border-box;
   border: 1.5px solid currentColor;
   border-radius: 50%;
-  position: relative;
 }
 
 .globeIcon::before,
@@ -167,7 +167,6 @@
   color: #ffffff;
   font-size: 22px;
   font-weight: 700;
-  letter-spacing: 0;
 }
 
 .container {
@@ -176,49 +175,66 @@
   gap: 24px;
 }
 
+/* ---------- Group card ---------- */
 .card {
   display: flex;
-  min-height: 325px;
   flex-direction: column;
-  gap: 16px;
-  padding: 24px;
-  border: 1px solid #30343b;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid #2e333c;
   border-radius: 16px;
-  background: #1c1f24;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(155deg, #22262e 0%, #1a1d22 100%);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
 }
 
-/* ---------- Group avatar image ---------- */
+.card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 16px 30px rgba(37, 99, 235, 0.18);
+  transform: translateY(-2px);
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
 .groupIcon {
   display: block;
+  flex-shrink: 0;
   width: 88px;
   height: 88px;
-  margin: 4px auto 8px;
   object-fit: cover;
-  border-radius: 22px;
+  border-radius: 18px;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
 }
 
 .groupInfo {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   gap: 8px;
   text-align: left;
 }
 
 .title {
+  overflow: hidden;
   margin: 0;
-  color: #ffffff;
+  color: #7dd3fc;
   font-size: 19px;
   font-weight: 700;
-  letter-spacing: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .description {
   display: -webkit-box;
-  margin: 0;
   overflow: hidden;
-  color: #b8c0cc;
+  margin: 0;
+  color: #93a5c4;
   font-size: 14px;
+  font-weight: 400;
   line-height: 1.5;
   overflow-wrap: anywhere;
   -webkit-box-orient: vertical;
@@ -227,7 +243,6 @@
 
 .actionButton {
   width: 100%;
-  margin-top: auto;
   padding: 12px 16px;
   border: 1px solid #3b4049;
   border-radius: 8px;
@@ -237,7 +252,12 @@
   font-size: 14px;
   font-weight: 650;
   cursor: pointer;
-  transition: background-color 160ms ease, transform 160ms ease;
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.actionButton:hover {
+  border-color: #3b82f6;
+  background: #2c3f61;
 }
 
 .emptyState,
@@ -261,8 +281,8 @@
   }
 
   .header {
-    align-items: flex-start;
     flex-direction: column;
+    align-items: flex-start;
   }
 
   .headerActions {
