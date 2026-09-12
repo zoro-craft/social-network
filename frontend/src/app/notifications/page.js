@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { apiRequest } from '@/utils/api';
 
-import styles from '../styles/notifications.module.css';
 
 export default function NotificationsPage() {
   const { auth, loading } = useRequireAuth();
@@ -128,17 +127,17 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className={styles.container}>
+    <div className="glass-notifications-page">
       <h1>Notifications</h1>
 
       {followRequests.length > 0 && (
         <>
           <h1 style={{ marginTop: 35 }}>Follow Requests</h1>
 
-          <div className={styles.notificationList}>
+          <div className="glass-notifications-list">
             {followRequests.map((req) => (
-              <div key={req.follower_id} className={styles.notification}>
-                <div className={styles.content}>
+              <div key={req.follower_id} className="glass-notification-card">
+                <div className="glass-notification-content">
                   <p>
                     {req.first_name}
                     {req.last_name ? ` ${req.last_name}` : ''} wants to
@@ -146,7 +145,7 @@ export default function NotificationsPage() {
                   </p>
                 </div>
 
-                <div className={styles.actions}>
+                <div className="glass-notification-actions">
                   <button
                     onClick={() =>
                       respondToFollowRequest(
@@ -176,21 +175,21 @@ export default function NotificationsPage() {
       )}
 
       {notifications.length === 0 && followRequests.length === 0 ? (
-        <p className={styles.empty}>
+        <p className="glass-notification-empty">
           No notifications
         </p>
       ) : (
-        <div className={styles.notificationList}>
+        <div className="glass-notifications-list">
           {notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`${styles.notification} ${
+              className={`glass-notification-card ${
                 notification.is_read
-                  ? styles.read
-                  : styles.unread
+                  ? 'glass-notification-read'
+                  : 'glass-notification-unread'
               }`}
             >
-              <div className={styles.content}>
+              <div className="glass-notification-content">
                 <p>{notification.message}</p>
 
                 <small>
@@ -201,7 +200,7 @@ export default function NotificationsPage() {
               </div>
 
               {notification.type === 'group_invtation' && (
-                <div className={styles.actions}>
+                <div className="glass-notification-actions">
                   <button
                     onClick={() =>
                       handleAcceptInvitation(notification)
@@ -221,7 +220,7 @@ export default function NotificationsPage() {
               )}
 
               {notification.type === 'join_request' && (
-                <div className={styles.actions}>
+                <div className="glass-notification-actions">
                   <button
                     onClick={() =>
                       handleAcceptRequest(notification)
@@ -241,7 +240,7 @@ export default function NotificationsPage() {
               )}
 
               {notification.type === 'message' && (
-                <span className={styles.messageType}>
+                <span className="glass-message-type">
                   Message
                 </span>
               )}
