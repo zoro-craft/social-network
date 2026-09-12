@@ -7,7 +7,6 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useImageInput } from '@/hooks/useImageInput';
 import { API_BASE } from '@/utils/api';
 import Avatar from '@/components/Avatar';
-import styles from '../../styles/posts.module.css';
 
 function CreatePostForm() {
   const router = useRouter();
@@ -139,17 +138,17 @@ function CreatePostForm() {
 
   return (
     <div className="glass-page">
-      <div className={`glass-container ${styles.container}`}>
+      <div className="glass-container glass-container-lg">
         <h2>Create Post</h2>
-        <p className={styles.subtitle}>
+        <p className="glass-subtitle">
           {isGroupPost ? 'Post to your group' : 'Share something with your network'}
         </p>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit} className="glass-form">
           {groups.length > 0 && (
             <div className="glass-input-group">
               <select
-                className={`glass-input ${styles.select}`}
+                className="glass-input glass-select"
                 value={selectedGroupId}
                 onChange={(e) => {
                   setSelectedGroupId(e.target.value);
@@ -159,9 +158,9 @@ function CreatePostForm() {
                   }
                 }}
               >
-                <option value="" className={styles.option}>Post to your feed</option>
+                <option value="" className="glass-select-option">Post to your feed</option>
                 {groups.map((g) => (
-                  <option key={g.id} value={g.id} className={styles.option}>
+                  <option key={g.id} value={g.id} className="glass-select-option">
                     Group: {g.titel}
                   </option>
                 ))}
@@ -194,49 +193,49 @@ function CreatePostForm() {
           {!isGroupPost && (
             <div className="glass-input-group">
               <select
-                className={`glass-input ${styles.select}`}
+                className="glass-input glass-select"
                 value={privacy}
                 onChange={(e) => setPrivacy(e.target.value)}
               >
-                <option value="public" className={styles.option}>Public</option>
-                <option value="almost_private" className={styles.option}>Almost private (followers)</option>
-                <option value="private" className={styles.option}>Private (chosen followers)</option>
+                <option value="public" className="glass-select-option">Public</option>
+                <option value="almost_private" className="glass-select-option">Almost private (followers)</option>
+                <option value="private" className="glass-select-option">Private (chosen followers)</option>
               </select>
             </div>
           )}
 
           {isGroupPost && (
-            <p className={styles.subtitle}>Group posts are always public</p>
+            <p className="glass-subtitle">Group posts are always public</p>
           )}
 
           {privacy === 'private' && !isGroupPost && (
-            <div className={`glass-input-group ${styles.viewerGroup}`}>
-              <label className={styles.viewerLabel}>
+            <div className="glass-input-group glass-viewer-group">
+              <label className="glass-viewer-label">
                 Choose who can see this post:
               </label>
               {followers.length === 0 && (
-                <p className={styles.noFollowers}>No followers yet</p>
+                <p className="glass-muted-text">No followers yet</p>
               )}
-              <div className={styles.viewerGrid}>
+              <div className="glass-viewer-grid">
                 {followers.map((f) => (
                   <div
                     key={f.id}
                     onClick={() => toggleViewer(f.id)}
-                    className={`${styles.viewerChip} ${
+                    className={`glass-viewer-chip ${
                       selectedViewers.includes(f.id)
-                        ? styles.viewerChipActive
-                        : styles.viewerChipInactive
+                        ? 'glass-viewer-chip-active'
+                        : ''
                     }`}
                   >
                     <Avatar src={f.avatar} name={f.first_name} size={32} />
-                    <span className={styles.viewerName}>{f.first_name}</span>
+                    <span className="glass-viewer-name">{f.first_name}</span>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          <label className={`glass-file-label ${styles.fileLabel}`}>
+          <label className="glass-file-label">
             Image
             <input
               className="glass-file-input"
@@ -246,7 +245,7 @@ function CreatePostForm() {
             />
           </label>
 
-          <button className={`glass-button ${styles.submitButton}`} type="submit" disabled={loading}>
+          <button className="glass-button" type="submit" disabled={loading}>
             {loading ? 'Posting...' : 'Post'}
           </button>
         </form>
