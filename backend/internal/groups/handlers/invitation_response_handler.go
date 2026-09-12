@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -17,6 +18,7 @@ import (
 // reject -> check_validation_of_invitation -> change stat -> remove the invitation from datatbase
 
 func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("3333")
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, 405, http.StatusText(405))
 		return
