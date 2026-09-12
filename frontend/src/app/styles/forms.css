@@ -1,0 +1,211 @@
+
+.glass-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.glass-input-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.glass-input,
+.glass-textarea {
+  width: 100%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color var(--transition), background var(--transition),
+    box-shadow var(--transition);
+}
+
+.glass-input::placeholder,
+.glass-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.glass-input:hover:not(:focus),
+.glass-textarea:hover:not(:focus) {
+  border-color: var(--border-strong);
+}
+
+.glass-input:focus,
+.glass-textarea:focus {
+  border-color: var(--accent-border);
+  background: var(--bg-hover);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.glass-textarea {
+  resize: vertical;
+  min-height: 42px;
+}
+
+.glass-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 38px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239a9a9a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px 14px;
+}
+
+.glass-select-option {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.glass-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.glass-row .glass-input-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.glass-row-align-end {
+  align-items: flex-end;
+}
+
+.glass-file-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.glass-file-label-inline {
+  flex-direction: row;
+  align-items: center;
+  width: auto;
+}
+
+.glass-file-label-inline > span {
+  margin-right: 8px;
+}
+
+.glass-file-input {
+  width: 100%;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.glass-file-input::file-selector-button {
+  background: var(--bg-hover);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  margin-right: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.glass-file-input::file-selector-button:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+}
+
+.glass-error {
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-md);
+  color: var(--danger);
+  font-size: 13px;
+  padding: 11px 14px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.glass-footer {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.glass-footer a {
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-left: 4px;
+  transition: color var(--transition);
+}
+
+.glass-footer a:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+.glass-viewer-group {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.glass-viewer-label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.glass-viewer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.glass-viewer-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 13px;
+  color: var(--text-secondary);
+  user-select: none;
+  min-width: 0;
+}
+
+.glass-viewer-chip:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.glass-viewer-chip-active {
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+  color: var(--text-primary);
+}
+
+.glass-viewer-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
