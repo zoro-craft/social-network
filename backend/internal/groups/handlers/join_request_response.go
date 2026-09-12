@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -9,7 +10,9 @@ import (
 	"zone/internal/groups/repositories"
 	"zone/internal/utils"
 )
+
 func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("221221")
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, 405, http.StatusText(405))
 		return
@@ -73,6 +76,11 @@ func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
+	err = repositories.DeleteRequestNotification(adminID, requestID)
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
 
 	utils.RespondJSON(w, http.StatusOK, map[string]string{
 		"message": "request accepted successfully!",
@@ -80,6 +88,7 @@ func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
 }
 
 func Reject_Join_Request(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("333333")
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, 405, http.StatusText(405))
 		return
@@ -130,6 +139,12 @@ func Reject_Join_Request(w http.ResponseWriter, r *http.Request) {
 		requestID,
 		"rejected",
 	)
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+
+	err = repositories.DeleteRequestNotification(adminID, requestID)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return

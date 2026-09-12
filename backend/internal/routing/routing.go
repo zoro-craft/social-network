@@ -53,6 +53,8 @@ mux.HandleFunc("POST /follow/{id}/{action}", middleware.Auth(followers.RespondRe
 
 // media & uploads routes
 mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
+mux.HandleFunc("POST /groups/{group_id}", middleware.Auth(handlers.GetGroupInfo))
+mux.HandleFunc("GET /groups/{group_id}/users", middleware.Auth(users.GetAllUsersNotmemberHandler))
 
 // groups routes
 mux.HandleFunc("POST /groups", middleware.Auth(handlers.CreatGroupeHandler))

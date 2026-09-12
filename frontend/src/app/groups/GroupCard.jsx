@@ -1,5 +1,7 @@
 import { useRouter } from "next/navigation";
+import styles from '@/app/styles/groups.module.css';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { apiRequest } from "@/utils/api";
 
 export default function GroupCard({ group }) {
     const { auth, loading } = useRequireAuth();
@@ -8,39 +10,50 @@ export default function GroupCard({ group }) {
     if (loading) return null;
 
     const isMember = group.is_member;
-
+    const join = async () => {
+        if (!auth.authenticated) return
+        try {
+            await apiRequest(`/groups/${group.id}/join`, 'POST')
+        } catch (error) {
+            console.log('faild to request to join to groupe', error)
+        }
+    }
     const enterGroup = () => {
         router.push(`/groups/${group.id}`);
     };
 
     return (
-        <div className="glass-group-card">
+        <div className={styles.card}>
+            <div className={styles.cardTop}>
+                <img
+                    className={styles.groupIcon}
+                    src="/group-avatar.jpeg"
+                    alt={`${group.titel} avatar`}
+                />
 
-            <div className="glass-group-icon" aria-hidden="true">
-                <span className="glass-person-one" />
-                <span className="glass-person-two" />
+                <div className={styles.groupInfo}>
+                    <h3 className={styles.title}>
+                        {group.titel}
+                    </h3>
+
+                    <p className={styles.description}>
+                        {group.description}
+                    </p>
+                </div>
             </div>
 
-            <div className="glass-group-info">
-                <h3 className="glass-group-title">
-                    {group.titel}
-                </h3>
-
-                <p className="glass-group-description">
-                    {group.description}
-                </p>
-            </div>
 
             {isMember ? (
                 <button
-                    className="glass-group-action-btn"
+                    className={styles.actionButton}
                     onClick={enterGroup}
                 >
                     Enter Group
                 </button>
             ) : (
                 <button
-                    className="glass-group-action-btn"
+                    className={styles.actionButton}
+                    onClick={join}
                 >
                     Request to join
                 </button>

@@ -5,6 +5,14 @@ import { useEffect, useState } from 'react';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { apiRequest } from '@/utils/api';
 
+import {
+  handleAcceptInvitation,
+  handleRejectInvitation,
+  handleAcceptRequest,
+  handleRejectRequest,
+} from './utils';
+
+import styles from '../styles/notifications.module.css';
 
 export default function NotificationsPage() {
   const { auth, loading } = useRequireAuth();
@@ -39,67 +47,6 @@ export default function NotificationsPage() {
     fetchFollowRequests();
   }, [auth.authenticated]);
 
-
-  const handleAcceptInvitation = async (notification) => {
-    try {
-      await apiRequest(
-        `/invitations/${notification.invitation_id}/accept`,
-        {
-          method: 'POST',
-        }
-      );
-
-      removeNotification(notification.id);
-    } catch (error) {
-      console.error('Failed to accept invitation:', error);
-    }
-  };
-
-  const handleRejectInvitation = async (notification) => {
-    try {
-      await apiRequest(
-        `/invitations/${notification.invitation_id}/reject`,
-        {
-          method: 'POST',
-        }
-      );
-
-      removeNotification(notification.id);
-    } catch (error) {
-      console.error('Failed to reject invitation:', error);
-    }
-  };
-
-  const handleAcceptRequest = async (notification) => {
-    try {
-      await apiRequest(
-        `/join_requests/${notification.request_id}/accept`,
-        {
-          method: 'POST',
-        }
-      );
-
-      removeNotification(notification.id);
-    } catch (error) {
-      console.error('Failed to accept join request:', error);
-    }
-  };
-
-  const handleRejectRequest = async (notification) => {
-    try {
-      await apiRequest(
-        `/join_requests/${notification.request_id}/reject`,
-        {
-          method: 'POST',
-        }
-      );
-
-      removeNotification(notification.id);
-    } catch (error) {
-      console.error('Failed to reject join request:', error);
-    }
-  };
-
   // Remove notification from UI
   const removeNotification = (notificationId) => {
     setNotifications((prev) =>
@@ -127,17 +74,17 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="glass-notifications-page">
+    <div className={styles.container}>
       <h1>Notifications</h1>
 
       {followRequests.length > 0 && (
         <>
           <h1 style={{ marginTop: 35 }}>Follow Requests</h1>
 
-          <div className="glass-notifications-list">
+          <div className={styles.notificationList}>
             {followRequests.map((req) => (
-              <div key={req.follower_id} className="glass-notification-card">
-                <div className="glass-notification-content">
+              <div key={req.follower_id} className={styles.notification}>
+                <div className={styles.content}>
                   <p>
                     {req.first_name}
                     {req.last_name ? ` ${req.last_name}` : ''} wants to
@@ -145,13 +92,10 @@ export default function NotificationsPage() {
                   </p>
                 </div>
 
-                <div className="glass-notification-actions">
+                <div className={styles.actions}>
                   <button
                     onClick={() =>
-                      respondToFollowRequest(
-                        req.follower_id,
-                        'accept'
-                      )
+                      respondToFollowRequest(req.follower_id, 'accept')
                     }
                   >
                     Accept
@@ -159,10 +103,7 @@ export default function NotificationsPage() {
 
                   <button
                     onClick={() =>
-                      respondToFollowRequest(
-                        req.follower_id,
-                        'decline'
-                      )
+                      respondToFollowRequest(req.follower_id, 'decline')
                     }
                   >
                     Decline
@@ -174,22 +115,18 @@ export default function NotificationsPage() {
         </>
       )}
 
-      {notifications.length === 0 && followRequests.length === 0 ? (
-        <p className="glass-notification-empty">
-          No notifications
-        </p>
+      {notifications.length === 0 ? (
+        <p className={styles.empty}>No notifications</p>
       ) : (
-        <div className="glass-notifications-list">
+        <div className={styles.notificationList}>
           {notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`glass-notification-card ${
-                notification.is_read
-                  ? 'glass-notification-read'
-                  : 'glass-notification-unread'
+              className={`${styles.notification} ${
+                notification.is_read ? styles.read : styles.unread
               }`}
             >
-              <div className="glass-notification-content">
+              <div className={styles.content}>
                 <p>{notification.message}</p>
 
                 <small>
@@ -199,40 +136,62 @@ export default function NotificationsPage() {
                 </small>
               </div>
 
+              {/* Group Invitation */}
               {notification.type === 'group_invtation' && (
-                <div className="glass-notification-actions">
+                <div className={styles.actions}>
                   <button
-                    onClick={() =>
-                      handleAcceptInvitation(notification)
-                    }
+                    onClick={async () => {
+                      const success =
+                        await handleAcceptInvitation(notification);
+
+                      if (success) {
+                        removeNotification(notification.id);
+                      }
+                    }}
                   >
                     Accept
                   </button>
 
                   <button
-                    onClick={() =>
-                      handleRejectInvitation(notification)
-                    }
+                    onClick={async () => {
+                      const success =
+                        await handleRejectInvitation(notification);
+
+                      if (success) {
+                        removeNotification(notification.id);
+                      }
+                    }}
                   >
                     Reject
                   </button>
                 </div>
               )}
 
+              {/* Join Request */}
               {notification.type === 'join_request' && (
-                <div className="glass-notification-actions">
+                <div className={styles.actions}>
                   <button
-                    onClick={() =>
-                      handleAcceptRequest(notification)
-                    }
+                    onClick={async () => {
+                      const success =
+                        await handleAcceptRequest(notification);
+
+                      if (success) {
+                        removeNotification(notification.id);
+                      }
+                    }}
                   >
                     Accept
                   </button>
 
                   <button
-                    onClick={() =>
-                      handleRejectRequest(notification)
-                    }
+                    onClick={async () => {
+                      const success =
+                        await handleRejectRequest(notification);
+
+                      if (success) {
+                        removeNotification(notification.id);
+                      }
+                    }}
                   >
                     Reject
                   </button>
@@ -240,9 +199,7 @@ export default function NotificationsPage() {
               )}
 
               {notification.type === 'message' && (
-                <span className="glass-message-type">
-                  Message
-                </span>
+                <span className={styles.messageType}>Message</span>
               )}
             </div>
           ))}

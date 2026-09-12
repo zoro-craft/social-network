@@ -73,6 +73,7 @@ func InvitationsHandler(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 500, "failed to create notification")
 		return
 	}
+	fmt.Println("2")
 
 	utils.RespondJSON(
 		w,

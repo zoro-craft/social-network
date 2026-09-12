@@ -1,27 +1,38 @@
 'use client';
 
-import { apiRequest } from "@/utils/api";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { useRouter } from "next/navigation";
-import GroupCard from '@/app/groups/GroupCard';
-import MyGroupsList from '@/app/groups/MyGroupsList';
+import { apiRequest } from '@/utils/api';
+import GroupCard from './GroupCard';
+import styles from '@/app/styles/groups.module.css';
 
 export default function Groupspage() {
     const { auth, loading } = useRequireAuth();
-    const [groups, setGroups] = useState([]);
-    const [activeTab, setActiveTab] = useState('all');
-
     const router = useRouter();
+
+    const [allGroups, setAllGroups] = useState([]);
+    const [groups, setGroups] = useState([]);
 
     useEffect(() => {
         if (!auth.authenticated) return;
 
         const fetchGroups = async () => {
             try {
-                const res = await apiRequest("/groups");
-                setGroups(res || []);
-            } catch {
+                const res = await apiRequest('/groups');
+
+                const all = res || [];
+
+                // Default: show groups where user is NOT a member
+                const notMember = all.filter(
+                    (group) => group.is_member === false
+                );
+
+                setAllGroups(all);
+                setGroups(notMember);
+            } catch (error) {
+                console.log(error);
+                setAllGroups([]);
                 setGroups([]);
             }
         };
@@ -29,10 +40,30 @@ export default function Groupspage() {
         fetchGroups();
     }, [auth.authenticated]);
 
+    // All Groups
+    const showAllGroups = () => {
+        const notMember = allGroups.filter(
+            (group) => group.is_member === false
+        );
+
+        setGroups(notMember);
+    };
+
+    // My Groups
+    const showMyGroups = () => {
+        const member = allGroups.filter(
+            (group) => group.is_member === true
+        );
+
+        setGroups(member);
+    };
+
     if (loading) {
         return (
-            <div className="glass-group-page">
-                <p className="glass-muted-text">Loading groups...</p>
+            <div className={styles.page}>
+                <p className={styles.mutedText}>
+                    Loading groups...
+                </p>
             </div>
         );
     }
@@ -40,60 +71,62 @@ export default function Groupspage() {
     if (!auth.authenticated) return null;
 
     return (
-        <main className="glass-group-page">
-            <div className="glass-group-header">
-                <h1 className="glass-groups-title">Groups</h1>
+        <main className={styles.page}>
+            <div className={styles.header}>
+                <h1 className={styles.pageTitle}>
+                    Groups
+                </h1>
 
-                <div className="glass-header-actions">
+                <div className={styles.headerActions}>
+
                     <button
-                        className="glass-btn-create"
+                        className={styles.createButton}
                         onClick={() => router.push('/groups/create')}
                     >
-                        <span className="glass-btn-icon" aria-hidden="true">
+                        <span
+                            className={styles.buttonIcon}
+                            aria-hidden="true"
+                        >
                             +
                         </span>
+
                         Create Group
                     </button>
 
                     <button
-                        className="glass-btn-browse"
-                        onClick={() => setActiveTab('all')}
+                        className={styles.browseButton}
+                        onClick={showAllGroups}
                     >
                         All Groups
                     </button>
 
                     <button
-                        className="glass-btn-browse"
-                        onClick={() => setActiveTab('my')}
+                        className={styles.browseButton}
+                        onClick={showMyGroups}
                     >
                         My Groups
                     </button>
+
                 </div>
             </div>
 
-            <section className="glass-groups-section" id="my-groups">
-                <h2 className="glass-section-title">
-                    {activeTab === 'all' ? 'All Groups' : 'My Groups'}
-                </h2>
+            <section className={styles.groupsSection}>
+                <div className={styles.container}>
 
-                {activeTab === 'all' ? (
-                    groups.length === 0 ? (
-                        <p className="glass-empty-state">
-                            No groups yet. Create the first one!
+                    {groups.length === 0 ? (
+                        <p className={styles.emptyState}>
+                            No groups found.
                         </p>
                     ) : (
-                        <div className="glass-groups-grid">
-                            {groups.map((group) => (
-                                <GroupCard
-                                    key={group.id}
-                                    group={group}
-                                />
-                            ))}
-                        </div>
-                    )
-                ) : (
-                    <MyGroupsList />
-                )}
+                        groups.map((group) => (
+                            <GroupCard
+                                key={group.id}
+                                group={group}
+                            />
+                        ))
+                    )}
+
+                </div>
             </section>
         </main>
     );
