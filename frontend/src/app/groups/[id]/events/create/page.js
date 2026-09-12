@@ -5,7 +5,6 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { apiRequest } from '@/utils/api';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import styles from '@/app/styles/posts.module.css';
 
 export default function CreatEvent() {
   const { auth, loading: authLoading } = useRequireAuth();
@@ -57,11 +56,11 @@ export default function CreatEvent() {
 
   return (
     <div className="glass-page">
-      <div className={`glass-container ${styles.container}`}>
+      <div className="glass-container glass-container-lg">
         <h2>Create Event</h2>
-        <p className={styles.subtitle}>Organize an activity for your group</p>
+        <p className="glass-subtitle">Organize an activity for your group</p>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit} className="glass-form">
           <div className="glass-input-group">
             <input
               className="glass-input"
@@ -98,7 +97,7 @@ export default function CreatEvent() {
           </div>
 
           <button
-            className={`glass-button ${styles.submitButton}`}
+            className="glass-button"
             type="submit"
             disabled={loading}
           >
