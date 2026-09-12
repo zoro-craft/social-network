@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { API_BASE } from '@/utils/api';
 import formatDate from '@/utils/format';
-import styles from '../styles/posts.module.css';
 
 export default function GroupPosts({ groupId }) {
     const router = useRouter();
@@ -36,12 +35,12 @@ export default function GroupPosts({ groupId }) {
     }, [groupId]);
 
     if (loading) {
-        return <p className={styles.mutedText}>Loading posts...</p>;
+        return <p className="glass-muted-text">Loading posts...</p>;
     }
 
     if (posts.length === 0) {
         return (
-            <p className={styles.mutedText}>No posts yet. Create the first one!</p>
+            <p className="glass-muted-text">No posts yet. Create the first one!</p>
         );
     }
 
