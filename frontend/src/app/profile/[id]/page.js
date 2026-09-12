@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import "@/app/styles/profile.css";
 
 const BACKEND_URL = "http://localhost:8080";
 
