@@ -109,7 +109,6 @@ func GetAllGroups(userID int) ([]models.Groupe, error) {
 	return groups, nil
 }
 
-
 func Alreadymember(group_id int, user_id int) bool {
 	var exists bool
 

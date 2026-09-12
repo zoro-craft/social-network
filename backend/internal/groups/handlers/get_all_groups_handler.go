@@ -27,7 +27,7 @@ func GetAllGroupsHandler(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
-utils.RespondJSON(w, http.StatusOK, groups)
+	utils.RespondJSON(w, http.StatusOK, groups)
 }
 
 // url : /groups/{group_id}
@@ -56,12 +56,11 @@ func GetGroupInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	groupinfo , err  := repositories.GetGroupbyid(group_id) 
-		if err != nil {
+	groupinfo, err := repositories.GetGroupbyid(group_id)
+	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
 
 	utils.RespondJSON(w, http.StatusOK, groupinfo)
 }
-
