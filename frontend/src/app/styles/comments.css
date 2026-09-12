@@ -1,0 +1,98 @@
+
+.glass-comments-heading {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.glass-comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.glass-comment-form-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.glass-comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.glass-empty-comments {
+  margin: 24px 0;
+  text-align: center;
+}
+
+.glass-comment-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.glass-comment-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.glass-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  width: fit-content;
+  padding: 2px 10px 2px 2px;
+  transition: background 0.15s ease;
+}
+
+.glass-comment-header:hover {
+  background: var(--accent-soft);
+}
+
+.glass-comment-author {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.glass-comment-date {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.glass-comment-content {
+  margin: 0 0 0 40px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.glass-comment-content-with-image {
+  margin-bottom: 10px;
+}
+
+.glass-comment-image {
+  max-width: 280px;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  display: block;
+  margin: 10px 0 0 40px;
+  border: 1px solid var(--border);
+}
