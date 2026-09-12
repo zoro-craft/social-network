@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { API_BASE } from '@/utils/api';
 import { useReactions } from './useReactions';
-import styles from '../styles/posts.module.css';
 import formatDate from '@/utils/format';
 
 const PAGE_SIZE = 10;
@@ -86,23 +85,23 @@ export default function Posts() {
 
   return (
     <div className="glass-feed-page">
-      <div className={styles.feedHeader}>
-        <h1 className={styles.feedTitle}>Feed</h1>
-        <button
-          className={`glass-button ${styles.createPostButton}`}
-          onClick={() => router.push('/posts/create')}
-        >
-          + Create Post
-        </button>
-      </div>
+<div className="glass-feed-header">
+				<h1 className="glass-feed-title">Feed</h1>
+				<button
+					className={`glass-button glass-create-post-button`}
+					onClick={() => router.push('/posts/create')}
+				>
+					+ Create Post
+				</button>
+			</div>
 
-      {postsLoading && <p className={styles.mutedText}>Loading posts...</p>}
+			{postsLoading && <p className="glass-muted-text">Loading posts...</p>}
 
-      {!postsLoading && posts.length === 0 && (
-        <p className={styles.mutedText}>
-          No posts yet. Be the first to share something.
-        </p>
-      )}
+			{!postsLoading && posts.length === 0 && (
+				<p className="glass-muted-text">
+					No posts yet. Be the first to share something.
+				</p>
+			)}
 
       {posts.map((post) => (
         <div key={post.id} className="glass-post-card">
@@ -148,7 +147,7 @@ export default function Posts() {
 
       {!postsLoading && hasMore && (
         <button
-          className={`glass-button ${styles.loadMoreButton}`}
+          className={`glass-button glass-load-more`}
           onClick={loadMore}
           disabled={loadingMore}
         >
