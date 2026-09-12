@@ -1,7 +1,6 @@
 'use client';
 
 import { createContext, useContext, useState } from 'react';
-import styles from '../styles/toast.module.css';
 
 const ToastContext = createContext(null);
 
@@ -18,7 +17,7 @@ export function ToastProvider({ children }) {
       {children}
       {toast && (
         <div
-          className={`${styles.toast} ${toast.isError ? styles.error : styles.success}`}
+          className={`glass-toast ${toast.isError ? 'glass-toast-error' : 'glass-toast-success'}`}
         >
           {toast.message}
         </div>
