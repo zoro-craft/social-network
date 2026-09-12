@@ -28,6 +28,11 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid group_id")
 		return
 	}
+	
+	if !utils.IsGroupMember(groupID, userID) {
+    utils.HandleError(w, http.StatusForbidden, "You must be a group member")
+    return
+	}
 
 	rows, err := database.Database.Query(`
 		SELECT id, group_id, title, created_by, created_at, options

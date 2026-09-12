@@ -11,7 +11,6 @@ export default function GroupEvent({ group_id }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [votingId, setVotingId] = useState(null);
 
   useEffect(() => {
     if (!group_id) return;
@@ -38,7 +37,6 @@ export default function GroupEvent({ group_id }) {
   }, [group_id, refreshKey]);
 
   const handleVote = async (eventId, option) => {
-    setVotingId(eventId);
     try {
       const res = await fetch(`${API_BASE}/events/vote`, {
         method: 'POST',
@@ -54,22 +52,11 @@ export default function GroupEvent({ group_id }) {
       }
     } catch {
       showToast('Failed to save vote');
-    } finally {
-      setVotingId(null);
     }
   };
 
   const countFor = (event, option) =>
     (event.vote_counts || []).find((vc) => vc.option === option)?.count || 0;
-
-  const totalVotes = (event) =>
-    (event.vote_counts || []).reduce((sum, vc) => sum + vc.count, 0);
-
-  const percentOf = (count, event) => {
-    const total = totalVotes(event);
-    if (total === 0) return 0;
-    return Math.round((count / total) * 100);
-  };
 
   if (loading) {
     return <p className={styles.mutedText}>Loading events...</p>;
@@ -83,56 +70,40 @@ export default function GroupEvent({ group_id }) {
 
   return (
     <div>
-      {events.map((event) => {
-        const total = totalVotes(event);
-        return (
-          <div
-            key={event.id}
-            className="glass-post-card"
-            style={{ marginBottom: 16 }}
-          >
-            <div className="glass-post-header">
-              <span className="glass-post-author">{event.title}</span>
-              <span>{formatDate(event.created_at)}</span>
-            </div>
-
-            <div className="glass-vote-options">
-              {(event.options || []).map((option) => {
-                const count = countFor(event, option);
-                const pct = percentOf(count, event);
-                const isSelected = event.user_response === option;
-                return (
-                  <button
-                    key={option}
-                    className={`glass-vote-option${
-                      isSelected ? ' glass-vote-selected' : ''
-                    }`}
-                    onClick={() => handleVote(event.id, option)}
-                    disabled={votingId === event.id}
-                  >
-                    <span className="glass-vote-label">{option}</span>
-                    <span className="glass-vote-bar">
-                      <span
-                        className="glass-vote-fill"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </span>
-                    <span className="glass-vote-meta">
-                      {count} vote{count === 1 ? '' : 's'}
-                      {pct > 0 ? ` · ${pct}%` : ''}
-                      {isSelected ? ' · Your vote' : ''}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <p className="glass-vote-total">
-              {total} total vote{total === 1 ? '' : 's'}
-            </p>
+      {events.map((event) => (
+        <div
+          key={event.id}
+          className="glass-post-card"
+          style={{ marginBottom: 16 }}
+        >
+          <div className="glass-post-header">
+            <span className="glass-post-author">{event.title}</span>
+            <span>{formatDate(event.created_at)}</span>
           </div>
-        );
-      })}
+
+          <div className="glass-vote-options">
+            {(event.options || []).map((option) => {
+              const count = countFor(event, option);
+              const isSelected = event.user_response === option;
+              return (
+                <button
+                  key={option}
+                  className={`glass-vote-option${
+                    isSelected ? ' glass-vote-selected' : ''
+                  }`}
+                  onClick={() => handleVote(event.id, option)}
+                >
+                  <span className="glass-vote-label">{option}</span>
+                  <span className="glass-vote-meta">
+                    {count} vote{count === 1 ? '' : 's'}
+                    {isSelected ? ' · Your vote' : ''}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
