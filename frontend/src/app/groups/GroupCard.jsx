@@ -24,10 +24,11 @@ export default function GroupCard({ group }) {
 
     return (
         <div className={styles.card}>
-            <div className={styles.groupIcon} aria-hidden="true">
-                <span className={styles.personOne} />
-                <span className={styles.personTwo} />
-            </div>
+            <img
+                className={styles.groupIcon}
+                src="/group-avatar.jpeg"
+                alt={`${group.titel} avatar`}
+            />
 
             <div className={styles.groupInfo}>
                 <h3 className={styles.title}>

@@ -57,10 +57,11 @@ export default function GroupDetailsPage() {
                 </div>
 
                 <header className={styles.headerCard}>
-                    <div className={styles.groupIcon} aria-hidden="true">
-                        <span className={styles.personOne} />
-                        <span className={styles.personTwo} />
-                    </div>
+                    <img
+                        className={styles.groupIcon}
+                        src="/group-avatar.jpeg"
+                        alt={`${group.titel} avatar`}
+                    />
 
                     <div className={styles.headerInfo}>
                         <h1 className={styles.title}>{group.titel}</h1>

@@ -188,63 +188,14 @@
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
 }
 
-/* ---------- Group icon (outline people, light blue tile) ---------- */
+/* ---------- Group avatar image ---------- */
 .groupIcon {
-  display: flex;
+  display: block;
   width: 88px;
   height: 88px;
   margin: 4px auto 8px;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 4px;
-  overflow: hidden;
+  object-fit: cover;
   border-radius: 22px;
-  background: #9bd5ff;
-}
-
-.personOne,
-.personTwo {
-  display: block;
-  position: relative;
-  width: 26px;
-  height: 20px;
-  margin-bottom: 12px;
-  background: transparent;
-  border: 2.5px solid #14324d;
-  border-top: none;
-  border-radius: 0 0 13px 13px;
-}
-
-.personOne::before,
-.personTwo::before {
-  content: '';
-  position: absolute;
-  top: -19px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 16px;
-  height: 16px;
-  background: transparent;
-  border: 2.5px solid #14324d;
-  border-radius: 50%;
-}
-
-.personOne {
-  z-index: 2;
-}
-
-.personTwo {
-  width: 22px;
-  height: 17px;
-  margin-bottom: 10px;
-  margin-left: -10px;
-  opacity: 0.75;
-}
-
-.personTwo::before {
-  top: -16px;
-  width: 13px;
-  height: 13px;
 }
 
 .groupInfo {
