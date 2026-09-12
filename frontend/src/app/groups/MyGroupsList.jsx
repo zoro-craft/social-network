@@ -3,7 +3,6 @@
 import { apiRequest } from "@/utils/api";
 import { useState, useEffect } from "react";
 import GroupCard from '@/app/groups/GroupCard';
-import styles from '../styles/groups.module.css';
 
 export default function MyGroupsList() {
     const [groups, setGroups] = useState([]);
@@ -33,19 +32,19 @@ export default function MyGroupsList() {
     }, []);
 
     if (loading) {
-        return <p className={styles.mutedText}>Loading your groups...</p>;
+        return <p className="glass-muted-text">Loading your groups...</p>;
     }
 
     if (error) {
-        return <p className={styles.mutedText}>{error}</p>;
+        return <p className="glass-muted-text">{error}</p>;
     }
 
     if (groups.length === 0) {
-        return <p className={styles.emptyState}>You not  joined any groups yet.</p>;
+        return <p className="glass-empty-state">You not  joined any groups yet.</p>;
     }
 
     return (
-        <div className={styles.container}>
+        <div className="glass-groups-grid">
             {groups.map((group) => (
                 <GroupCard key={group.id} group={group} />
             ))}
