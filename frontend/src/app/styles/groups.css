@@ -1,0 +1,178 @@
+.glass-group-page {
+  min-height: calc(100vh - var(--nav-height));
+  padding: 40px 32px 48px;
+  color: var(--text-primary);
+}
+
+.glass-group-wrapper {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+}
+
+.glass-group-header {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.glass-groups-title {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+
+.glass-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.glass-groups-section {
+  width: min(100%, 1180px);
+  margin: 40px auto 0;
+}
+
+.glass-groups-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.glass-group-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 320px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition), transform var(--transition),
+    box-shadow var(--transition);
+}
+
+.glass-group-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow);
+}
+
+.glass-group-icon {
+  display: flex;
+  width: 88px;
+  height: 88px;
+  margin: 4px auto 8px;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-strong);
+}
+
+.glass-group-icon--lg {
+  width: 96px;
+  height: 96px;
+  border-radius: 24px;
+  flex-shrink: 0;
+}
+
+.glass-person-one,
+.glass-person-two {
+  display: block;
+  position: relative;
+  width: 26px;
+  height: 20px;
+  margin-bottom: 12px;
+  background: transparent;
+  border: 2.5px solid var(--text-secondary);
+  border-top: none;
+  border-radius: 0 0 13px 13px;
+}
+
+.glass-person-one::before,
+.glass-person-two::before {
+  content: "";
+  position: absolute;
+  top: -19px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 16px;
+  background: transparent;
+  border: 2.5px solid var(--text-secondary);
+  border-radius: 50%;
+}
+
+.glass-person-one {
+  z-index: 2;
+}
+
+.glass-person-two {
+  width: 22px;
+  height: 17px;
+  margin-bottom: 10px;
+  margin-left: -10px;
+  opacity: 0.75;
+}
+
+.glass-person-two::before {
+  top: -16px;
+  width: 13px;
+  height: 13px;
+}
+
+.glass-group-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.glass-group-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.glass-group-description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.glass-group-action-btn {
+  width: 100%;
+  margin-top: auto;
+  padding: 12px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition),
+    transform 0.1s ease;
+}
+
+.glass-group-action-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-border);
+}
