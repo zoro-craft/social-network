@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { API_BASE } from '@/utils/api';
 import formatDate from '@/utils/format';
 import { useToast } from '@/app/context/ToastContext';
-import styles from '../styles/posts.module.css';
 
 export default function GroupEvent({ group_id }) {
   const showToast = useToast();
@@ -72,12 +71,12 @@ export default function GroupEvent({ group_id }) {
   };
 
   if (loading) {
-    return <p className={styles.mutedText}>Loading events...</p>;
+    return <p className="glass-muted-text">Loading events...</p>;
   }
 
   if (events.length === 0) {
     return (
-      <p className={styles.mutedText}>No events yet. Create the first one!</p>
+      <p className="glass-muted-text">No events yet. Create the first one!</p>
     );
   }
 
