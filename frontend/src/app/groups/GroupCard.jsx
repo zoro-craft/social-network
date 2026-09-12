@@ -1,5 +1,4 @@
 import { useRouter } from "next/navigation";
-import styles from '@/app/styles/groups.module.css';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 export default function GroupCard({ group }) {
@@ -15,33 +14,33 @@ export default function GroupCard({ group }) {
     };
 
     return (
-        <div className={styles.card}>
+        <div className="glass-group-card">
 
-            <div className={styles.groupIcon} aria-hidden="true">
-                <span className={styles.personOne} />
-                <span className={styles.personTwo} />
+            <div className="glass-group-icon" aria-hidden="true">
+                <span className="glass-person-one" />
+                <span className="glass-person-two" />
             </div>
 
-            <div className={styles.groupInfo}>
-                <h3 className={styles.title}>
+            <div className="glass-group-info">
+                <h3 className="glass-group-title">
                     {group.titel}
                 </h3>
 
-                <p className={styles.description}>
+                <p className="glass-group-description">
                     {group.description}
                 </p>
             </div>
 
             {isMember ? (
                 <button
-                    className={styles.actionButton}
+                    className="glass-group-action-btn"
                     onClick={enterGroup}
                 >
                     Enter Group
                 </button>
             ) : (
                 <button
-                    className={styles.actionButton}
+                    className="glass-group-action-btn"
                 >
                     Request to join
                 </button>
