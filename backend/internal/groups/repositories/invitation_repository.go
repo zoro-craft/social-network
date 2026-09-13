@@ -61,21 +61,6 @@ func InvitedUserIDExists(InvitedUserID int) bool {
 	return exists
 }
 
-func CreateNotification(userID int, Type string, invitationID *int, requestID *int, msg string) error {
-	_, err := database.Database.Exec(`
-		INSERT INTO notifications
-			(user_id, type, invitation_id, request_id, message)
-		VALUES (?, ?, ?, ?, ?)
-	`,
-		userID,
-		Type,
-		invitationID,
-		requestID,
-		msg,
-	)
-
-	return err
-}
 
 func GetInvitation(invitationID, userID int) (models.GroupInvitation, error) {
 	var invitation models.GroupInvitation

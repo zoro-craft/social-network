@@ -5,6 +5,24 @@ import (
 	"zone/internal/groups/models"
 )
 
+
+func CreateNotification(userID int, Type string, invitationID *int, requestID *int, msg string) error {
+	_, err := database.Database.Exec(`
+		INSERT INTO notifications
+			(user_id, type, invitation_id, request_id, message)
+		VALUES (?, ?, ?, ?, ?)
+	`,
+		userID,
+		Type,
+		invitationID,
+		requestID,
+		msg,
+	)
+
+	return err
+}
+
+
 func GetNotificationsByUserID(userID int) ([]models.Notification, error) {
 	rows, err := database.Database.Query(`
         SELECT id, user_id, type,  COALESCE(invitation_id, 0) , COALESCE(request_id, 0),  message, is_read, created_at

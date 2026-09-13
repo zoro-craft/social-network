@@ -53,13 +53,12 @@ func NewRouter() http.Handler {
 
 	// media & uploads routes
 	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
-	mux.HandleFunc("POST /groups/{group_id}", middleware.Auth(handlers.GetGroupInfo))
 	mux.HandleFunc("GET /groups/{group_id}/users", middleware.Auth(users.GetAllUsersNotmemberHandler))
 
 	// groups routes
 	mux.HandleFunc("POST /groups", middleware.Auth(handlers.CreatGroupeHandler))
 	mux.HandleFunc("GET /groups", middleware.Auth(handlers.GetAllGroupsHandler))
-	mux.HandleFunc("GET /groups/my-groups", middleware.Auth(handlers.GetMYgroups))
+	mux.HandleFunc("POST /groups/{group_id}", middleware.Auth(handlers.GetGroupInfo))
 	mux.HandleFunc("GET /groups/{group_id}/posts", middleware.Auth(posts.GetPostsByGroupAPI))
 	mux.HandleFunc("GET /groups/{group_id}/comments", middleware.Auth(comments.GetCommentsByGroupAPI))
 
