@@ -10,6 +10,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [formError, setFormError] = useState(null);
   const [modal, setModal] = useState({ type: null, users: [] });
 
   useEffect(() => {
@@ -63,9 +64,10 @@ const handleFollow = () => {
 
   const handleEdit = (e) => {
     e.preventDefault();
+    setFormError(null);
     fetchApi("/profile/edit", "POST", new FormData(e.target))
       .then(() => window.location.reload())
-      .catch((err) => alert(err.message || "Update failed"));
+      .catch((err) => setFormError(err.message || "Update failed"));
   };
 
  const openModal = (type) => {
@@ -113,7 +115,7 @@ const handleFollow = () => {
           {!isPrivateHidden && user.about_me && <p className="about-me">{user.about_me}</p>}
 
           {/* Action Button */}
-          {relation === "self" ? <button onClick={() => setIsEditing(true)} className="action-btn btn-edit">Edit Profile</button>
+          {relation === "self" ? <button onClick={() => { setIsEditing(true); setFormError(null); }} className="action-btn btn-edit">Edit Profile</button>
           : relation === "accepted" ? <button onClick={handleFollow} className="action-btn btn-unfollow">Unfollow</button>
           : relation === "pending" ? <button onClick={handleFollow} className="action-btn btn-pending">Cancel Request</button>
           : <button onClick={handleFollow} className="action-btn btn-follow">Follow</button>}
@@ -158,10 +160,13 @@ const handleFollow = () => {
 
       {/* Edit Modal */}
       {isEditing && (
-        <div className="modal-overlay" onClick={() => setIsEditing(false)}>
+        <div className="modal-overlay" onClick={() => { setIsEditing(false); setFormError(null); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2 style={{ marginTop: 0 }}>Edit Profile</h2>
             <form onSubmit={handleEdit} className="edit-form">
+              {formError && (
+                <p style={{ color: "#f44336", fontSize: "0.9rem", margin: "0 0 10px 0" }}>{formError}</p>
+              )}
               <input name="first_name" defaultValue={user.first_name} className="form-input" required placeholder="First Name" />
               <input name="last_name" defaultValue={user.last_name} className="form-input" required placeholder="Last Name" />
               <input name="email" type="email" defaultValue={user.email} className="form-input" required placeholder="Email" />
