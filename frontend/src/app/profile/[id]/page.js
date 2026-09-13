@@ -8,21 +8,38 @@ const BACKEND_URL = "http://localhost:8080";
 export default function ProfilePage() {
   const { id } = useParams();
   const [profile, setProfile] = useState(null);
+  const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [modal, setModal] = useState({ type: null, users: [] });
 
   useEffect(() => {
+    let cancelled = false;
+
     fetch(`${BACKEND_URL}/profile/${id}`, { credentials: "include" })
-      .then((res) => res.json())
-      .then(setProfile);
+      .then((res) => res.text())
+      .then((text) => {
+        const data = text ? JSON.parse(text) : {};
+        if (!data.user) throw new Error(data.error || "User not found");
+        if (!cancelled) setProfile(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message || "Failed to load profile");
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const fetchApi = async (endpoint, method = "POST", body = null) => {
     const options = { method, credentials: "include" };
-    if (body && method !== "GET") options.body = body; 
-    
+    if (body && method !== "GET") options.body = body;
+
     const res = await fetch(`${BACKEND_URL}${endpoint}`, options);
-    return res.ok ? res.json() : Promise.reject(await res.json());
+    const text = await res.text();
+    const data = text ? JSON.parse(text) : {};
+    if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+    return data;
   };
 
 const handleFollow = () => {
@@ -48,7 +65,7 @@ const handleFollow = () => {
     e.preventDefault();
     fetchApi("/profile/edit", "POST", new FormData(e.target))
       .then(() => window.location.reload())
-      .catch((err) => alert(err.error || "Update failed"));
+      .catch((err) => alert(err.message || "Update failed"));
   };
 
  const openModal = (type) => {
@@ -65,7 +82,19 @@ const handleFollow = () => {
       });
   };
 
-  if (!profile) return <div className="profile-wrapper">Loading...</div>;
+  if (error) {
+    return (
+      <div className="profile-wrapper">
+        <div className="glass-card" style={{ padding: "40px", textAlign: "center" }}>
+          <h2 style={{ marginTop: 0 }}>Profile unavailable</h2>
+          <p>{error}</p>
+          <Link href="/posts" className="action-btn btn-edit">Back to posts</Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile || !profile.user) return <div className="profile-wrapper">Loading...</div>;
 
   const { user, relation, followers_count, following_count, posts } = profile;
   const isPrivateHidden = user.is_private && relation !== "self" && relation !== "accepted";

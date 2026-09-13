@@ -19,7 +19,16 @@ export async function apiRequest(endpoint, method = "GET", data = null, isFormDa
   }
 
   const res = await fetch(url, options);
-  const result = await res.json();
+
+  const text = await res.text();
+  let result = {};
+  if (text) {
+    try {
+      result = JSON.parse(text);
+    } catch {
+      result = { error: text };
+    }
+  }
 
   if (!res.ok) {
     throw new Error(result.error || "Something went wrong!");
