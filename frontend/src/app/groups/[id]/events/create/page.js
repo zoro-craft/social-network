@@ -14,6 +14,7 @@ export default function CreatEvent() {
   const groupId = Number(id);
 
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [fitsOptions, setFitsOptions] = useState('');
   const [secondOptions, setSecondOptions] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,6 +41,7 @@ export default function CreatEvent() {
       await apiRequest('/events', 'POST', {
         group_id: groupId,
         title: title.trim(),
+        description: description.trim(),
         fitsOptions: fitsOptions.trim(),
         secondOptions: secondOptions.trim(),
       });
@@ -73,11 +75,21 @@ export default function CreatEvent() {
           </div>
 
           <div className="glass-input-group">
+            <textarea
+              className="glass-input"
+              placeholder="Event description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          <div className="glass-input-group">
             <label>Participation option 1</label>
             <input
               className="glass-input"
               type="text"
-              placeholder="yes"
+              placeholder="Going"
               value={fitsOptions}
               onChange={(e) => setFitsOptions(e.target.value)}
               required
@@ -89,7 +101,7 @@ export default function CreatEvent() {
             <input
               className="glass-input"
               type="text"
-              placeholder="no"
+              placeholder="Not going"
               value={secondOptions}
               onChange={(e) => setSecondOptions(e.target.value)}
               required
