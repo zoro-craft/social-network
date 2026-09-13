@@ -72,15 +72,9 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if firstName == "" {
+	if firstName == ""  || lastName == ""{
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "First name is required."})
-		return
-	}
-
-	if lastName == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Last name is required."})
+		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "First & last name  is required."})
 		return
 	}
 
