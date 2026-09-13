@@ -31,7 +31,15 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "title is required")
 		return
 	}
+	if len(req.Title)<=20 {
+		utils.HandleError(w, http.StatusBadRequest, "title is to long")
+		return
+	}
 	if req.FitsOptions == "" || req.SecondOptions == "" {
+		utils.HandleError(w, http.StatusBadRequest, "both options are required")
+		return
+	}
+	if len(req.FitsOptions) <=10|| len(req.SecondOptions) <=10 {
 		utils.HandleError(w, http.StatusBadRequest, "both options are required")
 		return
 	}
