@@ -109,20 +109,45 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 	if p.GroupID == nil &&
 		p.Privacy == "private" &&
 		len(viewerIDs) == 0 {
-		utils.HandleError(w,http.StatusBadRequest,"Select at least one follower")
+		utils.HandleError(w, http.StatusBadRequest, "Select at least one follower")
 		return
 	}
 
-	p.Image, err = utils.SaveImage(r,"./uploads/posts","/uploads/posts/",
-	)
+	if p.GroupID == nil {
+		for _, idStr := range viewerIDs {
+			viewerID, err := strconv.Atoi(idStr)
+			if err != nil {
+				utils.HandleError(w, http.StatusBadRequest, "Invalid viewer id")
+				return
+			}
+
+			var isFollower bool
+			err = database.Database.QueryRow(
+				"SELECT EXISTS(SELECT 1 FROM followers WHERE follower_id = ? AND followee_id = ? AND status = 'accepted')",
+				viewerID, userID,
+			).Scan(&isFollower)
+
+			if err != nil {
+				utils.HandleError(w, http.StatusInternalServerError, "Database error")
+				return
+			}
+
+			if !isFollower {
+				utils.HandleError(w, http.StatusBadRequest, "Viewer must be an accepted follower")
+				return
+			}
+		}
+	}
+
+	p.Image, err = utils.SaveImage(r, "./uploads/posts", "/uploads/posts/")
 
 	if err != nil {
 		utils.HandleError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	// Create post
-	result, err := database.Database.Exec(`INSERT INTO posts (user_id,group_id,title,content,image,privacy)VALUES (?, ?, ?, ?, ?, ?)`,
-	p.UserID,p.GroupID,p.Title,p.Content,p.Image,p.Privacy,
+
+	result, err := database.Database.Exec(`INSERT INTO posts (user_id, group_id, title, content, image, privacy) VALUES (?, ?, ?, ?, ?, ?)`,
+		p.UserID, p.GroupID, p.Title, p.Content, p.Image, p.Privacy,
 	)
 
 	if err != nil {
@@ -132,39 +157,19 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 
 	postID, _ := result.LastInsertId()
 
-//Private viewers
 	if p.GroupID == nil {
-	for _, idStr := range viewerIDs {
-		viewerID, err := strconv.Atoi(idStr)
-		if err != nil {
-			utils.HandleError(w, http.StatusBadRequest, "Invalid viewer id")
-			return
-		}
-		//check if user follow the creator
-		var isFollower bool
-		err = database.Database.QueryRow(
-			"SELECT EXISTS(SELECT 1 FROM followers WHERE follower_id = ? AND followee_id = ? AND status = 'accepted')",
-			viewerID, userID,
-		).Scan(&isFollower)
-		if err != nil {
-			utils.HandleError(w, http.StatusInternalServerError, "Database error")
-			return
-		}
-		if !isFollower {
-			utils.HandleError(w, http.StatusBadRequest, "Viewer must be an accepted follower")
-			return
-		}
+		for _, idStr := range viewerIDs {
+			viewerID, _ := strconv.Atoi(idStr)
 
-		_, err = database.Database.Exec(
-			"INSERT OR IGNORE INTO post_viewers (post_id, user_id) VALUES (?, ?)",
-			postID, viewerID,
-		)
-		if err != nil {
-			utils.HandleError(w, http.StatusInternalServerError, "Failed to save post viewers")
-			return
+			_, err = database.Database.Exec(
+				"INSERT OR IGNORE INTO post_viewers (post_id, user_id) VALUES (?, ?)",
+				postID, viewerID,
+			)
+			if err != nil {
+				utils.HandleError(w, http.StatusInternalServerError, "Failed to save post viewers")
+				return
+			}
 		}
-	}
-
 	}
 
 	utils.RespondJSON(w, http.StatusCreated, map[string]string{"message": "Post created successfully!"})

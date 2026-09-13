@@ -99,7 +99,7 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 	}
 	err = database.Database.QueryRow(`
 		SELECT c.id, c.post_id, c.group_id, c.content, COALESCE(c.image, ''), c.user_id,
-		       COALESCE(u.first_name, ''), COALESCE(u.avatar, ''), c.created_at
+		u.first_name, COALESCE(u.avatar, ''), c.created_at
 		FROM comments c
 		JOIN users u ON c.user_id = u.id
 		WHERE c.id = ?
