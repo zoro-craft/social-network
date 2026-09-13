@@ -136,11 +136,32 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 	if p.GroupID == nil {
 	for _, idStr := range viewerIDs {
 		viewerID, err := strconv.Atoi(idStr)
-		if err == nil {
-			database.Database.Exec(
-				"INSERT OR IGNORE INTO post_viewers (post_id, user_id) VALUES (?, ?)",
-				postID, viewerID,
-			)
+		if err != nil {
+			utils.HandleError(w, http.StatusBadRequest, "Invalid viewer id")
+			return
+		}
+		//check if user follow the creator
+		var isFollower bool
+		err = database.Database.QueryRow(
+			"SELECT EXISTS(SELECT 1 FROM followers WHERE follower_id = ? AND followee_id = ? AND status = 'accepted')",
+			viewerID, userID,
+		).Scan(&isFollower)
+		if err != nil {
+			utils.HandleError(w, http.StatusInternalServerError, "Database error")
+			return
+		}
+		if !isFollower {
+			utils.HandleError(w, http.StatusBadRequest, "Viewer must be an accepted follower")
+			return
+		}
+
+		_, err = database.Database.Exec(
+			"INSERT OR IGNORE INTO post_viewers (post_id, user_id) VALUES (?, ?)",
+			postID, viewerID,
+		)
+		if err != nil {
+			utils.HandleError(w, http.StatusInternalServerError, "Failed to save post viewers")
+			return
 		}
 	}
 
