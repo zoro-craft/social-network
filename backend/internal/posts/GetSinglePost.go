@@ -25,7 +25,7 @@ func GetPostByIDAPI(w http.ResponseWriter, r *http.Request) {
   
   query := postSelect  + fromPosts + "WHERE p.id = ? AND (" + visibleCondition + ")"
 
-  err = database.Database.QueryRow(query, postID, viewerID, viewerID, viewerID).Scan(
+  err = database.Database.QueryRow(query, postID, viewerID, viewerID, viewerID, viewerID).Scan(
     &p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy,
     &p.GroupID, &p.UserID, &p.Full_name, &p.CreatedAt,
   )
