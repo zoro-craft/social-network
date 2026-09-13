@@ -6,10 +6,12 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { apiRequest } from '@/utils/api';
 import GroupCard from './GroupCard';
 import styles from '@/app/styles/groups.module.css';
+import { useToast } from '@/app/context/ToastContext';
 
 export default function Groupspage() {
     const { auth, loading } = useRequireAuth();
     const router = useRouter();
+    const showToast = useToast();
 
     const [allGroups, setAllGroups] = useState([]);
     const [groups, setGroups] = useState([]);
@@ -31,6 +33,7 @@ export default function Groupspage() {
                 setAllGroups(all);
                 setGroups(notMember);
             } catch (error) {
+                showToast('Failed to load groups');
                 console.log(error);
                 setAllGroups([]);
                 setGroups([]);

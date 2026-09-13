@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useToast } from '@/app/context/ToastContext';
 import styles from '@/app/styles/group-details.module.css';
 import { useEffect, useState } from 'react';
 import { apiRequest } from '@/utils/api';
@@ -13,6 +14,8 @@ export default function GroupDetailsPage() {
     const router = useRouter();
     const { id } = useParams();
     const [group, setGroupInfo] = useState(null);
+    const showToast = useToast();
+
 
     useEffect(() => {
         if (!auth.authenticated || !id) return;
@@ -23,7 +26,7 @@ export default function GroupDetailsPage() {
                 setGroupInfo(res);
 
             } catch (error) {
-                setGroupInfo(null);
+                showToast('Failed to load group');
             }
         };
 

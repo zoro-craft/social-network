@@ -1,11 +1,13 @@
 import { useRouter } from "next/navigation";
 import styles from '@/app/styles/groups.module.css';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useToast } from '@/app/context/ToastContext';
 import { apiRequest } from "@/utils/api";
 
 export default function GroupCard({ group }) {
     const { auth, loading } = useRequireAuth();
     const router = useRouter();
+    const showToast = useToast();
 
     if (loading) return null;
 
@@ -15,6 +17,7 @@ export default function GroupCard({ group }) {
         try {
             await apiRequest(`/groups/${group.id}/join`, 'POST')
         } catch (error) {
+            showToast('Failed to request to join group');
             console.log('faild to request to join to groupe', error)
         }
     }

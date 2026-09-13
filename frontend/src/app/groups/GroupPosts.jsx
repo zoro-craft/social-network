@@ -4,9 +4,11 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { API_BASE } from '@/utils/api';
 import formatDate from '@/utils/format';
+import { useToast } from '@/app/context/ToastContext';
 
 export default function GroupPosts({ groupId }) {
     const router = useRouter();
+    const showToast = useToast();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -25,6 +27,7 @@ export default function GroupPosts({ groupId }) {
                     setPosts([]);
                 }
             } catch {
+                showToast('Failed to fetch posts');
                 setPosts([]);
             } finally {
                 setLoading(false);
