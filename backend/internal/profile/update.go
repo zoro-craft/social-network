@@ -1,7 +1,6 @@
 package profile
 
 import (
-	"database/sql"
 	"net/http"
 	"strings"
 
@@ -53,24 +52,43 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	isPrivate := r.FormValue("is_private") == "on"
-	firstName := r.FormValue("first_name")
-	lastName := r.FormValue("last_name")
+	firstName := strings.TrimSpace(r.FormValue("first_name"))
+	lastName := strings.TrimSpace(r.FormValue("last_name"))
 	email := r.FormValue("email")
-	dob := r.FormValue("date_of_birth")
+	dob := strings.TrimSpace(r.FormValue("date_of_birth"))
 	nickname := strings.TrimSpace(r.FormValue("nickname"))
 	aboutMe := r.FormValue("about_me")
+	password := r.FormValue("password")
+
+	if _, err := auth.ValidateDOB(dob); err != nil {
+		utils.HandleError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := auth.ValidateName(firstName, lastName); err != nil {
+		utils.HandleError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if !auth.ValidateEmail(email) {
+		utils.HandleError(w, http.StatusBadRequest, "Please enter a valid email address.")
+		return
+	}
+
+	if password != "" {
+		if err := auth.ValidatePassword(password); err != nil {
+			utils.HandleError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+	}
 
 	var nicknameValue any
 	if nickname != "" {
-		var existingID int
-		err = database.Database.QueryRow(
-			"SELECT id FROM users WHERE nickname = ? AND id != ?",
-			nickname, userID,
-		).Scan(&existingID)
-		if err == nil {
+		taken, err := auth.ValidateNickname(nickname, userID)
+		if taken {
 			utils.HandleError(w, http.StatusConflict, "Nickname already exists")
 			return
-		} else if err != sql.ErrNoRows {
+		} else if err != nil {
 			utils.HandleError(w, http.StatusInternalServerError, "Failed to update profile")
 			return
 		}
