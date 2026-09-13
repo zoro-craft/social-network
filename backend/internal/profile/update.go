@@ -60,8 +60,6 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 	nickname := strings.TrimSpace(r.FormValue("nickname"))
 	aboutMe := r.FormValue("about_me")
 
-	// Empty nickname is stored as NULL so every user can
-	// leave it blank (nickname column has a UNIQUE constraint).
 	var nicknameValue any
 	if nickname != "" {
 		var existingID int

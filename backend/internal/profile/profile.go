@@ -14,16 +14,20 @@ import (
 func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
 
 	profileIDStr := r.PathValue("id")
-	profileID, _ := strconv.Atoi(profileIDStr)
+	profileID, err := strconv.Atoi(profileIDStr)
+	if err != nil || profileID <= 0 {
+		utils.HandleError(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
 
 	requesterID, _ := auth.GetUserID(r)
 
 	var user models.User
-	err := database.Database.QueryRow(`SELECT id, email, first_name, last_name, COALESCE(date_of_birth, ''), nickname, avatar, about_me, is_private, created_at FROM users WHERE id = ?`, profileID).Scan(
+	err = database.Database.QueryRow(`SELECT id, email, first_name, last_name, COALESCE(date_of_birth, ''), COALESCE(nickname, ''), COALESCE(avatar, ''), COALESCE(about_me, ''), is_private, created_at FROM users WHERE id = ?`, profileID).Scan(
 		&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.DateOfBirth, &user.Nickname, &user.Avatar, &user.AboutMe, &user.IsPrivate, &user.CreatedAt,
 	)
 	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
+		utils.HandleError(w, http.StatusNotFound, "User not found")
 		return
 	}
 
