@@ -9,6 +9,7 @@ type Event struct {
 	ID           int         `json:"id"`
 	GroupID      int         `json:"group_id"`
 	Title        string      `json:"title"`
+	Description  string      `json:"description"`
 	CreatedBy    int         `json:"created_by"`
 	CreatedAt    string      `json:"created_at"`
 	Options      []string    `json:"options"`
@@ -24,6 +25,7 @@ type voteRequest struct {
 type createEventRequest struct {
 	GroupID       int    `json:"group_id"`
 	Title         string `json:"title"`
+	Description   string `json:"description"`
 	FitsOptions   string `json:"fitsOptions"`
 	SecondOptions string `json:"secondOptions"`
 }

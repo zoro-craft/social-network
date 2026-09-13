@@ -80,6 +80,10 @@ export default function GroupEvent({ group_id }) {
             <span>{formatDate(event.created_at)}</span>
           </div>
 
+          {event.description && (
+            <p className="glass-muted-text">{event.description}</p>
+          )}
+
           <div className="glass-vote-options">
             {(event.options || []).map((option) => {
               const count = countFor(event, option);
