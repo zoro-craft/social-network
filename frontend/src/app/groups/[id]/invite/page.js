@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useToast } from '@/app/context/ToastContext';
-import styles from '../../../styles/user.module.css';
 
 export default function Userlistpage() {
     const { auth, loading } = useRequireAuth();
@@ -33,7 +32,7 @@ export default function Userlistpage() {
     if (loading) {
         return (
             <div className="glass-feed-page">
-                <p className={styles.mutedText}>Loading ...</p>
+                <p className="glass-muted-text">Loading ...</p>
             </div>
         );
     }
@@ -56,21 +55,21 @@ export default function Userlistpage() {
 
     return (
         <div className="glass-feed-page">
-            <h1 className={styles.pageTitle}>Invite Members</h1>
+            <h1 className="glass-invite-title">Invite Members</h1>
             {users.length === 0 ? (
-                <p className={styles.emptyState}>No users found.</p>
+                <p className="glass-empty-state">No users found.</p>
             ) : (
-                <div className={styles.grid}>
+                <div className="glass-invite-grid">
                     {users.map((user) => {
 
                         return (
-                            <div key={user.id} className={styles.card}>
-                                <div className={styles.cardTop}>
+                            <div key={user.id} className="glass-invite-card">
+                                <div className="glass-invite-top">
                                     <Avatar src={user.avatar} name={user.full_name} size={48} />
-                                    <h2 className={styles.name}>{user.full_name}</h2>
+                                    <h2 className="glass-invite-name">{user.full_name}</h2>
                                 </div>
                                 <button
-                                    className={styles.inviteBtn}
+                                    className="glass-invite-btn"
                                     onClick={() => inviteUser(user.id)}
                                 >
                                     Invite

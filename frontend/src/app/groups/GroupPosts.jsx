@@ -48,9 +48,9 @@ export default function GroupPosts({ groupId }) {
     }
 
     return (
-        <div>
+        <div className="glass-group-list">
             {posts.map((post) => (
-                <div key={post.id} className="glass-post-card" style={{ marginBottom: 16 }}>
+                <div key={post.id} className="glass-post-card">
                     <div className="glass-post-header">
                         <span className="glass-post-author">Posted by {post.full_name}</span>
                         <span>{formatDate(post.created_at)}</span>

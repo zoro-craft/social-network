@@ -74,12 +74,11 @@ export default function GroupEvent({ group_id }) {
   }
 
   return (
-    <div>
+    <div className="glass-group-list">
       {events.map((event) => (
         <div
           key={event.id}
           className="glass-post-card"
-          style={{ marginBottom: 16 }}
         >
           <div className="glass-post-header">
             <span className="glass-post-author">{event.title}</span>
