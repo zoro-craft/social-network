@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react';
 import { apiRequest } from '@/utils/api';
 import GroupPosts from '@/app/groups/GroupPosts';
 import GroupEvent from '@/app/groups/Groupevents';
+import Image from "next/image";
+
 
 export default function GroupDetailsPage() {
     const { auth, loading } = useRequireAuth();
@@ -62,7 +64,7 @@ export default function GroupDetailsPage() {
                 </div>
 
                 <header className={styles.headerCard}>
-                    <img
+                    <Image
                         className={styles.groupIcon}
                         src="/group-avatar.jpeg"
                         alt={`${group.titel} avatar`}
