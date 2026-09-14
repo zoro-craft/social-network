@@ -57,6 +57,7 @@ func GetGroupInfo(w http.ResponseWriter, r *http.Request) {
 	exists := repositories.IsMember(user_id, group_id)
 	if !exists {
 		utils.HandleError(w, 403, http.StatusText(403))
+		return
 	}
 
 	groupinfo, err := repositories.GetGroupbyid(group_id)

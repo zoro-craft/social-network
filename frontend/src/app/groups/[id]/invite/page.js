@@ -3,7 +3,7 @@
 import { apiRequest } from "@/utils/api";
 import Avatar from "@/components/Avatar";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams , useRouter } from "next/navigation";
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useToast } from '@/app/context/ToastContext';
 import styles from '../../../styles/user.module.css';
@@ -13,20 +13,22 @@ export default function Userlistpage() {
     const { id } = useParams();
     const [users, setUsers] = useState([]);
     const showToast = useToast();
-    
+    const router = useRouter();
+
+
     useEffect(() => {
-        if (!auth.authenticated || !id ) return;
+        if (!auth.authenticated || !id) return;
         const Fetchusers = async () => {
             try {
                 const res = await apiRequest(`/groups/${id}/users`);
                 setUsers(res || []);
             } catch {
                 showToast('Failed to load users');
-                setUsers([]);
+                router.push("/groups")
             }
         };
         Fetchusers();
-    }, [auth.authenticated , id]);
+    }, [auth.authenticated, id]);
 
     if (loading) {
         return (
@@ -37,21 +39,20 @@ export default function Userlistpage() {
     }
 
     const inviteUser = async (userID) => {
-    try {
-        const response = await apiRequest(
-            `/groups/${id}/invitations`,
-            "POST",
-            {
-                group_id: Number(id),
-                invited_user_id: userID,
-            }
-        );
+        try {
+            const response = await apiRequest(
+                `/groups/${id}/invitations`,
+                "POST",
+                {
+                    group_id: Number(id),
+                    invited_user_id: userID,
+                }
+            );
 
-    } catch (error) {
-        showToast('Failed to send invitation');
-        console.error("Invitation error:", error);
-    }
-};
+        } catch (error) {
+            showToast('Failed to send invitation');
+        }
+    };
 
     return (
         <div className="glass-feed-page">
