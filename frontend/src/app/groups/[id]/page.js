@@ -26,7 +26,7 @@ export default function GroupDetailsPage() {
                 setGroupInfo(res);
 
             } catch (error) {
-                showToast('Failed to load group');
+                showToast('Unable to load group');
                 router.push("/groups")
             }
         };

@@ -22,9 +22,7 @@ export async function apiRequest(endpoint, method = "GET", data = null, isFormDa
   const result = await res.json();
 
   if (!res.ok) {
-    const error = new Error(result.error || "Something went wrong!");
-    error.status = res.status;
-    throw error;
+    throw new Error(result.error  || "Something went wrong!");
   }
 
   return result;

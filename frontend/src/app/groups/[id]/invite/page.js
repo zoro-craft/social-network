@@ -3,7 +3,7 @@
 import { apiRequest } from "@/utils/api";
 import Avatar from "@/components/Avatar";
 import { useState, useEffect } from "react";
-import { useParams , useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useToast } from '@/app/context/ToastContext';
 import styles from '../../../styles/user.module.css';
@@ -23,8 +23,8 @@ export default function Userlistpage() {
                 const res = await apiRequest(`/groups/${id}/users`);
                 setUsers(res || []);
             } catch {
-                showToast('Failed to load users');
-                router.push("/groups")
+                showToast("Unable to load users.")
+                 router.push("/groups")
             }
         };
         Fetchusers();
