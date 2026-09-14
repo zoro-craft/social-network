@@ -22,7 +22,7 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	parts := strings.Split((r.URL.Path), "/")
+	parts := strings.Split(r.URL.Path, "/")
 
 	if len(parts) < 4 {
 		utils.HandleError(w, 400, http.StatusText(400))
@@ -40,12 +40,6 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request_id, err := repositories.SaveJoinRequest(group_id, user_id)
-	if err != nil {
-		utils.HandleError(w, 500, http.StatusText(500))
-		return
-	}
-
 	// Get the admin from the group_id
 
 	creator_id, err := repositories.GetGroupCreator(group_id)
@@ -56,6 +50,12 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 
 	if user_id == creator_id {
 		utils.HandleError(w, 400, http.StatusText(400))
+		return
+	}
+	
+	request_id, err := repositories.SaveJoinRequest(group_id, user_id)
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
 
