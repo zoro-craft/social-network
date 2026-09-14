@@ -3,82 +3,79 @@
 import { apiRequest } from "@/utils/api";
 import Avatar from "@/components/Avatar";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import styles from '../../../styles/user.module.css';
+import { useToast } from '@/app/context/ToastContext';
 
 export default function Userlistpage() {
     const { auth, loading } = useRequireAuth();
     const { id } = useParams();
     const [users, setUsers] = useState([]);
-    
-    const [invitedUsers, setInvitedUsers] = useState(new Set());
+    const showToast = useToast();
+    const router = useRouter();
+
 
     useEffect(() => {
-        if (!auth.authenticated || !id ) return;
+        if (!auth.authenticated || !id) return;
         const Fetchusers = async () => {
             try {
                 const res = await apiRequest(`/groups/${id}/users`);
                 setUsers(res || []);
             } catch {
-                setUsers([]);
+                showToast("Unable to load users.")
+                 router.push("/groups")
             }
         };
         Fetchusers();
-    }, [auth.authenticated , id]);
+    }, [auth.authenticated, id]);
 
     if (loading) {
         return (
             <div className="glass-feed-page">
-                <p className={styles.mutedText}>Loading ...</p>
+                <p className="glass-muted-text">Loading ...</p>
             </div>
         );
     }
 
     const inviteUser = async (userID) => {
-    try {
-        const response = await apiRequest(
-            `/groups/${id}/invitations`,
-            "POST",
-            {
-                group_id: Number(id),
-                invited_user_id: userID,
+        try {
+            const response = await apiRequest(
+                `/groups/${id}/invitations`,
+                "POST",
+                {
+                    group_id: Number(id),
+                    invited_user_id: userID,
+                }
+            );
+
+        } catch (error) { 
+            if (error.error) {
+                showToast('')
             }
-        );
-
-        setInvitedUsers((prev) => {
-            const newSet = new Set(prev);
-            newSet.add(userID);
-            return newSet;
-        });
-
-    } catch (error) {
-        console.error("Invitation error:", error);
-    }
-};
+            showToast('Failed to send invitation');
+        }
+    };
 
     return (
         <div className="glass-feed-page">
-            <h1 className={styles.pageTitle}>Invite Members</h1>
+            <h1 className="glass-invite-title">Invite Members</h1>
             {users.length === 0 ? (
-                <p className={styles.emptyState}>No users found.</p>
+                <p className="glass-empty-state">No users found.</p>
             ) : (
-                <div className={styles.grid}>
+                <div className="glass-invite-grid">
                     {users.map((user) => {
-                        const isInvited = invitedUsers.has(user.id);
 
                         return (
-                            <div key={user.id} className={styles.card}>
-                                <div className={styles.cardTop}>
+                            <div key={user.id} className="glass-invite-card">
+                                <div className="glass-invite-top">
                                     <Avatar src={user.avatar} name={user.full_name} size={48} />
-                                    <h2 className={styles.name}>{user.full_name}</h2>
+                                    <h2 className="glass-invite-name">{user.full_name}</h2>
                                 </div>
                                 <button
-                                    className={styles.inviteBtn}
+                                    className="glass-invite-btn"
                                     onClick={() => inviteUser(user.id)}
-                                    disabled={isInvited}
                                 >
-                                    {isInvited ? "... wait the response" : "Invite"}
+                                    Invite
                                 </button>
                             </div>
                         );

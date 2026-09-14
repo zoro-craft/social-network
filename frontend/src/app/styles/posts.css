@@ -214,3 +214,16 @@
   border-top: 1px solid var(--border);
   padding-top: 10px;
 }
+
+.glass-event-datetime {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  color: var(--accent-strong, var(--accent));
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}

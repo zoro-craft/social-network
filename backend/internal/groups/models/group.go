@@ -37,3 +37,9 @@ type GroupRequest struct {
 	Status    string    `json:"status"`
 	CreatedAt time.Time `json:"created_at"`
 }
+
+type User struct {
+	ID        int    `json:"id"`
+	Full_name string `json:"full_name"`
+	Avatar    string `json:"avatar,omitempty"`
+}

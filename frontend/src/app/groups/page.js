@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { apiRequest } from '@/utils/api';
 import GroupCard from './GroupCard';
-import styles from '@/app/styles/groups.module.css';
+import { useToast } from '@/app/context/ToastContext';
 
 export default function Groupspage() {
     const { auth, loading } = useRequireAuth();
     const router = useRouter();
+    const showToast = useToast();
 
     const [allGroups, setAllGroups] = useState([]);
     const [groups, setGroups] = useState([]);
@@ -31,6 +32,7 @@ export default function Groupspage() {
                 setAllGroups(all);
                 setGroups(notMember);
             } catch (error) {
+                showToast('Failed to load groups');
                 console.log(error);
                 setAllGroups([]);
                 setGroups([]);
@@ -60,74 +62,78 @@ export default function Groupspage() {
 
     if (loading) {
         return (
-            <div className={styles.page}>
-                <p className={styles.mutedText}>
-                    Loading groups...
-                </p>
-            </div>
+            <main className="glass-group-page">
+                <div className="glass-group-wrapper">
+                    <p className="glass-muted-text">
+                        Loading groups...
+                    </p>
+                </div>
+            </main>
         );
     }
 
     if (!auth.authenticated) return null;
 
     return (
-        <main className={styles.page}>
-            <div className={styles.header}>
-                <h1 className={styles.pageTitle}>
-                    Groups
-                </h1>
+        <main className="glass-group-page">
+            <div className="glass-group-wrapper">
+                <header className="glass-group-header">
+                    <h1 className="glass-groups-title">
+                        Groups
+                    </h1>
 
-                <div className={styles.headerActions}>
+                    <div className="glass-header-actions">
 
-                    <button
-                        className={styles.createButton}
-                        onClick={() => router.push('/groups/create')}
-                    >
-                        <span
-                            className={styles.buttonIcon}
-                            aria-hidden="true"
+                        <button
+                            className={`glass-btn-create glass-btn-primary`}
+                            onClick={() => router.push('/groups/create')}
                         >
-                            +
-                        </span>
+                            <span
+                                className="glass-btn-icon"
+                                aria-hidden="true"
+                            >
+                                +
+                            </span>
 
-                        Create Group
-                    </button>
+                            Create Group
+                        </button>
 
-                    <button
-                        className={styles.browseButton}
-                        onClick={showAllGroups}
-                    >
-                        All Groups
-                    </button>
+                        <button
+                            className="glass-btn-browse"
+                            onClick={showAllGroups}
+                        >
+                            All Groups
+                        </button>
 
-                    <button
-                        className={styles.browseButton}
-                        onClick={showMyGroups}
-                    >
-                        My Groups
-                    </button>
+                        <button
+                            className="glass-btn-browse"
+                            onClick={showMyGroups}
+                        >
+                            My Groups
+                        </button>
 
-                </div>
+                    </div>
+                </header>
+
+                <section className="glass-groups-section">
+                    <div className="glass-groups-grid">
+
+                        {groups.length === 0 ? (
+                            <p className="glass-empty-state">
+                                No groups found.
+                            </p>
+                        ) : (
+                            groups.map((group) => (
+                                <GroupCard
+                                    key={group.id}
+                                    group={group}
+                                />
+                            ))
+                        )}
+
+                    </div>
+                </section>
             </div>
-
-            <section className={styles.groupsSection}>
-                <div className={styles.container}>
-
-                    {groups.length === 0 ? (
-                        <p className={styles.emptyState}>
-                            No groups found.
-                        </p>
-                    ) : (
-                        groups.map((group) => (
-                            <GroupCard
-                                key={group.id}
-                                group={group}
-                            />
-                        ))
-                    )}
-
-                </div>
-            </section>
         </main>
     );
 }

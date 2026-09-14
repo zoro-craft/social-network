@@ -3,31 +3,27 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { apiRequest } from "../../../utils/api";
-import { useAuth } from "../../../app/context/AuthContext";
+import { apiPost } from "@/utils/api";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
   const { refreshAuth } = useAuth();
-  
-  const [formData, setFormData] = useState({
-    identify: "", 
-    password: "",
-  });
+
+  const [formData, setFormData] = useState({ identify: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) =>
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); 
+    setLoading(true);
     setError("");
 
     try {
-      await apiRequest("/login", "POST", formData);
+      await apiPost("/login", formData);
       await refreshAuth();
       router.push("/posts");
     } catch (err) {

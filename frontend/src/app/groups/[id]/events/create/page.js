@@ -14,6 +14,9 @@ export default function CreatEvent() {
   const groupId = Number(id);
 
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [eventDate, setEventDate] = useState('');
+  const [eventTime, setEventTime] = useState('');
   const [fitsOptions, setFitsOptions] = useState('');
   const [secondOptions, setSecondOptions] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,6 +26,14 @@ export default function CreatEvent() {
 
     if (!title.trim()) {
       showToast('Title is required');
+      return;
+    }
+    if (!eventDate) {
+      showToast('Event date is required');
+      return;
+    }
+    if (!eventTime) {
+      showToast('Event time is required');
       return;
     }
     if (!fitsOptions.trim() || !secondOptions.trim()) {
@@ -40,6 +51,9 @@ export default function CreatEvent() {
       await apiRequest('/events', 'POST', {
         group_id: groupId,
         title: title.trim(),
+        description: description.trim(),
+        eventDate,
+        eventTime,
         fitsOptions: fitsOptions.trim(),
         secondOptions: secondOptions.trim(),
       });
@@ -73,11 +87,43 @@ export default function CreatEvent() {
           </div>
 
           <div className="glass-input-group">
+            <textarea
+              className="glass-input"
+              placeholder="Event description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          <div className="glass-input-group">
+            <label>Event date</label>
+            <input
+              className="glass-input"
+              type="date"
+              value={eventDate}
+              onChange={(e) => setEventDate(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="glass-input-group">
+            <label>Event time</label>
+            <input
+              className="glass-input"
+              type="time"
+              value={eventTime}
+              onChange={(e) => setEventTime(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="glass-input-group">
             <label>Participation option 1</label>
             <input
               className="glass-input"
               type="text"
-              placeholder="yes"
+              placeholder="Going"
               value={fitsOptions}
               onChange={(e) => setFitsOptions(e.target.value)}
               required
@@ -89,7 +135,7 @@ export default function CreatEvent() {
             <input
               className="glass-input"
               type="text"
-              placeholder="no"
+              placeholder="Not going"
               value={secondOptions}
               onChange={(e) => setSecondOptions(e.target.value)}
               required

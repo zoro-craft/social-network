@@ -43,7 +43,6 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("POST /profile/edit", middleware.Auth(profile.EditProfileAPI))
 	mux.HandleFunc("POST /profile/toggle-visibility", middleware.Auth(profile.SwitchStatus))
 	mux.HandleFunc("GET /users/search", middleware.Auth(users.SearchUsersAPI))
-	mux.HandleFunc("GET /users", middleware.Auth(users.GetAllUsersHandler))
 
 	// followers routes
 	mux.HandleFunc("GET /profile/{id}/followers", middleware.Auth(followers.GetFollowersAPI))
@@ -57,13 +56,11 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("/uploads/posts/", middleware.Auth(uploads.ServeImage))
 	mux.HandleFunc("/uploads/comments/", middleware.Auth(uploads.ServeImage))
 	mux.HandleFunc("/uploads/avatars/", middleware.Auth(utils.ServeUpload))
-	mux.HandleFunc("POST /groups/{group_id}", middleware.Auth(handlers.GetGroupInfo))
-	mux.HandleFunc("GET /groups/{group_id}/users", middleware.Auth(users.GetAllUsersNotmemberHandler))
-
+	
 	// groups routes
 	mux.HandleFunc("POST /groups", middleware.Auth(handlers.CreatGroupeHandler))
 	mux.HandleFunc("GET /groups", middleware.Auth(handlers.GetAllGroupsHandler))
-	mux.HandleFunc("GET /groups/my-groups", middleware.Auth(handlers.GetMYgroups))
+	mux.HandleFunc("POST /groups/{group_id}", middleware.Auth(handlers.GetGroupInfo))
 	mux.HandleFunc("GET /groups/{group_id}/posts", middleware.Auth(posts.GetPostsByGroupAPI))
 	mux.HandleFunc("GET /groups/{group_id}/comments", middleware.Auth(comments.GetCommentsByGroupAPI))
 
@@ -76,6 +73,8 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("POST /groups/{group_id}/invitations", middleware.Auth(handlers.InvitationsHandler))
 	mux.HandleFunc("POST /invitations/{invitation_id}/accept", middleware.Auth(handlers.AcceptInvitationResponse))
 	mux.HandleFunc("POST /invitations/{invitation_id}/reject", middleware.Auth(handlers.RejectInvitationResponse))
+	mux.HandleFunc("GET /groups/{group_id}/users", middleware.Auth(handlers.GetAllUsersNotmemberHandler))
+
 
 	// events routes
 	mux.HandleFunc("POST /events", middleware.Auth(events.CreateEvent))

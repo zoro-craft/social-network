@@ -20,7 +20,11 @@ func GetPostByIDAPI(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  viewerID, _ := auth.GetUserID(r)
+	viewerID, err := auth.GetUserID(r)
+	if err != nil {
+		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in")
+		return
+	}
   var p Post
   
   query := postSelect  + fromPosts + "WHERE p.id = ? AND (" + visibleCondition + ")"

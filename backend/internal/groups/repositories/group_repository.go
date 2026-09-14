@@ -35,6 +35,7 @@ func GetGroupNameByID(groupID int) (string, error) {
 	return groupName, nil
 }
 
+
 func GroupExists(groupID int) bool {
 	var exists bool
 
@@ -59,6 +60,7 @@ func AddGroupMember(groupID, userID int) error {
 
 	return err
 }
+
 
 func GetAllGroups(userID int) ([]models.Groupe, error) {
 	rows, err := database.Database.Query(`
@@ -109,22 +111,6 @@ func GetAllGroups(userID int) ([]models.Groupe, error) {
 	return groups, nil
 }
 
-func Alreadymember(group_id int, user_id int) bool {
-	var exists bool
-
-	err := database.Database.QueryRow(`
-		SELECT EXISTS(
-			SELECT 1 FROM group_members
-			WHERE group_id = ? AND user_id = ?
-		)
-	`, group_id, user_id).Scan(&exists)
-	if err != nil {
-		return false
-	}
-
-	return exists
-}
-
 func GetGroupCreator(group_id int) (int, error) {
 	var creatorID int
 
@@ -139,6 +125,7 @@ func GetGroupCreator(group_id int) (int, error) {
 
 	return creatorID, nil
 }
+
 
 func GetUserFullName(user_id int) string {
 	var fullName string
@@ -155,47 +142,7 @@ func GetUserFullName(user_id int) string {
 	return fullName
 }
 
-func GetMyGroups(userID int) ([]models.Groupe, error) {
-	rows, err := database.Database.Query(`
-		SELECT 
-			ug.id,
-			ug.creator_id,
-			ug.title,
-			ug.description
-		FROM user_groups ug
-		JOIN group_members gm ON ug.id = gm.group_id
-		WHERE gm.user_id = ?
-		ORDER BY ug.id DESC
-	`, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
 
-	var groups []models.Groupe
-
-	for rows.Next() {
-		var group models.Groupe
-
-		err := rows.Scan(
-			&group.Id,
-			&group.Admin,
-			&group.Title,
-			&group.Description,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		groups = append(groups, group)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return groups, nil
-}
 
 func GetGroupbyid(group_id int) (models.Groupe, error) {
 	var group models.Groupe
@@ -216,4 +163,23 @@ func GetGroupbyid(group_id int) (models.Groupe, error) {
 	}
 
 	return group, nil
+}
+
+
+func IsMember(userID int, groupID int) bool {
+	var exists bool
+
+	err := database.Database.QueryRow(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM group_members
+			WHERE user_id = ? AND group_id = ?
+		)
+	`, userID, groupID).Scan(&exists)
+
+	if err != nil {
+		return false
+	}
+
+	return exists
 }

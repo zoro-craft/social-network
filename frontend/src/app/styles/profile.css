@@ -283,3 +283,55 @@
   accent-color: var(--text-primary);
   cursor: pointer;
 }
+
+.form-error {
+  color: var(--danger);
+  font-size: 0.9rem;
+  margin: 0 0 10px 0;
+}
+
+.profile-dob {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 10px 0;
+}
+
+.profile-error-card {
+  padding: 40px;
+  text-align: center;
+}
+
+.users-modal {
+  max-width: 400px;
+}
+
+.users-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.modal-user-row {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-user-name {
+  color: var(--text-primary);
+  font-weight: bold;
+}
+
+.modal-user-handle {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.users-modal-empty {
+  color: var(--text-muted);
+  text-align: center;
+}

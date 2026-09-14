@@ -119,6 +119,12 @@
     width: 100%;
   }
 
+  .glass-header-actions .glass-btn-create,
+  .glass-header-actions .glass-btn-browse {
+    flex: 1;
+    padding-inline: 10px;
+  }
+
   .glass-groups-title {
     font-size: 26px;
   }
@@ -130,6 +136,11 @@
 
   .glass-group-actions {
     grid-template-columns: 1fr;
+  }
+
+  .glass-group-content {
+    grid-template-columns: 1fr;
+    gap: 28px;
   }
 
   .glass-comment-form-row {
@@ -185,8 +196,7 @@
 }
 
 @media (max-width: 480px) {
-  .glass-invite-top,
-  .glass-group-info {
+  .glass-invite-top {
     text-align: center;
   }
 }

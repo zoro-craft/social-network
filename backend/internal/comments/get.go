@@ -29,7 +29,11 @@ func GetCommentsAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	viewerID, _ := auth.GetUserID(r)
+	viewerID, err := auth.GetUserID(r)
+	if err != nil {
+		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in")
+		return
+	}
 
 	if !posts.CanViewPost(postID, viewerID) {
 		utils.HandleError(w, http.StatusNotFound, "Post not found")

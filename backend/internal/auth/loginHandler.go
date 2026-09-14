@@ -87,7 +87,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid email/nickname or password"})
+			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid credentials"})
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
@@ -99,7 +99,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	err = bcrypt.CompareHashAndPassword([]byte(dbPasswordHash), []byte(password))
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid username/email or password."})
+		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid credentials"})
 		return
 	}
 

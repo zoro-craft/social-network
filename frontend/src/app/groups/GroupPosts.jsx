@@ -4,9 +4,11 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { API_BASE } from '@/utils/api';
 import formatDate from '@/utils/format';
+import { useToast } from '@/app/context/ToastContext';
 
 export default function GroupPosts({ groupId }) {
     const router = useRouter();
+    const showToast = useToast();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -25,6 +27,7 @@ export default function GroupPosts({ groupId }) {
                     setPosts([]);
                 }
             } catch {
+                showToast('Failed to fetch posts');
                 setPosts([]);
             } finally {
                 setLoading(false);
@@ -45,9 +48,9 @@ export default function GroupPosts({ groupId }) {
     }
 
     return (
-        <div>
+        <div className="glass-group-list">
             {posts.map((post) => (
-                <div key={post.id} className="glass-post-card" style={{ marginBottom: 16 }}>
+                <div key={post.id} className="glass-post-card">
                     <div className="glass-post-header">
                         <span className="glass-post-author">Posted by {post.full_name}</span>
                         <span>{formatDate(post.created_at)}</span>
