@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { apiGet } from "@/utils/api";
+import { apiRequest } from "@/utils/api";
 
 const VALID_RELATIONS = ["self", "accepted", "pending", "none"];
 
@@ -14,7 +14,7 @@ export function useProfile(id) {
 
   const loadProfile = useCallback(
     () =>
-      apiGet(`/profile/${id}`).then((data) => {
+      apiRequest(`/profile/${id}`).then((data) => {
         if (!data.user) throw new Error(data.error || "User not found");
         return { ...data, relation: normalizeRelation(data.relation) };
       }),

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { apiPost } from "@/utils/api";
+import { apiRequest } from "@/utils/api";
 import { useAuth } from "@/app/context/AuthContext";
 
 export default function LoginPage() {
@@ -23,7 +23,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      await apiPost("/login", formData);
+      await apiRequest("/login", "POST", formData);
       await refreshAuth();
       router.push("/posts");
     } catch (err) {

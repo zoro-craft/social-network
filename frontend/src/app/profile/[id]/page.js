@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Avatar from "@/components/Avatar";
-import { apiGet } from "@/utils/api";
+import { apiRequest } from "@/utils/api";
 import { useToast } from "@/app/context/ToastContext";
 import { useProfile } from "./useProfile";
 import { useFollow } from "./useFollow";
@@ -26,7 +26,7 @@ export default function ProfilePage() {
     if (!profile || (profile.user.is_private && profile.relation !== "self" && profile.relation !== "accepted")) return;
     setModalType(type);
     try {
-      const data = await apiGet(`/profile/${id}/${type}`);
+      const data = await apiRequest(`/profile/${id}/${type}`);
       setUsersList(data || []);
     } catch (err) {
       setModalType(null);

@@ -1,56 +1,38 @@
 export const API_BASE = "http://localhost:8080";
 
-export class ApiError extends Error {
-  constructor(message, status) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-  }
-}
+export async function apiRequest(endpoint, method = "GET", data = null, isFormData = false) {
+  const url = `http://localhost:8080${endpoint}`;
 
-async function parseResponse(res) {
-  const text = await res.text();
-  if (!text) return {};
+  const options = {
+    method: method,
+    headers: {},
+    credentials: "include",
+  };
 
-  try {
-    return JSON.parse(text);
-  } catch {
-    return { error: text };
-  }
-}
-
-export async function apiRequest(
-  endpoint,
-  { method = "GET", body = null, isForm = false } = {},
-) {
-  const options = { method, credentials: "include", headers: {} };
-
-  if (body) {
-    if (isForm) {
-      options.body = body;
+  if (data) {
+    if (isFormData) {
+      options.body = data;
     } else {
       options.headers["Content-Type"] = "application/json";
-      options.body = JSON.stringify(body);
+      options.body = JSON.stringify(data);
     }
   }
 
-  const res = await fetch(`${API_BASE}${endpoint}`, options);
-  const result = await parseResponse(res);
+  const res = await fetch(url, options);
+
+  const text = await res.text();
+  let result = {};
+  if (text) {
+    try {
+      result = JSON.parse(text);
+    } catch {
+      result = { error: text };
+    }
+  }
 
   if (!res.ok) {
-    throw new ApiError(
-      result.message || result.error || "Something went wrong!",
-      res.status,
-    );
+    throw new Error(result.error || "Something went wrong!");
   }
 
   return result;
 }
-
-export const apiGet = (endpoint) => apiRequest(endpoint);
-
-export const apiPost = (endpoint, body = null) =>
-  apiRequest(endpoint, { method: "POST", body });
-
-export const apiPostForm = (endpoint, formData) =>
-  apiRequest(endpoint, { method: "POST", body: formData, isForm: true });

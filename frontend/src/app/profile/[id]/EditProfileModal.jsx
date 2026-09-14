@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { apiPostForm } from "@/utils/api";
+import { apiRequest } from "@/utils/api";
 
 function EditProfileModal({ user, onClose, onSaved }) {
   const [formError, setFormError] = useState(null);
@@ -8,7 +8,7 @@ function EditProfileModal({ user, onClose, onSaved }) {
     e.preventDefault();
     setFormError(null);
     try {
-      await apiPostForm("/profile/edit", new FormData(e.target));
+      await apiRequest("/profile/edit", "POST", new FormData(e.target), true);
       onSaved();
     } catch (err) {
       setFormError(err.message);

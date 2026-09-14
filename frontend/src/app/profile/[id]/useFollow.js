@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { apiPost } from "@/utils/api";
+import { apiRequest } from "@/utils/api";
 import { useToast } from "@/app/context/ToastContext";
 
 export function useFollow(id, reload) {
@@ -11,7 +11,7 @@ export function useFollow(id, reload) {
   const toggleFollow = async () => {
     setPending(true);
     try {
-      await apiPost(`/follow/${id}`);
+      await apiRequest(`/follow/${id}`, "POST");
       await reload();
     } catch (err) {
       showToast(err.message);

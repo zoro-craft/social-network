@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
-import { apiGet, apiPost } from "@/utils/api";
+import { apiRequest } from "@/utils/api";
 import { useToast } from "@/app/context/ToastContext";
 
 import {
@@ -26,7 +26,7 @@ export default function NotificationsPage() {
 
     const loadList = async (endpoint, setter) => {
       try {
-        setter((await apiGet(endpoint)) || []);
+        setter((await apiRequest(endpoint)) || []);
       } catch {
         setter([]);
       }
@@ -41,7 +41,7 @@ export default function NotificationsPage() {
 
   const respondToFollowRequest = async (followerId, action) => {
     try {
-      await apiPost(`/follow/${followerId}/${action}`);
+      await apiRequest(`/follow/${followerId}/${action}`, "POST");
       setFollowRequests((prev) => prev.filter((req) => req.follower_id !== followerId));
     } catch (err) {
       showToast(err.message);

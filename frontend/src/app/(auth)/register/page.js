@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { apiPostForm } from "@/utils/api";
+import { apiRequest } from "@/utils/api";
 
 const MAX_AVATAR_BYTES = 10 * 1024 * 1024;
 
@@ -46,7 +46,7 @@ export default function RegisterPage() {
     if (avatar) submitData.append("avatar", avatar);
 
     try {
-      await apiPostForm("/register", submitData);
+      await apiRequest("/register", "POST", submitData, true);
       router.push("/login");
     } catch (err) {
       setError(err.message);

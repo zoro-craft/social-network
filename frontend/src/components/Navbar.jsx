@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../app/context/AuthContext';
-import { apiPost } from '@/utils/api';
+import { apiRequest } from '@/utils/api';
 import Avatar from './Avatar';
 
 export default function Navbar() {
@@ -45,7 +45,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await apiPost('/logout');
+      await apiRequest('/logout', 'POST');
     } catch {
       // Clear the session locally even if the backend call fails.
     }
