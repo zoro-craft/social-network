@@ -8,21 +8,39 @@ const BACKEND_URL = "http://localhost:8080";
 export default function ProfilePage() {
   const { id } = useParams();
   const [profile, setProfile] = useState(null);
+  const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [formError, setFormError] = useState(null);
   const [modal, setModal] = useState({ type: null, users: [] });
 
   useEffect(() => {
+    let cancelled = false;
+
     fetch(`${BACKEND_URL}/profile/${id}`, { credentials: "include" })
-      .then((res) => res.json())
-      .then(setProfile);
+      .then((res) => res.text())
+      .then((text) => {
+        const data = text ? JSON.parse(text) : {};
+        if (!data.user) throw new Error(data.error || "User not found");
+        if (!cancelled) setProfile(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message || "Failed to load profile");
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const fetchApi = async (endpoint, method = "POST", body = null) => {
     const options = { method, credentials: "include" };
-    if (body && method !== "GET") options.body = body; 
-    
+    if (body && method !== "GET") options.body = body;
+
     const res = await fetch(`${BACKEND_URL}${endpoint}`, options);
-    return res.ok ? res.json() : Promise.reject(await res.json());
+    const text = await res.text();
+    const data = text ? JSON.parse(text) : {};
+    if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+    return data;
   };
 
 const handleFollow = () => {
@@ -46,9 +64,10 @@ const handleFollow = () => {
 
   const handleEdit = (e) => {
     e.preventDefault();
+    setFormError(null);
     fetchApi("/profile/edit", "POST", new FormData(e.target))
       .then(() => window.location.reload())
-      .catch((err) => alert(err.error || "Update failed"));
+      .catch((err) => setFormError(err.message || "Update failed"));
   };
 
  const openModal = (type) => {
@@ -65,7 +84,19 @@ const handleFollow = () => {
       });
   };
 
-  if (!profile) return <div className="profile-wrapper">Loading...</div>;
+  if (error) {
+    return (
+      <div className="profile-wrapper">
+        <div className="glass-card" style={{ padding: "40px", textAlign: "center" }}>
+          <h2 style={{ marginTop: 0 }}>Profile unavailable</h2>
+          <p>{error}</p>
+          <Link href="/posts" className="action-btn btn-edit">Back to posts</Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile || !profile.user) return <div className="profile-wrapper">Loading...</div>;
 
   const { user, relation, followers_count, following_count, posts } = profile;
   const isPrivateHidden = user.is_private && relation !== "self" && relation !== "accepted";
@@ -84,7 +115,7 @@ const handleFollow = () => {
           {!isPrivateHidden && user.about_me && <p className="about-me">{user.about_me}</p>}
 
           {/* Action Button */}
-          {relation === "self" ? <button onClick={() => setIsEditing(true)} className="action-btn btn-edit">Edit Profile</button>
+          {relation === "self" ? <button onClick={() => { setIsEditing(true); setFormError(null); }} className="action-btn btn-edit">Edit Profile</button>
           : relation === "accepted" ? <button onClick={handleFollow} className="action-btn btn-unfollow">Unfollow</button>
           : relation === "pending" ? <button onClick={handleFollow} className="action-btn btn-pending">Cancel Request</button>
           : <button onClick={handleFollow} className="action-btn btn-follow">Follow</button>}
@@ -129,10 +160,13 @@ const handleFollow = () => {
 
       {/* Edit Modal */}
       {isEditing && (
-        <div className="modal-overlay" onClick={() => setIsEditing(false)}>
+        <div className="modal-overlay" onClick={() => { setIsEditing(false); setFormError(null); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2 style={{ marginTop: 0 }}>Edit Profile</h2>
             <form onSubmit={handleEdit} className="edit-form">
+              {formError && (
+                <p style={{ color: "#f44336", fontSize: "0.9rem", margin: "0 0 10px 0" }}>{formError}</p>
+              )}
               <input name="first_name" defaultValue={user.first_name} className="form-input" required placeholder="First Name" />
               <input name="last_name" defaultValue={user.last_name} className="form-input" required placeholder="Last Name" />
               <input name="email" type="email" defaultValue={user.email} className="form-input" required placeholder="Email" />

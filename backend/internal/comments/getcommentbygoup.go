@@ -3,6 +3,7 @@ package comments
 import (
 	"net/http"
 	"strconv"
+	"zone/internal/auth"
 	"zone/internal/database"
 	"zone/internal/utils"
 )
@@ -13,9 +14,20 @@ func GetCommentsByGroupAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userID, err := auth.GetUserID(r)
+	if err != nil {
+		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in")
+		return
+	}
+
 	groupID, err := strconv.Atoi(r.PathValue("group_id"))
 	if err != nil || groupID <= 0 {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid group id")
+		return
+	}
+
+	if !utils.IsGroupMember(groupID, userID) {
+		utils.HandleError(w, http.StatusForbidden, "You must be a group member")
 		return
 	}
 

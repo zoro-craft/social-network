@@ -31,9 +31,33 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "title is required")
 		return
 	}
+	if len(req.Title)>=10 {
+		utils.HandleError(w, http.StatusBadRequest, "title is to long")
+		return
+	}
+		if req.Description == "" {
+		utils.HandleError(w, http.StatusBadRequest, "Description is required")
+		return
+	}
+	if len(req.Description)>=30 {
+		utils.HandleError(w, http.StatusBadRequest, "Description is to long")
+		return
+	}
+	if req.EventDate == "" {
+		utils.HandleError(w, http.StatusBadRequest, "event date is required")
+		return
+	}
+	if req.EventTime == "" {
+		utils.HandleError(w, http.StatusBadRequest, "event time is required")
+		return
+	}
 	if req.FitsOptions == "" || req.SecondOptions == "" {
 		utils.HandleError(w, http.StatusBadRequest, "both options are required")
 		return
+	}
+	if len(req.FitsOptions) >=10|| len(req.SecondOptions) >=10 {
+		utils.HandleError(w, http.StatusBadRequest, "both options is to long")
+		return	
 	}
 	if !utils.IsGroupMember(req.GroupID, userID) {
 		utils.HandleError(w, http.StatusForbidden, "You must be a group member to create an event")
@@ -48,8 +72,8 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res, err := database.Database.Exec(
-		"INSERT INTO events (group_id, title, created_by, options) VALUES (?, ?, ?, ?)",
-		req.GroupID, req.Title, userID, string(optionsJSON),
+		"INSERT INTO events (group_id, title, description, event_date, event_time, created_by, options) VALUES (?, ?, ?, ?, ?, ?, ?)",
+		req.GroupID, req.Title, req.Description, req.EventDate, req.EventTime, userID, string(optionsJSON),
 	)
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Could not create event")
@@ -59,9 +83,12 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	id, _ := res.LastInsertId()
 
 	utils.RespondJSON(w, http.StatusCreated, Event{
-		ID:        int(id),
-		GroupID:   req.GroupID,
-		Title:     req.Title,
-		CreatedBy: userID,
+		ID:          int(id),
+		GroupID:     req.GroupID,
+		Title:       req.Title,
+		Description: req.Description,
+		EventDate:   req.EventDate,
+		EventTime:   req.EventTime,
+		CreatedBy:   userID,
 	})
 }

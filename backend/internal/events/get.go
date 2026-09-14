@@ -35,7 +35,7 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := database.Database.Query(`
-		SELECT id, group_id, title, created_by, created_at, options
+		SELECT id, group_id, title, description, event_date, event_time, created_by, created_at, options
 		FROM events WHERE group_id = ? ORDER BY id DESC`,
 		groupID,
 	)
@@ -49,7 +49,7 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var e Event
 		var optionsJSON string
-		if err := rows.Scan(&e.ID, &e.GroupID, &e.Title, &e.CreatedBy, &e.CreatedAt, &optionsJSON); err != nil {
+		if err := rows.Scan(&e.ID, &e.GroupID, &e.Title, &e.Description, &e.EventDate, &e.EventTime, &e.CreatedBy, &e.CreatedAt, &optionsJSON); err != nil {
 			utils.HandleError(w, http.StatusInternalServerError, "Could not load events")
 			return
 		}

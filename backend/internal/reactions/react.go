@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"zone/internal/auth"
 	"zone/internal/database"
+	"zone/internal/posts"
 	"zone/internal/utils"
 )
 
@@ -32,15 +33,7 @@ func ReactToPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var exists bool
-	err = database.Database.QueryRow(
-		"SELECT EXISTS(SELECT * FROM posts WHERE id = ?)", req.PostID,
-	).Scan(&exists)
-	if err != nil {
-		utils.HandleError(w, http.StatusInternalServerError, "Database error")
-		return
-	}
-	if !exists {
+	if !posts.CanViewPost(req.PostID, userID) {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid post")
 		return
 	}

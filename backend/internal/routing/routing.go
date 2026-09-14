@@ -13,7 +13,9 @@ import (
 	"zone/internal/posts"
 	"zone/internal/profile"
 	"zone/internal/reactions"
+	"zone/internal/uploads"
 	"zone/internal/users"
+	"zone/internal/utils"
 )
 
 func NewRouter() http.Handler {
@@ -51,8 +53,10 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("POST /follow/{id}/{action}", middleware.Auth(followers.RespondRequestAPI))
 
 	// media & uploads routes
-	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
-
+	mux.HandleFunc("/uploads/posts/", middleware.Auth(uploads.ServeImage))
+	mux.HandleFunc("/uploads/comments/", middleware.Auth(uploads.ServeImage))
+	mux.HandleFunc("/uploads/avatars/", middleware.Auth(utils.ServeUpload))
+	
 	// groups routes
 	mux.HandleFunc("POST /groups", middleware.Auth(handlers.CreatGroupeHandler))
 	mux.HandleFunc("GET /groups", middleware.Auth(handlers.GetAllGroupsHandler))
