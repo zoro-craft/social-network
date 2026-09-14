@@ -5,6 +5,12 @@ import { API_BASE } from '@/utils/api';
 import formatDate from '@/utils/format';
 import { useToast } from '@/app/context/ToastContext';
 
+const formatEventDateTime = (dateStr, timeStr) => {
+  if (!dateStr || !timeStr) return '';
+  const [year, month, day] = dateStr.split('-');
+  return `${day}-${month}-${year} |${timeStr}`;
+};
+
 export default function GroupEvent({ group_id }) {
   const showToast = useToast();
   const [events, setEvents] = useState([]);
@@ -82,6 +88,12 @@ export default function GroupEvent({ group_id }) {
 
           {event.description && (
             <p className="glass-muted-text">{event.description}</p>
+          )}
+
+          {formatEventDateTime(event.event_date, event.event_time) && (
+            <p className="glass-event-datetime">
+              {formatEventDateTime(event.event_date, event.event_time)}
+            </p>
           )}
 
           <div className="glass-vote-options">

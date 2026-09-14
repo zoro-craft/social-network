@@ -15,6 +15,8 @@ export default function CreatEvent() {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [eventDate, setEventDate] = useState('');
+  const [eventTime, setEventTime] = useState('');
   const [fitsOptions, setFitsOptions] = useState('');
   const [secondOptions, setSecondOptions] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,6 +26,14 @@ export default function CreatEvent() {
 
     if (!title.trim()) {
       showToast('Title is required');
+      return;
+    }
+    if (!eventDate) {
+      showToast('Event date is required');
+      return;
+    }
+    if (!eventTime) {
+      showToast('Event time is required');
       return;
     }
     if (!fitsOptions.trim() || !secondOptions.trim()) {
@@ -42,6 +52,8 @@ export default function CreatEvent() {
         group_id: groupId,
         title: title.trim(),
         description: description.trim(),
+        eventDate,
+        eventTime,
         fitsOptions: fitsOptions.trim(),
         secondOptions: secondOptions.trim(),
       });
@@ -81,6 +93,28 @@ export default function CreatEvent() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
+            />
+          </div>
+
+          <div className="glass-input-group">
+            <label>Event date</label>
+            <input
+              className="glass-input"
+              type="date"
+              value={eventDate}
+              onChange={(e) => setEventDate(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="glass-input-group">
+            <label>Event time</label>
+            <input
+              className="glass-input"
+              type="time"
+              value={eventTime}
+              onChange={(e) => setEventTime(e.target.value)}
+              required
             />
           </div>
 
