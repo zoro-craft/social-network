@@ -10,6 +10,8 @@ type Event struct {
 	GroupID      int         `json:"group_id"`
 	Title        string      `json:"title"`
 	Description  string      `json:"description"`
+	EventDate    string      `json:"event_date"`
+	EventTime    string      `json:"event_time"`
 	CreatedBy    int         `json:"created_by"`
 	CreatedAt    string      `json:"created_at"`
 	Options      []string    `json:"options"`
@@ -26,6 +28,8 @@ type createEventRequest struct {
 	GroupID       int    `json:"group_id"`
 	Title         string `json:"title"`
 	Description   string `json:"description"`
+	EventDate     string `json:"eventDate"`
+	EventTime     string `json:"eventTime"`
 	FitsOptions   string `json:"fitsOptions"`
 	SecondOptions string `json:"secondOptions"`
 }
