@@ -3,7 +3,6 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"path/filepath"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -22,7 +21,7 @@ func Init() error {
 	const dbFileName = "social-network.db"
 
 	var err error
-	Database, err = sql.Open("sqlite3", filepath.Join(baseDirName, dbFileName)+"?_foreign_keys=on")
+	Database, err = sql.Open("sqlite3", baseDirName+"/"+dbFileName+"?_foreign_keys=on")
 	if err != nil {
 		return fmt.Errorf("can't open/create social-network.db: %v", err)
 	}
@@ -35,7 +34,7 @@ func Init() error {
 		return fmt.Errorf("can't create migration driver: %v", err)
 	}
 
-	migrationsPath := "file://" + filepath.Join(baseDirName, "migrations", "sqlite")
+	migrationsPath := "file://" + baseDirName + "/migrations/sqlite"
 	// creat the manger ho is connected to the database and the migration files, and run the migrations
 	m, err := migrate.NewWithDatabaseInstance(migrationsPath, "sqlite3", driver)
 	if err != nil { 
