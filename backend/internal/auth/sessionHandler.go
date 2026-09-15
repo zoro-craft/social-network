@@ -19,14 +19,14 @@ func GetUserID(r *http.Request) (int, error) {
 
 func MeHandler(w http.ResponseWriter, r *http.Request) {
 
-	userID, ok := r.Context().Value(middleware.UserIDKey).(int)
-	if !ok {
+	userID, err := GetUserID(r)
+	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "Unauthorized. Please login.")
 		return
 	}
 
 	var username, email, firstName, lastName, avatar string
-	err := database.Database.QueryRow(
+	err = database.Database.QueryRow(
 		"SELECT COALESCE(nickname, ''), email, COALESCE(first_name, ''), COALESCE(last_name, ''), COALESCE(avatar, '') FROM users WHERE id = ?",
 		userID,
 	).Scan(&username, &email, &firstName, &lastName, &avatar)

@@ -67,13 +67,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var dbID int
-	var dbUsername, dbEmail string
+	var dbUsername string
 	var dbPasswordHash string
+	var discardEmail string
 
 	err := database.Database.QueryRow(`
 		SELECT id, password, COALESCE(nickname, ''), email FROM users 
 		WHERE email = ? OR (nickname = ? AND nickname != '')
-	`, identify, identify).Scan(&dbID, &dbPasswordHash, &dbUsername, &dbEmail)
+	`, identify, identify).Scan(&dbID, &dbPasswordHash, &dbUsername, &discardEmail)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -128,7 +129,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		"message": "Logged in successfully",
 		"user": map[string]interface{}{
 			"id":       dbID,
-			"username": dbUsername,
 			"nickname": dbUsername,
 		},
 	})

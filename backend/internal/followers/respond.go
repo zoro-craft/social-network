@@ -17,11 +17,6 @@ type FollowRequest struct {
 }
 
 func GetRequestsAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
 	userID, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "Unauthorized")
@@ -57,11 +52,6 @@ func GetRequestsAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 func RespondRequestAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
 	followerID, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil || followerID <= 0 {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid ID")

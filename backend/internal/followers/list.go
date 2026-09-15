@@ -49,11 +49,6 @@ func GetFollowingAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 func listHandler(w http.ResponseWriter, r *http.Request, listFollowers bool) {
-	if r.Method != http.MethodGet {
-		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
 	profileID, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil || profileID <= 0 {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid ID")

@@ -15,11 +15,6 @@ import (
 var errUserNotFound = errors.New("follow target does not exist")
 
 func UnfollowAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
 	followerID, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in")
@@ -44,11 +39,6 @@ func UnfollowAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 func ToggleFollowAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
 	followerID, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in")

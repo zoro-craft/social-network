@@ -13,15 +13,7 @@ import (
 	"zone/internal/utils"
 )
 
-// SwitchStatus handles POST /profile/toggle-visibility: flips is_private in a
-// transaction. Going private keeps every accepted follower untouched; going
-// public auto-accepts pending requests (see setPrivacy).
 func SwitchStatus(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
 	userID, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "Not authenticated")
@@ -45,7 +37,6 @@ func SwitchStatus(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// flipPrivacy inverts the user's is_private flag inside one transaction.
 func flipPrivacy(userID int) (bool, error) {
 	tx, err := database.Database.Begin()
 	if err != nil {
@@ -65,16 +56,12 @@ func flipPrivacy(userID int) (bool, error) {
 	return !isPrivate, tx.Commit()
 }
 
-// setPrivacy writes the new is_private value on tx and, on a private -> public
-// switch, promotes every pending follow request to 'accepted': the profile is
-// public now, so approval is no longer required. Rows with status 'accepted'
-// are never modified or deleted.
 func setPrivacy(tx *sql.Tx, userID int, isPrivate bool) error {
 	if _, err := tx.Exec("UPDATE users SET is_private = ? WHERE id = ?", isPrivate, userID); err != nil {
 		return err
 	}
 	if isPrivate {
-		return nil // public -> private: current followers stay as they are
+		return nil
 	}
 	_, err := tx.Exec(
 		"UPDATE followers SET status = 'accepted' WHERE followee_id = ? AND status = 'pending'",
@@ -83,15 +70,7 @@ func setPrivacy(tx *sql.Tx, userID int, isPrivate bool) error {
 	return err
 }
 
-// EditProfileAPI handles POST /profile/edit: updates the authenticated user's
-// profile fields, avatar and privacy flag. The profile row and the privacy
-// side effects (pending -> accepted on private -> public) commit together.
 func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
 	userID, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "Not authenticated")
@@ -125,7 +104,6 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// The email column is UNIQUE: reject duplicates up front with 409.
 	var emailTaken bool
 	if err := database.Database.QueryRow(
 		"SELECT EXISTS(SELECT 1 FROM users WHERE email = ? AND id != ?)", email, userID,
@@ -150,8 +128,6 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Avatar: a new upload replaces the stored one, remove_avatar clears it,
-	// otherwise the UPDATE itself keeps the old value.
 	var avatarPath string
 	updateAvatar := false
 	if file, header, fileErr := r.FormFile("avatar"); fileErr == nil {
@@ -173,7 +149,6 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 		updateAvatar = true
 	}
 
-	// One all-or-nothing unit: profile row plus privacy side effects.
 	tx, err := database.Database.Begin()
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Database error")
@@ -191,8 +166,6 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// CASE expressions keep a single UPDATE for every combination:
-	// an empty nickname keeps the stored one, updateAvatar=false keeps the avatar.
 	if _, err := tx.Exec(`
 		UPDATE users SET
 			first_name = ?, last_name = ?, email = ?, date_of_birth = ?,
@@ -209,7 +182,6 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Private -> public: stale pending requests become accepted followers.
 	if wasPrivate && !isPrivate {
 		if _, err := tx.Exec(
 			"UPDATE followers SET status = 'accepted' WHERE followee_id = ? AND status = 'pending'",

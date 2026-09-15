@@ -59,7 +59,6 @@ func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Both counts in one round trip; SUM over booleans counts the matches.
 	var followersCount, followingCount int
 	if err := database.Database.QueryRow(`
 		SELECT
