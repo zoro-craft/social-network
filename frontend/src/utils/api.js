@@ -1,19 +1,24 @@
-export const API_BASE = "http://localhost:8080";
+export const API_BASE = '/api';
 
-export async function apiRequest(endpoint, method = "GET", data = null, isFormData = false) {
-  const url = `http://localhost:8080${endpoint}`;
+export async function apiRequest(
+  endpoint,
+  method = 'GET',
+  data = null,
+  isFormData = false,
+) {
+  const url = `${API_BASE}${endpoint}`;
 
   const options = {
-    method: method,
+    method,
     headers: {},
-    credentials: "include",
+    credentials: 'include',
   };
 
   if (data) {
     if (isFormData) {
       options.body = data;
     } else {
-      options.headers["Content-Type"] = "application/json";
+      options.headers['Content-Type'] = 'application/json';
       options.body = JSON.stringify(data);
     }
   }
@@ -21,7 +26,9 @@ export async function apiRequest(endpoint, method = "GET", data = null, isFormDa
   const res = await fetch(url, options);
 
   const text = await res.text();
+
   let result = {};
+
   if (text) {
     try {
       result = JSON.parse(text);
@@ -31,7 +38,7 @@ export async function apiRequest(endpoint, method = "GET", data = null, isFormDa
   }
 
   if (!res.ok) {
-    throw new Error(result.error || "Something went wrong!");
+    throw new Error(result.error || 'Something went wrong!');
   }
 
   return result;

@@ -85,5 +85,5 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("GET /notifications", middleware.Auth(handlers.NotifcationHandler))
 
 	// global middleware
-	return middleware.CORS(limiter.Middleware(mux.ServeHTTP))
+	return (limiter.Middleware(mux.ServeHTTP))
 }

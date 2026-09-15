@@ -1,0 +1,24 @@
+services:
+  backend:
+    build: ./backend
+    image: social-backend
+    ports:
+      - '8080:8080'
+
+  frontend:
+    build: ./frontend
+    image: social-frontend
+    ports:
+      - '3000:3000'
+    depends_on:
+      - backend
+
+  caddy:
+    image: caddy:alpine
+    ports:
+      - '80:80'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    depends_on:
+      - frontend
+      - backend
