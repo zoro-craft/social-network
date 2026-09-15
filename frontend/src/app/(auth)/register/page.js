@@ -57,10 +57,7 @@ export default function RegisterPage() {
   return (
     <div className="glass-page" style={{ flexDirection: 'column' }}>
       <div className="glass-container glass-container-register" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '24px', marginTop: '0', color: '#fff', background: 'linear-gradient(to right, #fff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.02em', textAlign: 'center' }}>
-          01-Social-Network
-        </h1>
-        <h2>Create Account</h2>
+        <h1 style={{ textAlign: "center" }}>Create Account</h1>
         <p>Join us today</p>
 
         {error && <div className="glass-error">{error}</div>}
