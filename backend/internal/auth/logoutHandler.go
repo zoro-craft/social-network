@@ -1,20 +1,17 @@
 package auth
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
+	"zone/internal/utils"
 
 	"zone/internal/database"
 )
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 
-	w.Header().Set("Content-Type", "application/json")
-
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Method not allowed"})
+		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 
@@ -42,9 +39,5 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, deletedCookie)
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(apiResponse{
-		Status:  "success",
-		Message: "Logged out successfully",
-	})
+	utils.RespondJSON(w, http.StatusOK, map[string]string{"status": "success", "message": "Logged out successfully"})
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sync"
 	"time"
+	"zone/internal/utils"
 )
 
 type bucket struct {
@@ -47,8 +48,7 @@ func (rl *RateLimiter) Middleware(next http.HandlerFunc) http.HandlerFunc {
 
 		if b.count >= rl.limit {
 			rl.mu.Unlock()
-			w.WriteHeader(http.StatusTooManyRequests)
-			_, _ = w.Write([]byte(`{"message":"too many requests, please slow down"}`))
+			utils.HandleError(w, http.StatusTooManyRequests, "too many requests, please slow down")
 			return
 		}
 

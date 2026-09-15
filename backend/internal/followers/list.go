@@ -17,7 +17,6 @@ type UserItem struct {
 	Avatar    string `json:"avatar"`
 }
 
-
 func canViewList(viewerID, profileID int) bool {
 	if viewerID == profileID {
 		return true

@@ -14,7 +14,6 @@ import (
 
 var errUserNotFound = errors.New("follow target does not exist")
 
-
 func UnfollowAPI(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
@@ -43,7 +42,6 @@ func UnfollowAPI(w http.ResponseWriter, r *http.Request) {
 
 	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": "Unfollowed"})
 }
-
 
 func ToggleFollowAPI(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -119,7 +117,7 @@ func toggleFollow(followerID, followeeID int) (string, error) {
 		)
 
 	case status.String == "accepted", isPrivate:
-		
+
 		newStatus = "none"
 		_, err = tx.Exec(
 			"DELETE FROM followers WHERE follower_id = ? AND followee_id = ?",

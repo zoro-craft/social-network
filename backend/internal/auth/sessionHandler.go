@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
+	"zone/internal/utils"
 
 	"zone/internal/database"
 	"zone/internal/middleware"
@@ -18,15 +18,10 @@ func GetUserID(r *http.Request) (int, error) {
 }
 
 func MeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	userID, ok := r.Context().Value(middleware.UserIDKey).(int)
 	if !ok {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"status":  "error",
-			"message": "Unauthorized. Please login.",
-		})
+		utils.HandleError(w, http.StatusUnauthorized, "Unauthorized. Please login.")
 		return
 	}
 
@@ -36,16 +31,11 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 		userID,
 	).Scan(&username, &email, &firstName, &lastName, &avatar)
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"status":  "error",
-			"message": "User not found or database error.",
-		})
+		utils.HandleError(w, http.StatusUnauthorized, "User not found or database error.")
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	utils.RespondJSON(w, http.StatusOK, map[string]interface{}{
 		"status": "success",
 		"user": map[string]interface{}{
 			"id":         userID,

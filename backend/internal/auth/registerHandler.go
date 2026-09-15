@@ -2,7 +2,6 @@ package auth
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -12,6 +11,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"zone/internal/utils"
 
 	"zone/internal/database"
 
@@ -23,25 +23,21 @@ var (
 )
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Method not allowed"})
+		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 
 	contentType := r.Header.Get("Content-Type")
 	if strings.HasPrefix(contentType, "multipart/form-data") {
 		if err := r.ParseMultipartForm(10 << 20); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid form data or file too large"})
+			utils.HandleError(w, http.StatusBadRequest, "Invalid form data or file too large")
 			return
 		}
 	} else {
 		if err := r.ParseForm(); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid form data"})
+			utils.HandleError(w, http.StatusBadRequest, "Invalid form data")
 			return
 		}
 	}
@@ -56,33 +52,28 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	dob, err := ValidateDOB(dateOfBirth)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: err.Error()})
+		utils.HandleError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := ValidateName(firstName, lastName); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: err.Error()})
+		utils.HandleError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if !ValidateEmail(email) {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Please enter a valid email address."})
+		utils.HandleError(w, http.StatusBadRequest, "Please enter a valid email address.")
 		return
 	}
 
 	var existingID int
 	err = database.Database.QueryRow("SELECT id FROM users WHERE email = ?", email).Scan(&existingID)
 	if err == nil {
-		w.WriteHeader(http.StatusConflict)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Email already exists"})
+		utils.HandleError(w, http.StatusConflict, "Email already exists")
 		return
 	} else if err != sql.ErrNoRows {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("Database query error checking existing email:", err)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Database error, please try again"})
+		utils.HandleError(w, http.StatusInternalServerError, "Database error, please try again")
 		return
 	}
 
@@ -90,29 +81,25 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if nickname != "" {
 		taken, err := ValidateNickname(nickname, 0)
 		if taken {
-			w.WriteHeader(http.StatusConflict)
-			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Nickname already exists"})
+			utils.HandleError(w, http.StatusConflict, "Nickname already exists")
 			return
 		} else if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
 			log.Println("Database query error checking existing nickname:", err)
-			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Database error, please try again"})
+			utils.HandleError(w, http.StatusInternalServerError, "Database error, please try again")
 			return
 		}
 		nicknameValue = nickname
 	}
 
 	if err := ValidatePassword(password); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: err.Error()})
+		utils.HandleError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("Bcrypt hash error:", err)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Error creating account, try again later"})
+		utils.HandleError(w, http.StatusInternalServerError, "Error creating account, try again later")
 		return
 	}
 
@@ -139,17 +126,12 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = createUser(email, string(hashedPassword), dob.Format("2006-01-02"), firstName, lastName, nicknameValue, aboutMe, avatarPath)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("Database insert error:", err)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Could not create account"})
+		utils.HandleError(w, http.StatusInternalServerError, "Could not create account")
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(apiResponse{
-		Status:  "success",
-		Message: "Account created successfully. Please login.",
-	})
+	utils.RespondJSON(w, http.StatusCreated, map[string]string{"status": "success", "message": "Account created successfully. Please login."})
 }
 
 func ValidateEmail(email string) bool {

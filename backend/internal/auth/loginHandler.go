@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"zone/internal/utils"
 
 	"zone/internal/database"
 
@@ -24,11 +25,6 @@ type LoginReq struct {
 	Password string `json:"password"`
 }
 
-type apiResponse struct {
-	Status  string `json:"status"`
-	Message string `json:"message"`
-}
-
 // creates a random 32 byte session token.
 func generateSessionToken() string {
 	b := make([]byte, 32)
@@ -42,11 +38,8 @@ func generateSessionToken() string {
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
-	w.Header().Set("Content-Type", "application/json")
-
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Method not allowed"})
+		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 
@@ -56,16 +49,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(contentType, "application/json") {
 		var req LoginReq
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid request formatting"})
+			utils.HandleError(w, http.StatusBadRequest, "Invalid request formatting")
 			return
 		}
 		identify = req.Identify
 		password = req.Password
 	} else {
 		if err := r.ParseForm(); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid form data"})
+			utils.HandleError(w, http.StatusBadRequest, "Invalid form data")
 			return
 		}
 		identify = r.FormValue("login")
@@ -86,20 +77,17 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid credentials"})
+			utils.HandleError(w, http.StatusUnauthorized, "Invalid credentials")
 			return
 		}
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Server error"})
+		utils.HandleError(w, http.StatusInternalServerError, "Server error")
 		return
 	}
 
 	// Verify password
 	err = bcrypt.CompareHashAndPassword([]byte(dbPasswordHash), []byte(password))
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Invalid credentials"})
+		utils.HandleError(w, http.StatusUnauthorized, "Invalid credentials")
 		return
 	}
 
@@ -113,16 +101,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Create new session token
 	sessionToken := generateSessionToken()
 	if sessionToken == "" {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Server error"})
+		utils.HandleError(w, http.StatusInternalServerError, "Server error")
 		return
 	}
 	expirationTime := time.Now().Add(SessionDuration)
 	_, err = database.Database.Exec("INSERT INTO user_sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)", dbID, sessionToken, expirationTime)
 	if err != nil {
 		log.Println("Error saving session to DB:", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(apiResponse{Status: "error", Message: "Error creating session, try again later"})
+		utils.HandleError(w, http.StatusInternalServerError, "Error creating session, try again later")
 		return
 	}
 
@@ -137,8 +123,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &newCookie)
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	utils.RespondJSON(w, http.StatusOK, map[string]interface{}{
 		"status":  "success",
 		"message": "Logged in successfully",
 		"user": map[string]interface{}{
