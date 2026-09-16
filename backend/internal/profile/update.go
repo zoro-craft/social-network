@@ -129,7 +129,7 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 
 	var avatarPath string
 	updateAvatar := false
-	avatarPath, err = utils.SaveImageField(r, "avatar", "./uploads/avatars", "/uploads/avatars/")
+	avatarPath, err = utils.SaveImageField(r, "avatar", "avatars", "/uploads/avatars/")
 	if err != nil {
 		utils.HandleError(w, http.StatusBadRequest, "Only JPEG, PNG, and GIF images are allowed")
 		return
