@@ -11,11 +11,9 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// Init sets up the SQLite database connection and applies all pending migrations to ensure the database schema is up to date.
-
 var Database *sql.DB
 
-
+// Init sets up the SQLite database connection and applies all pending migrations to ensure the database schema is up to date.
 func Init() error {
 	const baseDirName = "./internal/database"
 	const dbFileName = "social-network.db"
@@ -25,6 +23,7 @@ func Init() error {
 	if err != nil {
 		return fmt.Errorf("can't open/create social-network.db: %v", err)
 	}
+	
 	if err := Database.Ping(); err != nil {
 		return fmt.Errorf("can't connect to database: %v", err)
 	}

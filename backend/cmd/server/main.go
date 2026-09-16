@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	// Initialize Posts/Media database
+	// Initialize database
 	if err := database.Init(); err != nil {
 		log.Fatal(err)
 	}
