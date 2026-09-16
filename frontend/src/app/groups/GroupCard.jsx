@@ -19,12 +19,14 @@ export default function GroupCard({ group }) {
             await apiRequest(`/groups/${group.id}/join`, 'POST')
 
         } catch (error) {
+
             if (error.message === 'join request already exists') {
                 showToast('You already requested to join this group')
                 return
             }
 
             showToast('Failed to request to join group')
+
         }
     }
 

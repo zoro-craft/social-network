@@ -48,10 +48,7 @@ export default function Userlistpage() {
                 }
             );
 
-        } catch (error) { 
-            if (error.error) {
-                showToast('')
-            }
+        } catch (error) {
             showToast('Failed to send invitation');
         }
     };

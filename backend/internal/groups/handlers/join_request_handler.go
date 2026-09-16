@@ -52,14 +52,9 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
-
+	
 	request_id, err := repositories.SaveJoinRequest(group_id, user_id)
 	if err != nil {
-		if err.Error() == "join request already exists" {
-			utils.HandleError(w, 409, "join request already exists")
-			return
-		}
-
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
