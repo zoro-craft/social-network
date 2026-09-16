@@ -1,6 +1,9 @@
 package followers
 
 import (
+	"database/sql"
+	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -9,12 +12,9 @@ import (
 	"zone/internal/utils"
 )
 
-func UnfollowAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
+var errUserNotFound = errors.New("follow target does not exist")
 
+func UnfollowAPI(w http.ResponseWriter, r *http.Request) {
 	followerID, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in")
@@ -27,11 +27,10 @@ func UnfollowAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = database.Database.Exec(
+	if _, err := database.Database.Exec(
 		"DELETE FROM followers WHERE follower_id = ? AND followee_id = ?",
 		followerID, followeeID,
-	)
-	if err != nil {
+	); err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to unfollow")
 		return
 	}
@@ -40,8 +39,9 @@ func UnfollowAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 func ToggleFollowAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
+	followerID, err := auth.GetUserID(r)
+	if err != nil {
+		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in")
 		return
 	}
 
@@ -51,57 +51,79 @@ func ToggleFollowAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	followerID, err := auth.GetUserID(r)
-	if err != nil || followerID == 0 {
-		utils.HandleError(w, http.StatusUnauthorized, "Unauthorized")
-		return
-	}
-
 	if followerID == followeeID {
 		utils.HandleError(w, http.StatusBadRequest, "Cannot follow yourself")
 		return
 	}
 
-	var isPrivate bool
-	err = database.Database.QueryRow("SELECT is_private FROM users WHERE id = ?", followeeID).Scan(&isPrivate)
+	newStatus, err := toggleFollow(followerID, followeeID)
 	if err != nil {
-		utils.HandleError(w, http.StatusNotFound, "User not found")
-		return
-	}
-
-	newStatus := "accepted"
-	if isPrivate {
-		newStatus = "pending"
-	}
-
-	// Atomic toggle: INSERT OR IGNORE inserts the relation when absent.
-	// When it is already present the insert is ignored (RowsAffected == 0)
-	// and the relation is removed instead. No read-then-write race, so a
-	// concurrent double-click can never hit the unique constraint.
-	res, err := database.Database.Exec(
-		"INSERT OR IGNORE INTO followers (follower_id, followee_id, status) VALUES (?, ?, ?)",
-		followerID, followeeID, newStatus,
-	)
-	if err != nil {
-		utils.HandleError(w, http.StatusInternalServerError, "Failed to toggle follow")
-		return
-	}
-
-	affected, err := res.RowsAffected()
-	if err != nil {
-		utils.HandleError(w, http.StatusInternalServerError, "Failed to toggle follow")
-		return
-	}
-	if affected == 0 {
-		_, err = database.Database.Exec("DELETE FROM followers WHERE follower_id = ? AND followee_id = ?", followerID, followeeID)
-		if err != nil {
-			utils.HandleError(w, http.StatusInternalServerError, "Failed to unfollow")
+		if errors.Is(err, errUserNotFound) {
+			utils.HandleError(w, http.StatusNotFound, "User not found")
 			return
 		}
-		newStatus = "none"
+		log.Println("toggle follow:", err)
+		utils.HandleError(w, http.StatusInternalServerError, "Failed to update follow status")
+		return
 	}
 
-	utils.RespondJSON(w, http.StatusOK, map[string]string{
-		"status": newStatus,
-	})
+	utils.RespondJSON(w, http.StatusOK, map[string]string{"status": newStatus})
+}
+
+func toggleFollow(followerID, followeeID int) (string, error) {
+	tx, err := database.Database.Begin()
+	if err != nil {
+		return "", err
+	}
+	defer tx.Rollback()
+
+	var isPrivate bool
+	var status sql.NullString
+	err = tx.QueryRow(`
+		SELECT COALESCE(u.is_private, 0), f.status
+		FROM users u
+		LEFT JOIN followers f
+			ON f.followee_id = u.id AND f.follower_id = ?
+		WHERE u.id = ?`,
+		followerID, followeeID,
+	).Scan(&isPrivate, &status)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", errUserNotFound
+	}
+	if err != nil {
+		return "", err
+	}
+
+	var newStatus string
+	switch {
+	case !status.Valid:
+		newStatus = "accepted"
+		if isPrivate {
+			newStatus = "pending"
+		}
+		_, err = tx.Exec(
+			"INSERT INTO followers (follower_id, followee_id, status) VALUES (?, ?, ?)",
+			followerID, followeeID, newStatus,
+		)
+
+	case status.String == "accepted", isPrivate:
+
+		newStatus = "none"
+		_, err = tx.Exec(
+			"DELETE FROM followers WHERE follower_id = ? AND followee_id = ?",
+			followerID, followeeID,
+		)
+
+	default:
+		newStatus = "accepted"
+		_, err = tx.Exec(
+			"UPDATE followers SET status = 'accepted' WHERE follower_id = ? AND followee_id = ? AND status = 'pending'",
+			followerID, followeeID,
+		)
+	}
+	if err != nil {
+		return "", err
+	}
+
+	return newStatus, tx.Commit()
 }

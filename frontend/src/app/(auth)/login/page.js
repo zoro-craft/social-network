@@ -3,27 +3,23 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { apiRequest } from "../../../utils/api";
-import { useAuth } from "../../../app/context/AuthContext";
+import { apiRequest } from "@/utils/api";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
   const { refreshAuth } = useAuth();
-  
-  const [formData, setFormData] = useState({
-    identify: "", 
-    password: "",
-  });
+
+  const [formData, setFormData] = useState({ identify: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) =>
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); 
+    setLoading(true);
     setError("");
 
     try {
@@ -39,9 +35,6 @@ export default function LoginPage() {
   return (
     <div className="glass-page" style={{ flexDirection: 'column' }}>
       <div className="glass-container glass-container-login" style={{ minHeight: '500px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '24px', marginTop: '0', color: '#fff', background: 'linear-gradient(to right, #fff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.02em', textAlign: 'center' }}>
-          01-Social-Network
-        </h1>
         <h2>Welcome Back</h2>
         <p>Sign in with your credentials</p>
 
@@ -75,7 +68,7 @@ export default function LoginPage() {
           </button>
 
           <div className="glass-footer">
-            Don&apos;t have an account?
+            Don't have an account?
             <Link href="/register">Register</Link>
           </div>
         </form>

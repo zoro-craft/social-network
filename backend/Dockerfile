@@ -1,0 +1,19 @@
+  FROM golang:1.25-alpine
+
+  WORKDIR /app
+
+  RUN apk add --no-cache gcc musl-dev
+
+  COPY go.mod go.sum ./
+
+  RUN go mod download
+
+  COPY . .
+
+  ENV CGO_ENABLED=1
+
+  RUN go build -o server ./cmd/server
+
+  EXPOSE 8080
+
+  CMD ["./server"]

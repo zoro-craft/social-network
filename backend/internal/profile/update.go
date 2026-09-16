@@ -1,7 +1,11 @@
 package profile
 
 import (
+	"database/sql"
+	"errors"
+	"log"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"zone/internal/auth"
@@ -10,34 +14,63 @@ import (
 )
 
 func SwitchStatus(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
 	userID, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "Not authenticated")
 		return
 	}
 
-	_, err = database.Database.Exec(
-		"UPDATE users SET is_private = NOT is_private WHERE id = ?", userID,
-	)
+	newValue, err := flipPrivacy(userID)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			utils.HandleError(w, http.StatusNotFound, "User not found")
+			return
+		}
+		log.Println("toggle visibility:", err)
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to update profile")
 		return
 	}
 
-	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": "Profile visibility updated"})
+	utils.RespondJSON(w, http.StatusOK, map[string]any{
+		"message":    "Profile visibility updated",
+		"is_private": newValue,
+	})
+}
+
+func flipPrivacy(userID int) (bool, error) {
+	tx, err := database.Database.Begin()
+	if err != nil {
+		return false, err
+	}
+	defer tx.Rollback()
+
+	var isPrivate bool
+	if err := tx.QueryRow("SELECT is_private FROM users WHERE id = ?", userID).Scan(&isPrivate); err != nil {
+		return false, err
+	}
+
+	if err := setPrivacy(tx, userID, !isPrivate); err != nil {
+		return false, err
+	}
+
+	return !isPrivate, tx.Commit()
+}
+
+func setPrivacy(tx *sql.Tx, userID int, isPrivate bool) error {
+	if _, err := tx.Exec("UPDATE users SET is_private = ? WHERE id = ?", isPrivate, userID); err != nil {
+		return err
+	}
+	if isPrivate {
+		return nil
+	}
+	_, err := tx.Exec(
+		"UPDATE followers SET status = 'accepted' WHERE followee_id = ? AND status = 'pending'",
+		userID,
+	)
+	return err
 }
 
 func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
 	userID, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "Not authenticated")
@@ -45,8 +78,7 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	r.Body = http.MaxBytesReader(w, r.Body, 20<<20)
-	err = r.ParseMultipartForm(20 << 20)
-	if err != nil {
+	if err := r.ParseMultipartForm(20 << 20); err != nil {
 		utils.HandleError(w, http.StatusBadRequest, "Form too large or invalid")
 		return
 	}
@@ -58,79 +90,110 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 	dob := strings.TrimSpace(r.FormValue("date_of_birth"))
 	nickname := strings.TrimSpace(r.FormValue("nickname"))
 	aboutMe := r.FormValue("about_me")
-	password := r.FormValue("password")
 
 	if _, err := auth.ValidateDOB(dob); err != nil {
 		utils.HandleError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-
 	if err := auth.ValidateName(firstName, lastName); err != nil {
 		utils.HandleError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-
 	if !auth.ValidateEmail(email) {
 		utils.HandleError(w, http.StatusBadRequest, "Please enter a valid email address.")
 		return
 	}
 
-	if password != "" {
-		if err := auth.ValidatePassword(password); err != nil {
-			utils.HandleError(w, http.StatusBadRequest, err.Error())
-			return
-		}
+	var emailTaken bool
+	if err := database.Database.QueryRow(
+		"SELECT EXISTS(SELECT 1 FROM users WHERE email = ? AND id != ?)", email, userID,
+	).Scan(&emailTaken); err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Database error")
+		return
+	}
+	if emailTaken {
+		utils.HandleError(w, http.StatusConflict, "Email already exists")
+		return
 	}
 
-	var nicknameValue any
 	if nickname != "" {
 		taken, err := auth.ValidateNickname(nickname, userID)
+		if err != nil {
+			utils.HandleError(w, http.StatusInternalServerError, "Failed to check nickname")
+			return
+		}
 		if taken {
 			utils.HandleError(w, http.StatusConflict, "Nickname already exists")
 			return
-		} else if err != nil {
-			utils.HandleError(w, http.StatusInternalServerError, "Failed to update profile")
-			return
 		}
-		nicknameValue = nickname
 	}
 
-	removeAvatar := r.FormValue("remove_avatar") == "on"
-
-	// avatar handling
 	var avatarPath string
 	updateAvatar := false
-
-	file, header, err := r.FormFile("avatar")
-	if err == nil {
+	if file, header, fileErr := r.FormFile("avatar"); fileErr == nil {
 		defer file.Close()
-		filename, saveErr := utils.SaveUploadFile(file, header.Filename, "./uploads/avatars")
-		if saveErr == nil {
-			avatarPath = "/uploads/avatars/" + filename
-			updateAvatar = true
+		if !utils.AllowedImageExtensions[strings.ToLower(filepath.Ext(header.Filename))] {
+			utils.HandleError(w, http.StatusBadRequest, "Only JPEG, PNG, and GIF images are allowed")
+			return
 		}
-	} else if removeAvatar {
+		filename, saveErr := utils.SaveUploadFile(file, header.Filename, "./uploads/avatars")
+		if saveErr != nil {
+			log.Println("save avatar:", saveErr)
+			utils.HandleError(w, http.StatusInternalServerError, "Failed to save avatar")
+			return
+		}
+		avatarPath = "/uploads/avatars/" + filename
+		updateAvatar = true
+	} else if r.FormValue("remove_avatar") == "on" {
 		avatarPath = ""
 		updateAvatar = true
 	}
 
-	if updateAvatar {
-		_, err = database.Database.Exec(`
-			UPDATE users 
-			SET first_name = ?, last_name = ?, email = ?, date_of_birth = ?, nickname = ?, about_me = ?, is_private = ?, avatar = ? 
-			WHERE id = ?`,
-			firstName, lastName, email, dob, nicknameValue, aboutMe, isPrivate, avatarPath, userID,
-		)
-	} else {
-		_, err = database.Database.Exec(`
-			UPDATE users 
-			SET first_name = ?, last_name = ?, email = ?, date_of_birth = ?, nickname = ?, about_me = ?, is_private = ? 
-			WHERE id = ?`,
-			firstName, lastName, email, dob, nicknameValue, aboutMe, isPrivate, userID,
-		)
+	tx, err := database.Database.Begin()
+	if err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Database error")
+		return
+	}
+	defer tx.Rollback()
+
+	var wasPrivate bool
+	if err := tx.QueryRow("SELECT is_private FROM users WHERE id = ?", userID).Scan(&wasPrivate); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			utils.HandleError(w, http.StatusNotFound, "User not found")
+			return
+		}
+		utils.HandleError(w, http.StatusInternalServerError, "Database error")
+		return
 	}
 
-	if err != nil {
+	if _, err := tx.Exec(`
+		UPDATE users SET
+			first_name = ?, last_name = ?, email = ?, date_of_birth = ?,
+			nickname = CASE WHEN ? <> '' THEN ? ELSE nickname END,
+			about_me = ?, is_private = ?,
+			avatar = CASE WHEN ? THEN ? ELSE avatar END
+		WHERE id = ?`,
+		firstName, lastName, email, dob,
+		nickname, nickname, aboutMe, isPrivate,
+		updateAvatar, avatarPath, userID,
+	); err != nil {
+		log.Println("update profile:", err)
+		utils.HandleError(w, http.StatusInternalServerError, "Failed to update profile")
+		return
+	}
+
+	if wasPrivate && !isPrivate {
+		if _, err := tx.Exec(
+			"UPDATE followers SET status = 'accepted' WHERE followee_id = ? AND status = 'pending'",
+			userID,
+		); err != nil {
+			log.Println("accept pending followers:", err)
+			utils.HandleError(w, http.StatusInternalServerError, "Failed to update profile")
+			return
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to update profile")
 		return
 	}

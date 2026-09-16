@@ -11,15 +11,26 @@ export default function GroupCard({ group }) {
     if (loading) return null;
 
     const isMember = group.is_member;
+
     const join = async () => {
         if (!auth.authenticated) return
+
         try {
             await apiRequest(`/groups/${group.id}/join`, 'POST')
+
         } catch (error) {
-            showToast('Failed to request to join group');
-            console.log('faild to request to join to groupe', error)
+
+            if (error.message === 'join request already exists') {
+                showToast('You already requested to join this group')
+                return
+            }
+
+            showToast('Failed to request to join group')
+
         }
     }
+
+
     const enterGroup = () => {
         router.push(`/groups/${group.id}`);
     };

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../app/context/AuthContext';
-import { API_BASE } from '@/utils/api';
+import { apiRequest } from '@/utils/api';
 import Avatar from './Avatar';
 
 export default function Navbar() {
@@ -44,10 +44,11 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    await fetch(`${API_BASE}/logout`, {
-      method: 'POST',
-      credentials: 'include',
-    });
+    try {
+      await apiRequest('/logout', 'POST');
+    } catch {
+      // Clear the session locally even if the backend call fails.
+    }
     setAuth({ authenticated: false, nickname: '' });
     setOpen(false);
     router.push('/login');

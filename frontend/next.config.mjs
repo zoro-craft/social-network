@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -10,6 +11,7 @@ const nextConfig = {
       },
     ],
   },
+
   async redirects() {
     return [
       {
@@ -19,6 +21,19 @@ const nextConfig = {
       },
     ];
   },
-};
+
+   rewrites() {
+    if (process.env.NODE_ENV === 'development') {
+      return [
+        {
+          source: '/api/:path*',
+          destination: 'http://localhost:8080/:path*',
+        },
+      ];
+    }
+
+    return [];
+  },
+};  
 
 export default nextConfig;

@@ -42,9 +42,12 @@ func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if relation != "self" {
+		user.Email = ""
+	}
+
 	var userPosts []posts.Post
 	if user.IsPrivate && relation != "self" && relation != "accepted" {
-		user.Email = ""
 		user.DateOfBirth = ""
 		user.AboutMe = ""
 		userPosts = []posts.Post{}
@@ -57,8 +60,17 @@ func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var followersCount, followingCount int
-	database.Database.QueryRow(`SELECT count(*) FROM followers WHERE followee_id = ? AND status = 'accepted'`, user.ID).Scan(&followersCount)
-	database.Database.QueryRow(`SELECT count(*) FROM followers WHERE follower_id = ? AND status = 'accepted'`, user.ID).Scan(&followingCount)
+	if err := database.Database.QueryRow(`
+		SELECT
+			COALESCE(SUM(followee_id = ?), 0),
+			COALESCE(SUM(follower_id = ?), 0)
+		FROM followers
+		WHERE status = 'accepted' AND (followee_id = ? OR follower_id = ?)`,
+		user.ID, user.ID, user.ID, user.ID,
+	).Scan(&followersCount, &followingCount); err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Database error")
+		return
+	}
 
 	utils.RespondJSON(w, http.StatusOK, map[string]interface{}{
 		"user":            user,

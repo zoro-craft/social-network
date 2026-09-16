@@ -3,50 +3,47 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { apiRequest } from "../../../utils/api";
+import { apiRequest } from "@/utils/api";
+
+const MAX_AVATAR_BYTES = 10 * 1024 * 1024;
+
+const INITIAL_FORM = {
+  first_name: "",
+  last_name: "",
+  email: "",
+  password: "",
+  date_of_birth: "",
+  nickname: "",
+  about_me: "",
+};
 
 export default function RegisterPage() {
   const router = useRouter();
 
-  const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    password: "",
-    date_of_birth: "",
-    nickname: "",
-    about_me: "",
-  });
-
+  const [formData, setFormData] = useState(INITIAL_FORM);
   const [avatar, setAvatar] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) =>
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  const handleFileChange = (e) => {
-    setAvatar(e.target.files[0]);
-  };
+  const handleFileChange = (e) => setAvatar(e.target.files[0]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
-    const submitData = new FormData();
-    for (const key in formData) {
-      submitData.append(key, formData[key]);
-    }
-    if (avatar && avatar.size > 10 * 1024 * 1024) {
+    if (avatar && avatar.size > MAX_AVATAR_BYTES) {
       setError("Avatar must be less than 10MB");
-      setLoading(false);
       return;
     }
-    if (avatar) {
-      submitData.append("avatar", avatar);
-    }
+
+    setLoading(true);
+
+    const submitData = new FormData();
+    Object.entries(formData).forEach(([key, value]) => submitData.append(key, value));
+    if (avatar) submitData.append("avatar", avatar);
 
     try {
       await apiRequest("/register", "POST", submitData, true);
@@ -60,10 +57,7 @@ export default function RegisterPage() {
   return (
     <div className="glass-page" style={{ flexDirection: 'column' }}>
       <div className="glass-container glass-container-register" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '24px', marginTop: '0', color: '#fff', background: 'linear-gradient(to right, #fff, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.02em', textAlign: 'center' }}>
-          01-Social-Network
-        </h1>
-        <h2>Create Account</h2>
+        <h1 style={{ textAlign: "center" }}>Create Account</h1>
         <p>Join us today</p>
 
         {error && <div className="glass-error">{error}</div>}

@@ -1,93 +1,48 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-
-const BACKEND_URL = "http://localhost:8080";
+import Avatar from "@/components/Avatar";
+import { apiRequest } from "@/utils/api";
+import { useToast } from "@/app/context/ToastContext";
+import { useProfile } from "./useProfile";
+import { useFollow } from "./useFollow";
+import FollowButton from "./FollowButton";
+import PostGrid from "./PostGrid";
+import EditProfileModal from "./EditProfileModal";
+import UsersModal from "./UsersModal";
 
 export default function ProfilePage() {
   const { id } = useParams();
-  const [profile, setProfile] = useState(null);
-  const [error, setError] = useState(null);
+  const showToast = useToast();
+  const { profile, error, reload } = useProfile(id);
+  const { toggleFollow, pending: followPending } = useFollow(id, reload);
+  const [modalType, setModalType] = useState(null);
+  const [usersList, setUsersList] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
-  const [formError, setFormError] = useState(null);
-  const [modal, setModal] = useState({ type: null, users: [] });
 
-  useEffect(() => {
-    let cancelled = false;
-
-    fetch(`${BACKEND_URL}/profile/${id}`, { credentials: "include" })
-      .then((res) => res.text())
-      .then((text) => {
-        const data = text ? JSON.parse(text) : {};
-        if (!data.user) throw new Error(data.error || "User not found");
-        if (!cancelled) setProfile(data);
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err.message || "Failed to load profile");
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
-
-  const fetchApi = async (endpoint, method = "POST", body = null) => {
-    const options = { method, credentials: "include" };
-    if (body && method !== "GET") options.body = body;
-
-    const res = await fetch(`${BACKEND_URL}${endpoint}`, options);
-    const text = await res.text();
-    const data = text ? JSON.parse(text) : {};
-    if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
-    return data;
-  };
-
-const handleFollow = () => {
-    fetchApi(`/follow/${id}`).then((data) => {
-      const newRelation = data.status || data.new_status || "none";
-      let newCount = profile.followers_count || 0;
-      
-      if (profile.relation === "accepted" && newRelation !== "accepted") {
-        newCount = Math.max(0, newCount - 1); 
-      } else if (profile.relation !== "accepted" && newRelation === "accepted") {
-        newCount += 1; 
-      }
-
-      setProfile({ 
-        ...profile, 
-        relation: newRelation, 
-        followers_count: newCount 
-      });
-    }).catch(err => console.error("Error toggling follow:", err));
-  };
-
-  const handleEdit = (e) => {
-    e.preventDefault();
-    setFormError(null);
-    fetchApi("/profile/edit", "POST", new FormData(e.target))
-      .then(() => window.location.reload())
-      .catch((err) => setFormError(err.message || "Update failed"));
-  };
-
- const openModal = (type) => {
-    if (profile.user.is_private && profile.relation !== "self" && profile.relation !== "accepted") {
-      return; 
+  const openModal = async (type) => {
+    if (!profile || (profile.user.is_private && profile.relation !== "self" && profile.relation !== "accepted")) return;
+    setModalType(type);
+    try {
+      const data = await apiRequest(`/profile/${id}/${type}`);
+      setUsersList(data || []);
+    } catch (err) {
+      setModalType(null);
+      showToast(err.message);
     }
-    
-    fetchApi(`/profile/${id}/${type}`, "GET")
-      .then((users) => {
-        setModal({ type, users: users || [] });
-      })
-      .catch((err) => {
-        console.error("Error fetching list:", err);
-      });
+  };
+
+  const closeModal = () => {
+    setModalType(null);
+    setUsersList([]);
   };
 
   if (error) {
     return (
       <div className="profile-wrapper">
-        <div className="glass-card" style={{ padding: "40px", textAlign: "center" }}>
+        <div className="glass-card profile-error-card">
           <h2 style={{ marginTop: 0 }}>Profile unavailable</h2>
           <p>{error}</p>
           <Link href="/posts" className="action-btn btn-edit">Back to posts</Link>
@@ -96,7 +51,7 @@ const handleFollow = () => {
     );
   }
 
-  if (!profile || !profile.user) return <div className="profile-wrapper">Loading...</div>;
+  if (!profile) return <div className="profile-wrapper">Loading...</div>;
 
   const { user, relation, followers_count, following_count, posts } = profile;
   const isPrivateHidden = user.is_private && relation !== "self" && relation !== "accepted";
@@ -104,119 +59,43 @@ const handleFollow = () => {
   return (
     <div className="profile-wrapper">
       <div className="profile-layout">
-        
-        {/* Left Sidebar */}
         <div className="glass-card left-sidebar">
-          <img src={user.avatar ? `${BACKEND_URL}${user.avatar}` : "/default-avatar.png"} className="avatar-img" alt="Avatar" />
+          <Avatar src={user.avatar} name={user.first_name} size={112} />
           <h2 className="user-name">{user.first_name} {user.last_name}</h2>
           <p className="user-handle">@{user.nickname || user.first_name}</p>
           <span className="privacy-badge">{user.is_private ? "Private Profile" : "Public Profile"}</span>
-          {!isPrivateHidden && user.date_of_birth && <p style={{ color: "#94a3b8", fontSize: "0.9rem", margin: "10px 0" }}>Born: {user.date_of_birth.split("T")[0]}</p>}
+          {!isPrivateHidden && user.date_of_birth && <p className="profile-dob">Born: {user.date_of_birth.split("T")[0]}</p>}
           {!isPrivateHidden && user.about_me && <p className="about-me">{user.about_me}</p>}
 
-          {/* Action Button */}
-          {relation === "self" ? <button onClick={() => { setIsEditing(true); setFormError(null); }} className="action-btn btn-edit">Edit Profile</button>
-          : relation === "accepted" ? <button onClick={handleFollow} className="action-btn btn-unfollow">Unfollow</button>
-          : relation === "pending" ? <button onClick={handleFollow} className="action-btn btn-pending">Cancel Request</button>
-          : <button onClick={handleFollow} className="action-btn btn-follow">Follow</button>}
+          <FollowButton relation={relation} isPrivate={user.is_private} onToggle={relation === "self" ? () => setIsEditing(true) : toggleFollow} disabled={followPending} />
         </div>
 
-        {/* Right Area */}
         <div className="right-area">
           <div className="stats-grid">
-            <div className="glass-card stat-item" onClick={() => openModal("followers")} style={{ cursor: isPrivateHidden ? "default" : "pointer" }}>
-              <p className="stat-label">Followers</p> 
-              <p className="stat-value">{followers_count || 0}</p>
-            </div>
-            <div className="glass-card stat-item" onClick={() => openModal("following")} style={{ cursor: isPrivateHidden ? "default" : "pointer" }}>
-              <p className="stat-label">Following</p> 
-              <p className="stat-value">{following_count || 0}</p>
-            </div>
-            <div className="glass-card stat-item">
-              <p className="stat-label">Joined</p> 
-              <p className="stat-value">{user.created_at ? user.created_at.split("-")[0] : "Recently"}</p>
-            </div>
+            {[
+              { label: "Followers", value: followers_count || 0, type: "followers" },
+              { label: "Following", value: following_count || 0, type: "following" },
+              { label: "Joined", value: user.created_at ? user.created_at.split("-")[0] : "Recently" },
+            ].map(({ label, value, type }) => (
+              <div key={label} className="glass-card stat-item" onClick={type && !isPrivateHidden ? () => openModal(type) : undefined} style={{ cursor: type && !isPrivateHidden ? "pointer" : "default" }}>
+                <p className="stat-label">{label}</p>
+                <p className="stat-value">{value}</p>
+              </div>
+            ))}
           </div>
 
-          {/* Posts Grid */}
           <div className="glass-card">
             <h3 style={{ marginTop: 0 }}>Posts</h3>
-            {isPrivateHidden ? <p className="empty-state">🔒 Private account.</p> : (
-              <div className="posts-grid">
-                {posts?.length ? posts.map((p) => (
-                  <Link key={p.id} href={`/posts/comment/${p.id}`} className="post-tile">
-                    {p.image ? (
-                        <img src={`${BACKEND_URL}${p.image}`} className="post-tile-img" alt="" />
-                    ) : (
-                        <p className="placeholder-text" style={{padding: "10px", textAlign: "center"}}>{p.title}</p>
-                    )}
-                  </Link>
-                )) : <p className="empty-state">No posts yet.</p>}
-              </div>
-            )}
+            <PostGrid posts={posts} isPrivateHidden={isPrivateHidden} />
           </div>
         </div>
       </div>
 
-      {/* Edit Modal */}
       {isEditing && (
-        <div className="modal-overlay" onClick={() => { setIsEditing(false); setFormError(null); }}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2 style={{ marginTop: 0 }}>Edit Profile</h2>
-            <form onSubmit={handleEdit} className="edit-form">
-              {formError && (
-                <p style={{ color: "#f44336", fontSize: "0.9rem", margin: "0 0 10px 0" }}>{formError}</p>
-              )}
-              <input name="first_name" defaultValue={user.first_name} className="form-input" required placeholder="First Name" />
-              <input name="last_name" defaultValue={user.last_name} className="form-input" required placeholder="Last Name" />
-              <input name="email" type="email" defaultValue={user.email} className="form-input" required placeholder="Email" />
-              <input name="date_of_birth" type="date" defaultValue={user.date_of_birth?.split("T")[0]} className="form-input" required />
-              <input name="nickname" defaultValue={user.nickname || ""} className="form-input" maxLength={30} placeholder="Nickname" />
-              <textarea name="about_me" defaultValue={user.about_me} className="form-input" placeholder="About me" />
-              <label className="privacy-toggle">
-                <input type="checkbox" name="is_private" defaultChecked={!!user.is_private} />
-                Private Profile
-              </label>
-              <input type="file" name="avatar" className="form-file" accept="image/*" />
-              <button type="submit" className="action-btn btn-follow">Save</button>
-            </form>
-          </div>
-        </div>
+        <EditProfileModal user={user} onClose={() => setIsEditing(false)} onSaved={async () => { setIsEditing(false); await reload(); showToast("Profile updated", false); }} />
       )}
 
-      {/* Users List Modal (Followers / Following) */}
-      {modal.type && (
-        <div className="modal-overlay" onClick={() => setModal({ type: null, users: [] })}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "400px" }}>
-            <h2 style={{ marginTop: 0, textTransform: "capitalize" }}>{modal.type}</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "15px", maxHeight: "300px", overflowY: "auto" }}>
-              {modal.users?.length ? modal.users.map((u) => {
-                const itemStyle = {textDecoration: "none", display: "flex", alignItems: "center", gap: "10px"};
-                if (user.is_private && relation !== "self") {
-                  return (
-                    <div key={u.id} className="user-handle" style={itemStyle}>
-                      <img src={u.avatar ? `${BACKEND_URL}${u.avatar}` : "/default-avatar.png"} style={{width: 40, height: 40, borderRadius: "50%"}} alt="" />
-                      <div>
-                        <div style={{ color: "white", fontWeight: "bold" }}>{u.first_name} {u.last_name}</div>
-                        <div style={{ color: "#94a3b8", fontSize: "0.8rem" }}>@{u.nickname || u.first_name}</div>
-                      </div>
-                    </div>
-                  );
-                }
-                return (
-                  <Link href={`/profile/${u.id}`} key={u.id} className="user-handle" onClick={() => setModal({type: null})} style={itemStyle}>
-                    <img src={u.avatar ? `${BACKEND_URL}${u.avatar}` : "/default-avatar.png"} style={{width: 40, height: 40, borderRadius: "50%"}} alt="" />
-                    <div>
-                      <div style={{ color: "white", fontWeight: "bold" }}>{u.first_name} {u.last_name}</div>
-                      <div style={{ color: "#94a3b8", fontSize: "0.8rem" }}>@{u.nickname || u.first_name}</div>
-                    </div>
-                  </Link>
-                );
-              }) : <p style={{ color: "#94a3b8", textAlign: "center" }}>No {modal.type} found.</p>}
-            </div>
-          </div>
-        </div>
-      )}
+      {modalType && <UsersModal type={modalType} users={usersList} onClose={closeModal} />}
     </div>
   );
 }

@@ -1,27 +1,56 @@
 package repositories
 
 import (
+	"database/sql"
+	"fmt"
+
 	"zone/internal/database"
 	"zone/internal/groups/models"
 )
 
 // insert the join request  in the group_requests table
+func SaveJoinRequest(groupID int, userID int) (int, error) {
+	var id int
 
-func SaveJoinRequest(group_id int, user_id int) (int, error) {
-	result, err := database.Database.Exec(`
+	// Check if request already exists
+	err := database.Database.QueryRow(
+		`
+		SELECT id
+		FROM group_requests
+		WHERE group_id = ?
+		AND user_id = ?
+	`,
+		groupID,
+		userID,
+	).Scan(&id)
+
+	if err == nil {
+		return 0, fmt.Errorf("join request already exists")
+	}
+
+	if err != sql.ErrNoRows {
+		return 0, err
+	}
+
+	// Insert request
+	result, err := database.Database.Exec(
+		`
 		INSERT INTO group_requests (group_id, user_id)
 		VALUES (?, ?)
-	`, group_id, user_id)
+	`,
+		groupID,
+		userID,
+	)
 	if err != nil {
 		return 0, err
 	}
 
-	id, err := result.LastInsertId()
+	id64, err := result.LastInsertId()
 	if err != nil {
 		return 0, err
 	}
 
-	return int(id), nil
+	return int(id64), nil
 }
 
 func GetJoinRequest(requestID int) (models.GroupRequest, error) {
@@ -41,7 +70,6 @@ func GetJoinRequest(requestID int) (models.GroupRequest, error) {
 
 	return request, err
 }
-
 
 func UpdateJoinRequestStatus(requestID int, status string) error {
 	_, err := database.Database.Exec(`
