@@ -9,6 +9,7 @@ import (
 	"zone/internal/auth"
 	"zone/internal/database"
 	"zone/internal/posts"
+	"zone/internal/utils"
 )
 
 func ServeImage(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +60,7 @@ func postImagePostID(imagePrefix, urlPath string) (string, int, error) {
 		"SELECT id FROM posts WHERE image = ?",
 		imagePrefix+filepath.Base(urlPath),
 	).Scan(&postID)
-	return "./uploads/posts", postID, err
+	return filepath.Join(utils.UploadsDir(), "posts"), postID, err
 }
 
 func commentImagePostID(imagePrefix, urlPath string) (string, int, error) {
@@ -68,5 +69,5 @@ func commentImagePostID(imagePrefix, urlPath string) (string, int, error) {
 		"SELECT post_id FROM comments WHERE image = ?",
 		imagePrefix+filepath.Base(urlPath),
 	).Scan(&postID)
-	return "./uploads/comments", postID, err
+	return filepath.Join(utils.UploadsDir(), "comments"), postID, err
 }
