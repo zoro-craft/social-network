@@ -2,23 +2,31 @@ services:
   backend:
     build: ./backend
     image: social-backend
-    ports:
-      - '8080:8080'
+
+    environment:
+      - DB_PATH=/data/social-network.db
+      - UPLOADS_PATH=/uploads
+
+    volumes:
+      - ./backend/internal/database:/data
+      - ./backend/uploads:/uploads
 
   frontend:
     build: ./frontend
     image: social-frontend
-    ports:
-      - '3000:3000'
+
     depends_on:
       - backend
 
   caddy:
     image: caddy:alpine
+
     ports:
-      - '80:80'
+      - "80:80"
+
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
+
     depends_on:
       - frontend
       - backend
