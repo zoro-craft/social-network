@@ -26,12 +26,15 @@ func CreatGroupeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var groupe models.Groupe
+	// read the request body and decode it into the Groupe struct
 	err = json.NewDecoder(r.Body).Decode(&groupe)
 	if err != nil {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
+
 	groupe.Admin = user_id
+	// validate the group input 
 	if !services.ValidateGroup(groupe) {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
