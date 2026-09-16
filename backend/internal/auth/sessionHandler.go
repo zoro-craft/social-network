@@ -38,13 +38,8 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 	utils.RespondJSON(w, http.StatusOK, map[string]interface{}{
 		"status": "success",
 		"user": map[string]interface{}{
-			"id":         userID,
-			"username":   username,
-			"nickname":   username,
-			"email":      email,
-			"first_name": firstName,
-			"last_name":  lastName,
-			"avatar":     avatar,
+			"id":       userID,
+			"nickname": username,
 		},
 	})
 }

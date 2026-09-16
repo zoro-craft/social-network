@@ -33,7 +33,6 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid post")
 		return
 	}
-//group
 	var groupID *int
 	err = database.Database.QueryRow(
 		"SELECT group_id FROM posts WHERE id = ?", postID,

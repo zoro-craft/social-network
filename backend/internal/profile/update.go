@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"path/filepath"
 	"strings"
 
 	"zone/internal/auth"
@@ -130,19 +129,12 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 
 	var avatarPath string
 	updateAvatar := false
-	if file, header, fileErr := r.FormFile("avatar"); fileErr == nil {
-		defer file.Close()
-		if !utils.AllowedImageExtensions[strings.ToLower(filepath.Ext(header.Filename))] {
-			utils.HandleError(w, http.StatusBadRequest, "Only JPEG, PNG, and GIF images are allowed")
-			return
-		}
-		filename, saveErr := utils.SaveUploadFile(file, header.Filename, "./uploads/avatars")
-		if saveErr != nil {
-			log.Println("save avatar:", saveErr)
-			utils.HandleError(w, http.StatusInternalServerError, "Failed to save avatar")
-			return
-		}
-		avatarPath = "/uploads/avatars/" + filename
+	avatarPath, err = utils.SaveImageField(r, "avatar", "./uploads/avatars", "/uploads/avatars/")
+	if err != nil {
+		utils.HandleError(w, http.StatusBadRequest, "Only JPEG, PNG, and GIF images are allowed")
+		return
+	}
+	if avatarPath != "" {
 		updateAvatar = true
 	} else if r.FormValue("remove_avatar") == "on" {
 		avatarPath = ""

@@ -18,7 +18,14 @@ var AllowedImageExtensions = map[string]bool{
 var ErrInvalidImageType = errors.New("only JPEG, PNG, and GIF images are allowed")
 
 func SaveImage(r *http.Request, dir, urlPrefix string) (string, error) {
-	file, header, err := r.FormFile("image")
+	return SaveImageField(r, "image", dir, urlPrefix)
+}
+
+// SaveImageField saves an uploaded image read from the given multipart field
+// name. Posts and comments send their file as "image"; avatar uploads
+// (register + edit profile) send theirs as "avatar".
+func SaveImageField(r *http.Request, field, dir, urlPrefix string) (string, error) {
+	file, header, err := r.FormFile(field)
 	if err == http.ErrMissingFile {
 		return "", nil
 	}

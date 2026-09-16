@@ -1,7 +1,5 @@
 const FALLBACK = { text: "Follow", className: "btn-follow" };
 
-// Declarative label/style map keeps every relation state accounted for —
-// unknown states fall back to "Follow" instead of rendering a dead button.
 function FollowButton({ relation, isPrivate, onToggle, disabled }) {
   const config = {
     self: { text: "Edit Profile", className: "btn-edit" },
