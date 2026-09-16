@@ -1,13 +1,14 @@
 package repositories
 
 import (
+	"database/sql"
+
 	"zone/internal/database"
 	"zone/internal/groups/models"
 )
 
-
-func CreateNotification(userID int, Type string, invitationID *int, requestID *int, msg string) error {
-	_, err := database.Database.Exec(`
+func CreateNotification(tx *sql.Tx, userID int, Type string, invitationID *int, requestID *int, msg string) error {
+	_, err := tx.Exec(`
 		INSERT INTO notifications
 			(user_id, type, invitation_id, request_id, message)
 		VALUES (?, ?, ?, ?, ?)
@@ -60,8 +61,8 @@ func GetNotificationsByUserID(userID int) ([]models.Notification, error) {
 	return notifications, nil
 }
 
-func DeleteInvitationNotification(userID int, invitationID int) error {
-	_, err := database.Database.Exec(
+func DeleteInvitationNotification(tx *sql.Tx, userID int, invitationID int) error {
+	_, err := tx.Exec(
 		`
 		DELETE FROM notifications
 		WHERE user_id = ?
@@ -75,8 +76,8 @@ func DeleteInvitationNotification(userID int, invitationID int) error {
 	return err
 }
 
-func DeleteRequestNotification(userID int, Requsestid int) error {
-	_, err := database.Database.Exec(
+func DeleteRequestNotification(tx *sql.Tx, userID int, Requsestid int) error {
+	_, err := tx.Exec(
 		`
 		DELETE FROM notifications
 		WHERE user_id = ?

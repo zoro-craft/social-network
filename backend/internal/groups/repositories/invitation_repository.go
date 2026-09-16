@@ -1,16 +1,17 @@
 package repositories
 
 import (
+	"database/sql"
 	"fmt"
 
 	"zone/internal/database"
 	"zone/internal/groups/models"
 )
 
-func SaveInvitation(invit models.GroupInvitation) (int, error) {
+func SaveInvitation(tx *sql.Tx, invit models.GroupInvitation) (int, error) {
 	var Id int
 	// Check if invitation already exists
-	err := database.Database.QueryRow(`
+	err := tx.QueryRow(`
 		SELECT id
 		FROM group_invitations
 		WHERE group_id = ?
@@ -24,7 +25,7 @@ func SaveInvitation(invit models.GroupInvitation) (int, error) {
 		return 0, fmt.Errorf("already invited")
 	}
 
-	result, err := database.Database.Exec(`
+	result, err := tx.Exec(`
 		INSERT INTO group_invitations
 			(group_id, inviter_id, invited_user_id)
 		VALUES (?, ?, ?)
@@ -85,8 +86,8 @@ func GetInvitation(invitationID, userID int) (models.GroupInvitation, error) {
 	return invitation, nil
 }
 
-func UpdateInvitationStatus(invitationID int, status string) error {
-	_, err := database.Database.Exec(`
+func UpdateInvitationStatus(tx *sql.Tx, invitationID int, status string) error {
+	_, err := tx.Exec(`
 		UPDATE group_invitations
 		SET status = ?
 		WHERE id = ?

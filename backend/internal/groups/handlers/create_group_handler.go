@@ -5,14 +5,13 @@ import (
 	"net/http"
 
 	"zone/internal/auth"
+	"zone/internal/database"
 	"zone/internal/groups/models"
 	"zone/internal/groups/repositories"
 	"zone/internal/groups/services"
 
 	"zone/internal/utils"
 )
-
-
 
 func CreatGroupeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -26,28 +25,40 @@ func CreatGroupeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var groupe models.Groupe
-	// read the request body and decode it into the Groupe struct
 	err = json.NewDecoder(r.Body).Decode(&groupe)
 	if err != nil {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
-
 	groupe.Admin = user_id
-	// validate the group input 
+
 	if !services.ValidateGroup(groupe) {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
 
-	groupe_Id , err := repositories.SaveGroup(groupe)
+	// Use a transaction so the group and its creator member
+	// are inserted atomically (all succeed or none is committed).
+	tx, err := database.Database.Begin()
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
-	
-	err  = repositories.AddGroupMember(groupe_Id, user_id) 
+	defer tx.Rollback()
+
+	groupe_Id, err := repositories.SaveGroup(tx, groupe)
 	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+
+	err = repositories.AddGroupMember(tx, groupe_Id, user_id)
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}

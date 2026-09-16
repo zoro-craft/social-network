@@ -7,12 +7,12 @@ import (
 	"strings"
 
 	"zone/internal/auth"
+	"zone/internal/database"
 	"zone/internal/groups/repositories"
 	"zone/internal/utils"
 )
 
 func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("221221")
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, 405, http.StatusText(405))
 		return
@@ -59,7 +59,17 @@ func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Use a transaction so adding the member, updating the request
+	// status and removing the notification are applied atomically.
+	tx, err := database.Database.Begin()
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+	defer tx.Rollback()
+
 	err = repositories.AddGroupMember(
+		tx,
 		joinRequest.GroupID,
 		joinRequest.UserID,
 	)
@@ -69,6 +79,7 @@ func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = repositories.UpdateJoinRequestStatus(
+		tx,
 		requestID,
 		"accepted",
 	)
@@ -76,8 +87,13 @@ func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
-	err = repositories.DeleteRequestNotification(adminID, requestID)
+	err = repositories.DeleteRequestNotification(tx, adminID, requestID)
 	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
@@ -135,7 +151,17 @@ func Reject_Join_Request(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Use a transaction so updating the request status and
+	// removing the notification are applied atomically.
+	tx, err := database.Database.Begin()
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+	defer tx.Rollback()
+
 	err = repositories.UpdateJoinRequestStatus(
+		tx,
 		requestID,
 		"rejected",
 	)
@@ -144,8 +170,13 @@ func Reject_Join_Request(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = repositories.DeleteRequestNotification(adminID, requestID)
+	err = repositories.DeleteRequestNotification(tx, adminID, requestID)
 	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}

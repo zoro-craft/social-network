@@ -1,12 +1,14 @@
 package repositories
 
 import (
+	"database/sql"
+
 	"zone/internal/database"
 	"zone/internal/groups/models"
 )
 
-func SaveGroup(groupe models.Groupe) (int, error) {
-	result, err := database.Database.Exec(
+func SaveGroup(tx *sql.Tx, groupe models.Groupe) (int, error) {
+	result, err := tx.Exec(
 		`INSERT INTO user_groups (creator_id, title, description) VALUES (?, ?, ?)`,
 		groupe.Admin, groupe.Title, groupe.Description,
 	)
@@ -52,8 +54,8 @@ func GroupExists(groupID int) bool {
 	return exists
 }
 
-func AddGroupMember(groupID, userID int) error {
-	_, err := database.Database.Exec(`
+func AddGroupMember(tx *sql.Tx, groupID, userID int) error {
+	_, err := tx.Exec(`
 		INSERT INTO group_members (group_id, user_id)
 		VALUES (?, ?)
 	`, groupID, userID)

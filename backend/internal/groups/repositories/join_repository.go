@@ -9,11 +9,11 @@ import (
 )
 
 // insert the join request  in the group_requests table
-func SaveJoinRequest(groupID int, userID int) (int, error) {
+func SaveJoinRequest(tx *sql.Tx, groupID int, userID int) (int, error) {
 	var id int
 
 	// Check if request already exists
-	err := database.Database.QueryRow(
+	err := tx.QueryRow(
 		`
 		SELECT id
 		FROM group_requests
@@ -33,7 +33,7 @@ func SaveJoinRequest(groupID int, userID int) (int, error) {
 	}
 
 	// Insert request
-	result, err := database.Database.Exec(
+	result, err := tx.Exec(
 		`
 		INSERT INTO group_requests (group_id, user_id)
 		VALUES (?, ?)
@@ -71,8 +71,8 @@ func GetJoinRequest(requestID int) (models.GroupRequest, error) {
 	return request, err
 }
 
-func UpdateJoinRequestStatus(requestID int, status string) error {
-	_, err := database.Database.Exec(`
+func UpdateJoinRequestStatus(tx *sql.Tx, requestID int, status string) error {
+	_, err := tx.Exec(`
 		UPDATE group_requests
 		SET status = ?
 		WHERE id = ?
