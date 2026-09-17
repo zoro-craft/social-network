@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { API_BASE } from '@/utils/api';
+import { handleSessionLost } from '@/utils/session';
 
 const AuthContext = createContext({
   auth: {
@@ -69,6 +70,20 @@ export function AuthProvider({ children }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshAuth();
   }, [pathname]);
+
+  // revalidate the session every 10s; any failed /me means the session is gone
+  useEffect(() => {
+    if (!auth.authenticated) return;
+
+    const interval = setInterval(async () => {
+      const data = await fetchAuth();
+      if (data.authenticated === false) {
+        handleSessionLost();
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [auth.authenticated]);
 
   return (
     <AuthContext.Provider value={{ auth, setAuth, loading, refreshAuth }}>
