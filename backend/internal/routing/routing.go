@@ -73,6 +73,7 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("POST /invitations/{invitation_id}/accept", middleware.Auth(handlers.AcceptInvitationResponse))
 	mux.HandleFunc("POST /invitations/{invitation_id}/reject", middleware.Auth(handlers.RejectInvitationResponse))
 	mux.HandleFunc("GET /groups/{group_id}/users", middleware.Auth(handlers.GetAllUsersNotmemberHandler))
+	mux.HandleFunc("GET /groups/{group_id}/members", middleware.Auth(handlers.GetGroupMembersHandler))
 
 
 	// events routes

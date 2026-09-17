@@ -132,3 +132,35 @@ func GetAllUsersNotmember(userid int, groupid int) ([]models.User, error) {
 
 	return users, rows.Err()
 }
+
+func GetAllMembers(groupID int) ([]models.User, error) {
+	rows, err := database.Database.Query(`
+		SELECT u.id, u.full_name, COALESCE(u.avatar, '')
+		FROM users u
+		INNER JOIN group_members gm ON gm.user_id = u.id
+		WHERE gm.group_id = ?
+		ORDER BY gm.joined_at ASC, u.id ASC
+	`, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []models.User
+
+	for rows.Next() {
+		var u models.User
+
+		if err := rows.Scan(
+			&u.ID,
+			&u.Full_name,
+			&u.Avatar,
+		); err != nil {
+			return nil, err
+		}
+
+		users = append(users, u)
+	}
+
+	return users, rows.Err()
+}

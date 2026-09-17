@@ -101,9 +101,9 @@ export default function GroupDetailsPage() {
 
                     <button
                         className="glass-action-btn"
-                        onClick={() => goTo('/chat')}
+                        onClick={() => goTo('/members')}
                     >
-                        Go to Chat
+                        Group Members
                     </button>
                 </section>
 
