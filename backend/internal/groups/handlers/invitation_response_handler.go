@@ -7,6 +7,7 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/groups/repositories"
+	ws "zone/internal/websocket"
 	"zone/internal/utils"
 )
 
@@ -63,6 +64,7 @@ func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
+	ws.DefaultHub.Subscribe(user_id, invitation.GroupID) // subscribe new member to the group room (FR-007)
 	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": " invitation accept successfully!"})
 }
 

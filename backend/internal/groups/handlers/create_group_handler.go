@@ -8,6 +8,7 @@ import (
 	"zone/internal/groups/models"
 	"zone/internal/groups/repositories"
 	"zone/internal/groups/services"
+	ws "zone/internal/websocket"
 
 	"zone/internal/utils"
 )
@@ -48,6 +49,7 @@ func CreatGroupeHandler(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
+	ws.DefaultHub.Subscribe(user_id, groupe_Id) // subscribe creator to the group room (FR-007)
 
 	utils.RespondJSON(w, http.StatusCreated, map[string]string{"message": " Groupe created successfully!"})
 }
