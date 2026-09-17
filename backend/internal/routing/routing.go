@@ -16,6 +16,8 @@ import (
 	"zone/internal/uploads"
 	"zone/internal/users"
 	"zone/internal/utils"
+	"zone/internal/websocket"
+	wshandlers "zone/internal/websocket/handlers"
 )
 
 func NewRouter() http.Handler {
@@ -82,6 +84,9 @@ func NewRouter() http.Handler {
 
 	// notifications
 	mux.HandleFunc("GET /notifications", middleware.Auth(handlers.NotifcationHandler))
+
+	// websocket routes
+	mux.HandleFunc("GET /ws", middleware.Auth(wshandlers.WSHandler(websocket.DefaultHub)))
 
 	// global middleware
 	return (limiter.Middleware(mux.ServeHTTP))
