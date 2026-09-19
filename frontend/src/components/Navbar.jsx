@@ -57,7 +57,7 @@ export default function Navbar() {
   return (
     <header className="glass-navbar">
       <div className="glass-logo" onClick={() => router.push('/')}>
-        01Forum
+       Social-Network
       </div>
 
       <div className="glass-nav-actions">

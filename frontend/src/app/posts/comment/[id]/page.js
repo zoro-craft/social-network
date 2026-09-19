@@ -37,7 +37,10 @@ export default function CommentPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!content.trim()) return;
+    if (!content.trim()) {
+      showToast('Content is required');
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -59,6 +62,7 @@ export default function CommentPage() {
       if (imageInputRef.current) {
         imageInputRef.current.value = '';
       }
+      showToast('Comment added successfully', false);
     } catch {
       showToast('Could not reach the server');
     } finally {
@@ -123,6 +127,7 @@ export default function CommentPage() {
               placeholder="Write a comment..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              disabled={submitting}
             />
           </div>
 
@@ -135,6 +140,7 @@ export default function CommentPage() {
                 accept="image/jpeg,image/png,image/gif"
                 onChange={handleImageChange}
                 ref={imageInputRef}
+                disabled={submitting}
               />
             </label>
             <button
