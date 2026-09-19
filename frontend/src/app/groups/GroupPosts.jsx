@@ -35,6 +35,7 @@ export default function GroupPosts({ groupId }) {
         };
 
         fetchPosts();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [groupId]);
 
     if (loading) {

@@ -39,6 +39,7 @@ export default function GroupEvent({ group_id }) {
     };
 
     fetchEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [group_id, refreshKey]);
 
   const handleVote = async (eventId, option) => {
