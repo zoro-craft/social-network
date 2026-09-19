@@ -10,6 +10,7 @@ import (
 	"zone/internal/utils"
 )
 
+// GetAllGroupsHandler handles the request to retrieve all groups for a user.
 func GetAllGroupsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		utils.HandleError(w, 405, http.StatusText(405))
@@ -21,7 +22,7 @@ func GetAllGroupsHandler(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 401, http.StatusText(401))
 		return
 	}
-
+	// get all groups from the database and check if the user is a member of each group
 	groups, err := repositories.GetAllGroups(user_id)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
@@ -29,6 +30,8 @@ func GetAllGroupsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.RespondJSON(w, http.StatusOK, groups)
 }
+
+
 
 func GetGroupInfo(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {

@@ -13,6 +13,7 @@ import (
 	"zone/internal/utils"
 )
 
+
 func CreatGroupeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, 405, http.StatusText(405))
@@ -32,13 +33,12 @@ func CreatGroupeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	groupe.Admin = user_id
 
+	// Validate the group data
 	if !services.ValidateGroup(groupe) {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
-
-	// Use a transaction so the group and its creator member
-	// are inserted atomically (all succeed or none is committed).
+	// start a transaction
 	tx, err := database.Database.Begin()
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
@@ -57,7 +57,7 @@ func CreatGroupeHandler(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
-
+	// Commit to permanently save the changes to the database.
 	if err := tx.Commit(); err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return

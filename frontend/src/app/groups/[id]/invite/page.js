@@ -47,6 +47,9 @@ export default function Userlistpage() {
                     invited_user_id: userID,
                 }
             );
+            if (response) {
+                showToast('Invitation sent successfully' , false);
+            }  
 
         } catch (error) {
             showToast('Failed to send invitation');

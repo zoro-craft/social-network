@@ -11,7 +11,8 @@ import (
 func SaveInvitation(tx *sql.Tx, invit models.GroupInvitation) (int, error) {
 	var Id int
 	// Check if invitation already exists
-	err := tx.QueryRow(`
+	err := tx.QueryRow(
+		`
 		SELECT id
 		FROM group_invitations
 		WHERE group_id = ?
@@ -25,7 +26,8 @@ func SaveInvitation(tx *sql.Tx, invit models.GroupInvitation) (int, error) {
 		return 0, fmt.Errorf("already invited")
 	}
 
-	result, err := tx.Exec(`
+	result, err := tx.Exec(
+		`
 		INSERT INTO group_invitations
 			(group_id, inviter_id, invited_user_id)
 		VALUES (?, ?, ?)
@@ -62,7 +64,6 @@ func InvitedUserIDExists(InvitedUserID int) bool {
 	return exists
 }
 
-
 func GetInvitation(invitationID, userID int) (models.GroupInvitation, error) {
 	var invitation models.GroupInvitation
 
@@ -96,6 +97,7 @@ func UpdateInvitationStatus(tx *sql.Tx, invitationID int, status string) error {
 	return err
 }
 
+// this function is used the get all users that are not members of a specific group .
 func GetAllUsersNotmember(userid int, groupid int) ([]models.User, error) {
 	rows, err := database.Database.Query(`
 		SELECT id, full_name, COALESCE(avatar, '')
@@ -133,13 +135,13 @@ func GetAllUsersNotmember(userid int, groupid int) ([]models.User, error) {
 	return users, rows.Err()
 }
 
+// GetAllMembers retrieves all members of a specific group.
 func GetAllMembers(groupID int) ([]models.User, error) {
 	rows, err := database.Database.Query(`
 		SELECT u.id, u.full_name, COALESCE(u.avatar, '')
 		FROM users u
-		INNER JOIN group_members gm ON gm.user_id = u.id
+		JOIN group_members gm ON u.id = gm.user_id
 		WHERE gm.group_id = ?
-		ORDER BY gm.joined_at ASC, u.id ASC
 	`, groupID)
 	if err != nil {
 		return nil, err
@@ -151,16 +153,21 @@ func GetAllMembers(groupID int) ([]models.User, error) {
 	for rows.Next() {
 		var u models.User
 
-		if err := rows.Scan(
+		err := rows.Scan(
 			&u.ID,
 			&u.Full_name,
 			&u.Avatar,
-		); err != nil {
+		)
+		if err != nil {
 			return nil, err
 		}
 
 		users = append(users, u)
 	}
 
-	return users, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }

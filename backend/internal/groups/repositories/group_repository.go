@@ -7,6 +7,7 @@ import (
 	"zone/internal/groups/models"
 )
 
+// SaveGroup saves a new group to the database and returns the generated group ID.
 func SaveGroup(tx *sql.Tx, groupe models.Groupe) (int, error) {
 	result, err := tx.Exec(
 		`INSERT INTO user_groups (creator_id, title, description) VALUES (?, ?, ?)`,
@@ -22,6 +23,7 @@ func SaveGroup(tx *sql.Tx, groupe models.Groupe) (int, error) {
 	return int(groupID), err
 }
 
+// GetGroupNameByID retrieves the name of a group based on its ID.
 func GetGroupNameByID(groupID int) (string, error) {
 	var groupName string
 
@@ -37,7 +39,7 @@ func GetGroupNameByID(groupID int) (string, error) {
 	return groupName, nil
 }
 
-
+// GroupExists checks if a group with the given ID exists in the database.
 func GroupExists(groupID int) bool {
 	var exists bool
 
@@ -54,6 +56,7 @@ func GroupExists(groupID int) bool {
 	return exists
 }
 
+// AddGroupMember adds a user to a group in the database.
 func AddGroupMember(tx *sql.Tx, groupID, userID int) error {
 	_, err := tx.Exec(`
 		INSERT INTO group_members (group_id, user_id)
@@ -63,7 +66,7 @@ func AddGroupMember(tx *sql.Tx, groupID, userID int) error {
 	return err
 }
 
-
+// GetAllGroups retrieves all groups from the database and checks if the user is a member of each group.
 func GetAllGroups(userID int) ([]models.Groupe, error) {
 	rows, err := database.Database.Query(`
 		SELECT
@@ -113,6 +116,7 @@ func GetAllGroups(userID int) ([]models.Groupe, error) {
 	return groups, nil
 }
 
+// get the creator of the group by group id
 func GetGroupCreator(group_id int) (int, error) {
 	var creatorID int
 
@@ -129,6 +133,7 @@ func GetGroupCreator(group_id int) (int, error) {
 }
 
 
+// GetUserFullName retrieves the full name of a user based on their user ID.
 func GetUserFullName(user_id int) string {
 	var fullName string
 
@@ -145,7 +150,7 @@ func GetUserFullName(user_id int) string {
 }
 
 
-
+// get the group info by group id
 func GetGroupbyid(group_id int) (models.Groupe, error) {
 	var group models.Groupe
 
@@ -167,7 +172,7 @@ func GetGroupbyid(group_id int) (models.Groupe, error) {
 	return group, nil
 }
 
-
+// check if the user is a member of the group
 func IsMember(userID int, groupID int) bool {
 	var exists bool
 

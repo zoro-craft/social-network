@@ -13,6 +13,8 @@ import (
 	"zone/internal/utils"
 )
 
+
+// the handler is used to create a group invitation and send a notification to the invited user.
 func InvitationsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, 405, http.StatusText(405))
