@@ -63,7 +63,6 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("GET /groups", middleware.Auth(handlers.GetAllGroupsHandler))
 	mux.HandleFunc("POST /groups/{group_id}", middleware.Auth(handlers.GetGroupInfo))
 	mux.HandleFunc("GET /groups/{group_id}/posts", middleware.Auth(posts.GetPostsByGroupAPI))
-	mux.HandleFunc("GET /groups/{group_id}/comments", middleware.Auth(comments.GetCommentsByGroupAPI))
 
 	// join request
 	mux.HandleFunc("POST /groups/{group_id}/join", middleware.Auth(handlers.Join_Request_handler))
@@ -75,7 +74,6 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("POST /invitations/{invitation_id}/accept", middleware.Auth(handlers.AcceptInvitationResponse))
 	mux.HandleFunc("POST /invitations/{invitation_id}/reject", middleware.Auth(handlers.RejectInvitationResponse))
 	mux.HandleFunc("GET /groups/{group_id}/users", middleware.Auth(handlers.GetAllUsersNotmemberHandler))
-
 
 	// events routes
 	mux.HandleFunc("POST /events", middleware.Auth(events.CreateEvent))

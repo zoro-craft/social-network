@@ -8,7 +8,7 @@ type Post struct {
 	Privacy      string `json:"privacy"`
 	GroupID      *int   `json:"group_id,omitempty"`
 	UserID       int    `json:"user_id"`
-	Full_name    string `json:"full_name"`
+	FullName     string `json:"full_name"`
 	CreatedAt    string `json:"created_at"`
 	LikeCount    int    `json:"like_count"`
 	DislikeCount int    `json:"dislike_count"`

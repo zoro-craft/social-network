@@ -49,7 +49,7 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// check goup
+		// check group exists
 		var exists bool
 
 		err = database.Database.QueryRow(

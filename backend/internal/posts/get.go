@@ -73,7 +73,7 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 	// Home posts + reactions
 	query := postSelect + reactionSelect + fromPosts + " WHERE p.group_id IS NULL AND (" + visibleCondition + ")"
 
-	args := []interface{}{viewerID,viewerID,viewerID,viewerID,}
+	args := []interface{}{viewerID, viewerID, viewerID, viewerID}
 
 	if beforeID > 0 {
 		query += " AND p.id < ?"
@@ -95,7 +95,7 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var p Post
 
-		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.Full_name, &p.CreatedAt, &p.LikeCount, &p.DislikeCount); err != nil {
+		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.FullName, &p.CreatedAt, &p.LikeCount, &p.DislikeCount); err != nil {
 			utils.HandleError(w, http.StatusInternalServerError, "Error scanning post")
 			return
 		}
@@ -133,7 +133,7 @@ func GetPostsByUser(userID, viewerID int) ([]Post, error) {
 	for rows.Next() {
 		var p Post
 
-		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.Full_name, &p.CreatedAt); err != nil {
+		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.FullName, &p.CreatedAt); err != nil {
 			return nil, err
 		}
 
@@ -157,7 +157,7 @@ func GetPostsByGroup(groupID int) ([]Post, error) {
 	for rows.Next() {
 		var p Post
 
-		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.Full_name, &p.CreatedAt, &p.LikeCount, &p.DislikeCount); err != nil {
+		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.FullName, &p.CreatedAt, &p.LikeCount, &p.DislikeCount); err != nil {
 			return nil, err
 		}
 
