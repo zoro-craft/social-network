@@ -34,10 +34,15 @@ func SaveImageField(r *http.Request, fieldName string, dir string, urlPrefix str
 
 	file, header, err := r.FormFile(fieldName)
 	if err != nil {
+		if err == http.ErrMissingFile {
+			return "", nil
+		}
 		return "", err
 	}
 	defer file.Close()
-
+	if header.Size == 0 || header.Filename == "" {
+		return "", nil
+	}
 	ext := strings.ToLower(filepath.Ext(header.Filename))
 
 	if !AllowedImageExtensions[ext] {
