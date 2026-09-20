@@ -2,9 +2,14 @@ package utils
 
 import (
 	"errors"
+	"fmt"
+	"image"
+	"io"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 const MaxUploadSize = 5 * 1024 * 1024
@@ -21,26 +26,94 @@ func SaveImage(r *http.Request, subDir, urlPrefix string) (string, error) {
 	return SaveImageField(r, "image", subDir, urlPrefix)
 }
 
-func SaveImageField(r *http.Request, field, subDir, urlPrefix string) (string, error) {
-	file, header, err := r.FormFile(field)
-	if err == http.ErrMissingFile {
-		return "", nil
-	}
+package utils
+
+import (
+	"fmt"
+	"image"
+	"image/gif"
+	"image/jpeg"
+	"image/png"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+)
+
+// SaveImageField كتقبل JPEG, PNG, و GIF وكتحتفظ بالامتداد الأصلي مع الغسيل الأمني
+func SaveImageField(r *http.Request, fieldName string, dir string, urlPrefix string) (string, error) {
+	
+	file, header, err := r.FormFile(fieldName)
 	if err != nil {
 		return "", err
 	}
 	defer file.Close()
 
 	ext := strings.ToLower(filepath.Ext(header.Filename))
-	if !AllowedImageExtensions[ext] {
-		return "", ErrInvalidImageType
+	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".gif" {
+		return "", fmt.Errorf("unsupported file extension")
 	}
 
-	filename, err := SaveUploadFile(file, header.Filename, filepath.Join(UploadsDir(), subDir))
+	// first check - Magic bytes
+	buff := make([]byte, 512)
+	if _, err := file.Read(buff); err != nil && err != io.EOF {
+		return "", fmt.Errorf("error reading file header")
+	}
+	fileType := http.DetectContentType(buff)
+	if fileType != "image/jpeg" && fileType != "image/png" && fileType != "image/gif" {
+		return "", fmt.Errorf("invalid file format")
+	}
+
+	// start index reading into 0
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return "", fmt.Errorf("error resetting file pointer")
+	}
+
+	// second check -- size of image
+	config, _, err := image.DecodeConfig(file)
+	if err != nil {
+		return "", fmt.Errorf("invalid image metadata")
+	}
+	if config.Width > 4000 || config.Height > 4000 {
+		return "", fmt.Errorf("image dimensions too large (max 4000x4000 pixels)")
+	}
+
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return "", fmt.Errorf("error resetting file pointer")
+	}
+
+	// last check -- rendering image
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return "", fmt.Errorf("invalid or corrupted image file")
+	}
+
+	newFileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
+	fullPath := filepath.Join(".", "uploads", dir, newFileName)
+
+	dst, err := os.Create(fullPath)
 	if err != nil {
 		return "", err
 	}
-	return urlPrefix + filename, nil
+	defer dst.Close()
+
+	// encoding image into origin ext
+	switch ext {
+	case ".jpg", ".jpeg":
+		err = jpeg.Encode(dst, img, nil)
+	case ".png":
+		err = png.Encode(dst, img)
+	case ".gif":
+		err = gif.Encode(dst, img, nil)
+	}
+
+	if err != nil {
+		return "", fmt.Errorf("failed to process and save image")
+	}
+
+	return urlPrefix + newFileName, nil
 }
 
 func ServeUpload(w http.ResponseWriter, r *http.Request) {
