@@ -4,6 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"image/gif"
+	"image/jpeg"
+	"image/png"
 	"io"
 	"net/http"
 	"os"
@@ -20,31 +23,15 @@ var AllowedImageExtensions = map[string]bool{
 	".png":  true,
 	".gif":  true,
 }
+
 var ErrInvalidImageType = errors.New("only JPEG, PNG, and GIF images are allowed")
 
 func SaveImage(r *http.Request, subDir, urlPrefix string) (string, error) {
 	return SaveImageField(r, "image", subDir, urlPrefix)
 }
 
-package utils
-
-import (
-	"fmt"
-	"image"
-	"image/gif"
-	"image/jpeg"
-	"image/png"
-	"io"
-	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
-	"time"
-)
-
-// SaveImageField كتقبل JPEG, PNG, و GIF وكتحتفظ بالامتداد الأصلي مع الغسيل الأمني
 func SaveImageField(r *http.Request, fieldName string, dir string, urlPrefix string) (string, error) {
-	
+
 	file, header, err := r.FormFile(fieldName)
 	if err != nil {
 		return "", err
@@ -52,8 +39,9 @@ func SaveImageField(r *http.Request, fieldName string, dir string, urlPrefix str
 	defer file.Close()
 
 	ext := strings.ToLower(filepath.Ext(header.Filename))
-	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".gif" {
-		return "", fmt.Errorf("unsupported file extension")
+
+	if !AllowedImageExtensions[ext] {
+		return "", ErrInvalidImageType
 	}
 
 	// first check - Magic bytes
@@ -63,7 +51,7 @@ func SaveImageField(r *http.Request, fieldName string, dir string, urlPrefix str
 	}
 	fileType := http.DetectContentType(buff)
 	if fileType != "image/jpeg" && fileType != "image/png" && fileType != "image/gif" {
-		return "", fmt.Errorf("invalid file format")
+		return "", ErrInvalidImageType
 	}
 
 	// start index reading into 0

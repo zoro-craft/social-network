@@ -76,8 +76,8 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 20<<20)
-	if err := r.ParseMultipartForm(20 << 20); err != nil {
+	r.Body = http.MaxBytesReader(w, r.Body, 5<<20)
+	if err := r.ParseMultipartForm(utils.MaxUploadSize); err != nil {
 		utils.HandleError(w, http.StatusBadRequest, "Form too large or invalid")
 		return
 	}
