@@ -27,10 +27,23 @@ func UnfollowAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := database.Database.Exec(
+	// فتح الـ Transaction حتى في Unfollow باش نحافظو على الاتساق
+	tx, err := database.Database.Begin()
+	if err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Failed to unfollow")
+		return
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.Exec(
 		"DELETE FROM followers WHERE follower_id = ? AND followee_id = ?",
 		followerID, followeeID,
 	); err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Failed to unfollow")
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to unfollow")
 		return
 	}
@@ -80,11 +93,11 @@ func toggleFollow(followerID, followeeID int) (string, error) {
 	var isPrivate bool
 	var status sql.NullString
 	err = tx.QueryRow(`
-		SELECT COALESCE(u.is_private, 0), f.status
-		FROM users u
-		LEFT JOIN followers f
-			ON f.followee_id = u.id AND f.follower_id = ?
-		WHERE u.id = ?`,
+        SELECT COALESCE(u.is_private, 0), f.status
+        FROM users u
+        LEFT JOIN followers f
+            ON f.followee_id = u.id AND f.follower_id = ?
+        WHERE u.id = ?`,
 		followerID, followeeID,
 	).Scan(&isPrivate, &status)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -107,7 +120,6 @@ func toggleFollow(followerID, followeeID int) (string, error) {
 		)
 
 	case status.String == "accepted", isPrivate:
-
 		newStatus = "none"
 		_, err = tx.Exec(
 			"DELETE FROM followers WHERE follower_id = ? AND followee_id = ?",

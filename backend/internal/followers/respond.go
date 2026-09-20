@@ -1,6 +1,7 @@
 package followers
 
 import (
+	"database/sql"
 	"net/http"
 	"strconv"
 
@@ -24,10 +25,10 @@ func GetRequestsAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := database.Database.Query(`
-		SELECT f.follower_id, u.first_name, u.last_name, COALESCE(u.avatar, '')
-		FROM followers f
-		JOIN users u ON u.id = f.follower_id
-		WHERE f.followee_id = ? AND f.status = 'pending'`, userID)
+        SELECT f.follower_id, u.first_name, u.last_name, COALESCE(u.avatar, '')
+        FROM followers f
+        JOIN users u ON u.id = f.follower_id
+        WHERE f.followee_id = ? AND f.status = 'pending'`, userID)
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Database error")
 		return
@@ -43,6 +44,7 @@ func GetRequestsAPI(w http.ResponseWriter, r *http.Request) {
 		}
 		requests = append(requests, req)
 	}
+
 	if err := rows.Err(); err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Database error")
 		return
@@ -64,23 +66,45 @@ func RespondRequestAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch action := r.PathValue("action"); action {
-	case "accept":
-		_, err = database.Database.Exec(
-			"UPDATE followers SET status = 'accepted' WHERE follower_id = ? AND followee_id = ? AND status = 'pending'",
-			followerID, followeeID,
-		)
-	case "decline":
-		_, err = database.Database.Exec(
-			"DELETE FROM followers WHERE follower_id = ? AND followee_id = ? AND status = 'pending'",
-			followerID, followeeID,
-		)
-	default:
+	action := r.PathValue("action")
+	if action != "accept" && action != "decline" {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid action")
 		return
 	}
+
+	tx, err := database.Database.Begin()
+	if err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Failed to process request")
+		return
+	}
+	defer tx.Rollback()
+
+	var result sql.Result
+	if action == "accept" {
+		result, err = tx.Exec(
+			"UPDATE followers SET status = 'accepted' WHERE follower_id = ? AND followee_id = ? AND status = 'pending'",
+			followerID, followeeID,
+		)
+	} else {
+		result, err = tx.Exec(
+			"DELETE FROM followers WHERE follower_id = ? AND followee_id = ? AND status = 'pending'",
+			followerID, followeeID,
+		)
+	}
+
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to update request")
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil || rowsAffected == 0 {
+		utils.HandleError(w, http.StatusNotFound, "Request not found")
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Failed to process request")
 		return
 	}
 
