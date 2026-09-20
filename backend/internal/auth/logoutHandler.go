@@ -19,12 +19,23 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	// delete session from database
 	if err == nil && cookie.Value != "" {
+		
+		tx, txErr := database.Database.Begin()
+		if txErr != nil {
+			log.Println("Error starting transaction:", txErr)
+		} else {
+			defer tx.Rollback()
 
-		query := "DELETE FROM user_sessions WHERE session_token = ?"
-		_, err := database.Database.Exec(query, cookie.Value)
+			query := "DELETE FROM user_sessions WHERE session_token = ?"
+			_, err := tx.Exec(query, cookie.Value)
 
-		if err != nil {
-			log.Println("Error deleting session from DB:", err)
+			if err != nil {
+				log.Println("Error deleting session from DB:", err)
+			} else {
+				if commitErr := tx.Commit(); commitErr != nil {
+					log.Println("Error committing transaction:", commitErr)
+				}
+			}
 		}
 	}
 

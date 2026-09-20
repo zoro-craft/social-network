@@ -25,7 +25,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
-
+	r.Body = http.MaxBytesReader(w, r.Body, 5<<20)
 	contentType := r.Header.Get("Content-Type")
 	if strings.HasPrefix(contentType, "multipart/form-data") {
 		if err := r.ParseMultipartForm(10 << 20); err != nil {
@@ -63,8 +63,15 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tx, err := database.Database.Begin()
+	if err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Database error, please try again")
+		return
+	}
+	defer tx.Rollback()
+
 	var existingID int
-	err = database.Database.QueryRow("SELECT id FROM users WHERE email = ?", email).Scan(&existingID)
+	err = tx.QueryRow("SELECT id FROM users WHERE email = ?", email).Scan(&existingID)
 	if err == nil {
 		utils.HandleError(w, http.StatusConflict, "Email already exists")
 		return
@@ -106,9 +113,15 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = createUser(email, string(hashedPassword), dob.Format("2006-01-02"), firstName, lastName, nicknameValue, aboutMe, avatarPath)
+	err = createUser(tx, email, string(hashedPassword), dob.Format("2006-01-02"), firstName, lastName, nicknameValue, aboutMe, avatarPath)
 	if err != nil {
 		log.Println("Database insert error:", err)
+		utils.HandleError(w, http.StatusInternalServerError, "Could not create account")
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Println("Transaction commit error:", err)
 		utils.HandleError(w, http.StatusInternalServerError, "Could not create account")
 		return
 	}
@@ -182,8 +195,8 @@ func ValidateNickname(nickname string, excludeID int) (bool, error) {
 	return false, nil
 }
 
-func createUser(email, hashedPassword, dob, firstName, lastName string, nickname any, aboutMe, avatarPath string) error {
-	_, err := database.Database.Exec(
+func createUser(tx *sql.Tx, email, hashedPassword, dob, firstName, lastName string, nickname any, aboutMe, avatarPath string) error {
+	_, err := tx.Exec(
 		"INSERT INTO users (email, password, date_of_birth, first_name, last_name, nickname, about_me, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 		email, hashedPassword, dob, firstName, lastName, nickname, aboutMe, avatarPath,
 	)
