@@ -38,8 +38,9 @@ export async function apiRequest(
   }
 
   if (!res.ok) {
-
-    throw new Error(result.error  ||  "Something went wrong!");
+    const error = new Error(result.error  ||  "Something went wrong!");
+    error.status = res.status;
+    throw error;
     }
 
   return result;
