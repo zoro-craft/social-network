@@ -6,6 +6,8 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	"zone/internal/groups/repositories"
+	notificationservice "zone/internal/notifications/services"
 	"zone/internal/utils"
 )
 
@@ -81,9 +83,13 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, _ := res.LastInsertId()
+	eventID := int(id)
+
+	// Fan out an event_created notification to every group member except the creator.
+	_ = notificationservice.Notifier.NotifyGroupEvent(req.GroupID, eventID, userID, req.Title, repositories.GetUserFullName(userID))
 
 	utils.RespondJSON(w, http.StatusCreated, Event{
-		ID:          int(id),
+		ID:          eventID,
 		GroupID:     req.GroupID,
 		Title:       req.Title,
 		Description: req.Description,
