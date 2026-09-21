@@ -6,8 +6,6 @@ import (
 	"zone/internal/database"
 )
 
-
-
 func getReactionSummary(postID, userID int) (Reaction, error) {
 	var resp Reaction
 	resp.PostID = postID

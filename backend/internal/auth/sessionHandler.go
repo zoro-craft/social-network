@@ -39,7 +39,6 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 		"status": "success",
 		"user": map[string]interface{}{
 			"id":         userID,
-			"username":   username,
 			"nickname":   username,
 			"email":      email,
 			"first_name": firstName,

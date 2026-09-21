@@ -9,6 +9,7 @@ import (
 	"zone/internal/database"
 	"zone/internal/groups/repositories"
 	"zone/internal/utils"
+	ws "zone/internal/websocket"
 )
 
 // POST /invitations/1/accept
@@ -77,6 +78,8 @@ func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ws.DefaultHub.Subscribe(user_id, invitation.GroupID) // subscribe new member to the group room (FR-007)
+
 	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": " invitation accept successfully!"})
 }
 
@@ -106,7 +109,7 @@ func RejectInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
-	
+
 	// Use a transaction so updating the invitation status and
 	// removing the notification are applied atomically.
 	tx, err := database.Database.Begin()
@@ -122,7 +125,7 @@ func RejectInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = repositories.DeleteInvitationNotification( tx, user_id , invitation_id)
+	err = repositories.DeleteInvitationNotification(tx, user_id, invitation_id)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return

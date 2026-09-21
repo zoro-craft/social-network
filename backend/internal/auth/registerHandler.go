@@ -3,11 +3,8 @@ package auth
 import (
 	"database/sql"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -103,25 +100,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var avatarPath string
-	if strings.HasPrefix(contentType, "multipart/form-data") {
-		file, handler, err := r.FormFile("avatar")
-		if err == nil {
-			defer file.Close()
-			os.MkdirAll("uploads/avatars", os.ModePerm)
-			ext := filepath.Ext(handler.Filename)
-			newFileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
-			filePath := filepath.Join("uploads/avatars", newFileName)
-
-			dst, err := os.Create(filePath)
-			if err == nil {
-				defer dst.Close()
-				io.Copy(dst, file)
-				avatarPath = "/" + filePath
-			}
-		}
-	} else {
-		avatarPath = strings.TrimSpace(r.FormValue("avatar"))
+	avatarPath, err := utils.SaveImageField(r, "avatar", "avatars", "/uploads/avatars/")
+	if err != nil {
+		utils.HandleError(w, http.StatusBadRequest, "Invalid image")
+		return
 	}
 
 	err = createUser(email, string(hashedPassword), dob.Format("2006-01-02"), firstName, lastName, nicknameValue, aboutMe, avatarPath)

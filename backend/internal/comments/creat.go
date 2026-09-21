@@ -33,7 +33,6 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid post")
 		return
 	}
-//group
 	var groupID *int
 	err = database.Database.QueryRow(
 		"SELECT group_id FROM posts WHERE id = ?", postID,
@@ -77,7 +76,7 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c.Image, err = utils.SaveImage(r, "./uploads/comments", "/uploads/comments/")
+	c.Image, err = utils.SaveImage(r, "comments", "/uploads/comments/")
 	if err != nil {
 		utils.HandleError(w, http.StatusBadRequest, err.Error())
 		return

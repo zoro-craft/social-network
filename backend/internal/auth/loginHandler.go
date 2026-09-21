@@ -124,12 +124,4 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &newCookie)
 
-	utils.RespondJSON(w, http.StatusOK, map[string]interface{}{
-		"status":  "success",
-		"message": "Logged in successfully",
-		"user": map[string]interface{}{
-			"id":       dbID,
-			"nickname": dbUsername,
-		},
-	})
 }

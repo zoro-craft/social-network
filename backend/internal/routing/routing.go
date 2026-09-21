@@ -16,6 +16,8 @@ import (
 	"zone/internal/uploads"
 	"zone/internal/users"
 	"zone/internal/utils"
+	"zone/internal/websocket"
+	wshandlers "zone/internal/websocket/handlers"
 )
 
 func NewRouter() http.Handler {
@@ -61,7 +63,6 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("GET /groups", middleware.Auth(handlers.GetAllGroupsHandler))
 	mux.HandleFunc("POST /groups/{group_id}", middleware.Auth(handlers.GetGroupInfo))
 	mux.HandleFunc("GET /groups/{group_id}/posts", middleware.Auth(posts.GetPostsByGroupAPI))
-	mux.HandleFunc("GET /groups/{group_id}/comments", middleware.Auth(comments.GetCommentsByGroupAPI))
 
 	// join request
 	mux.HandleFunc("POST /groups/{group_id}/join", middleware.Auth(handlers.Join_Request_handler))
@@ -75,7 +76,6 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("GET /groups/{group_id}/users", middleware.Auth(handlers.GetAllUsersNotmemberHandler))
 	mux.HandleFunc("GET /groups/{group_id}/members", middleware.Auth(handlers.GetGroupMembersHandler))
 
-
 	// events routes
 	mux.HandleFunc("POST /events", middleware.Auth(events.CreateEvent))
 	mux.HandleFunc("GET /events", middleware.Auth(events.GetEvents))
@@ -83,6 +83,9 @@ func NewRouter() http.Handler {
 
 	// notifications
 	mux.HandleFunc("GET /notifications", middleware.Auth(handlers.NotifcationHandler))
+
+	// websocket routes
+	mux.HandleFunc("GET /ws", middleware.Auth(wshandlers.WSHandler(websocket.DefaultHub)))
 
 	// global middleware
 	return (limiter.Middleware(mux.ServeHTTP))

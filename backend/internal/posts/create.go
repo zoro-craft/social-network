@@ -27,7 +27,6 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in to post")
 		return
 	}
-	
 	r.Body = http.MaxBytesReader(w, r.Body, utils.MaxUploadSize)
 	if err := r.ParseMultipartForm(utils.MaxUploadSize); err != nil {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid form data or file too large")
@@ -41,7 +40,6 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 		UserID:  userID,
 	}
 
-//group
 	groupIDStr := strings.TrimSpace(r.FormValue("group_id"))
 
 	if groupIDStr != "" {
@@ -51,7 +49,7 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// check goup
+		// check group exists
 		var exists bool
 
 		err = database.Database.QueryRow(
@@ -139,7 +137,7 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	p.Image, err = utils.SaveImage(r, "./uploads/posts", "/uploads/posts/")
+	p.Image, err = utils.SaveImage(r, "posts", "/uploads/posts/")
 
 	if err != nil {
 		utils.HandleError(w, http.StatusBadRequest, err.Error())

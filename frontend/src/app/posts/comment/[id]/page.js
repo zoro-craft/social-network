@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useComments } from './useComments';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useImageInput } from '@/hooks/useImageInput';
 import { API_BASE } from '@/utils/api';
 import formatDate from '@/utils/format';
 import Avatar from '@/components/Avatar';
@@ -26,18 +27,22 @@ export default function CommentPage() {
     addComment,
   } = useComments(id);
   const [content, setContent] = useState('');
-  const [imageFile, setImageFile] = useState(null);
+  const { file: imageFile, setFile: setImageFile, handleChange: handleImageChange } = useImageInput();
   const imageInputRef = useRef(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!auth.authenticated) return;
     fetchPostAndComments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.authenticated]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!content.trim()) return;
+    if (!content.trim()) {
+      showToast('Content is required');
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -56,18 +61,13 @@ export default function CommentPage() {
 
       setContent('');
       setImageFile(null);
-      if (imageInputRef.current) {
-        imageInputRef.current.value = '';
-      }
+      if (imageInputRef.current) imageInputRef.current.value = '';
+      showToast('Comment added successfully', false);
     } catch {
       showToast('Could not reach the server');
     } finally {
       setSubmitting(false);
     }
-  };
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImageFile(file || null);
   };
 
   if (authLoading || !auth.authenticated) {
@@ -123,6 +123,7 @@ export default function CommentPage() {
               placeholder="Write a comment..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              disabled={submitting}
             />
           </div>
 
@@ -134,6 +135,7 @@ export default function CommentPage() {
                 type="file"
                 accept="image/jpeg,image/png,image/gif"
                 onChange={handleImageChange}
+                disabled={submitting}
                 ref={imageInputRef}
               />
             </label>

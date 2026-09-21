@@ -1,6 +1,7 @@
 import './globals.css';
 import { AuthProvider } from '@/app/context/AuthContext';
 import { ToastProvider } from '@/app/context/ToastContext';
+import { RealtimeProvider } from '@/components/RealtimeProvider';
 import Navbar from '@/components/Navbar';
 
 export const metadata = {
@@ -13,10 +14,12 @@ export default function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning>
       <body>
         <AuthProvider>
-          <ToastProvider>
-            <Navbar />
-            {children}
-          </ToastProvider>
+          <RealtimeProvider>
+            <ToastProvider>
+              <Navbar />
+              {children}
+            </ToastProvider>
+          </RealtimeProvider>
         </AuthProvider>
       </body>
     </html>

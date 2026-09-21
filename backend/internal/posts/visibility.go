@@ -2,7 +2,6 @@ package posts
 
 import "zone/internal/database"
 
-
 const publicOrGroupCondition = `(
 	(p.group_id IS NULL AND p.privacy = 'public')
 	OR (p.group_id IS NOT NULL AND EXISTS (

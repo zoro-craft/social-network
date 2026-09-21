@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:unit": "node --experimental-loader ./test/alias-loader.mjs --test src/utils/*.test.js"
   },
   "dependencies": {
     "lodash": "^4.18.1",

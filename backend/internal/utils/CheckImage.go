@@ -17,8 +17,12 @@ var AllowedImageExtensions = map[string]bool{
 }
 var ErrInvalidImageType = errors.New("only JPEG, PNG, and GIF images are allowed")
 
-func SaveImage(r *http.Request, dir, urlPrefix string) (string, error) {
-	file, header, err := r.FormFile("image")
+func SaveImage(r *http.Request, subDir, urlPrefix string) (string, error) {
+	return SaveImageField(r, "image", subDir, urlPrefix)
+}
+
+func SaveImageField(r *http.Request, field, subDir, urlPrefix string) (string, error) {
+	file, header, err := r.FormFile(field)
 	if err == http.ErrMissingFile {
 		return "", nil
 	}
@@ -32,7 +36,7 @@ func SaveImage(r *http.Request, dir, urlPrefix string) (string, error) {
 		return "", ErrInvalidImageType
 	}
 
-	filename, err := SaveUploadFile(file, header.Filename, dir)
+	filename, err := SaveUploadFile(file, header.Filename, filepath.Join(UploadsDir(), subDir))
 	if err != nil {
 		return "", err
 	}
@@ -45,5 +49,6 @@ func ServeUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.ServeFile(w, r, filepath.Join(".", r.URL.Path))
+	rel := strings.TrimPrefix(r.URL.Path, "/uploads")
+	http.ServeFile(w, r, filepath.Join(UploadsDir(), rel))
 }
