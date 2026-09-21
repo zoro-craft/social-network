@@ -43,6 +43,8 @@ export default function NotificationsPage() {
         const items = data.items || [];
         setNotifications(items);
         setHasMore(data.has_more);
+        // This fetch carried the exact unread total; reconcile the mounted bell.
+        window.dispatchEvent(new Event('notifications:changed'));
       })
       .catch(() => {
         if (cancelled) return;
