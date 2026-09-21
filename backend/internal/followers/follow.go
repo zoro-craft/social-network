@@ -9,6 +9,8 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	"zone/internal/groups/repositories"
+	notificationservice "zone/internal/notifications/services"
 	"zone/internal/utils"
 )
 
@@ -125,5 +127,22 @@ func toggleFollow(followerID, followeeID int) (string, error) {
 		return "", err
 	}
 
-	return newStatus, tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return "", err
+	}
+
+	// A follow that lands pending means the followee's profile is private:
+	// notify the followee, attributed to the requester.
+	if newStatus == "pending" {
+		message := "New follow request from " + repositories.GetUserFullName(followerID)
+		_, _ = notificationservice.Notifier.NotifyFollowRequest(followeeID, followerID, message)
+	}
+
+	// A cancelled pending request is resolved: delete its follow_request notification
+	// and signal the followee so open sessions remove it and refresh the badge.
+	if newStatus == "none" && status.String == "pending" {
+		_ = notificationservice.Notifier.RemoveFollowRequestNotification(followeeID, followerID)
+	}
+
+	return newStatus, nil
 }
