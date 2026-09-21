@@ -1,6 +1,7 @@
 package followers
 
 import (
+	"database/sql"
 	"net/http"
 	"strconv"
 
@@ -65,23 +66,36 @@ func RespondRequestAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var affected int64
 	switch action := r.PathValue("action"); action {
 	case "accept":
-		_, err = database.Database.Exec(
+		var res sql.Result
+		res, err = database.Database.Exec(
 			"UPDATE followers SET status = 'accepted' WHERE follower_id = ? AND followee_id = ? AND status = 'pending'",
 			followerID, followeeID,
 		)
+		if err == nil {
+			affected, err = res.RowsAffected()
+		}
 	case "decline":
-		_, err = database.Database.Exec(
+		var res sql.Result
+		res, err = database.Database.Exec(
 			"DELETE FROM followers WHERE follower_id = ? AND followee_id = ? AND status = 'pending'",
 			followerID, followeeID,
 		)
+		if err == nil {
+			affected, err = res.RowsAffected()
+		}
 	default:
 		utils.HandleError(w, http.StatusBadRequest, "Invalid action")
 		return
 	}
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to update request")
+		return
+	}
+	if affected == 0 {
+		utils.HandleError(w, http.StatusBadRequest, "Request is no longer pending")
 		return
 	}
 
