@@ -8,6 +8,7 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/groups/repositories"
+	notificationservice "zone/internal/notifications/services"
 	ws "zone/internal/websocket"
 	"zone/internal/utils"
 )
@@ -77,13 +78,14 @@ func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
-	err = repositories.DeleteRequestNotification(adminID, requestID)
+	// Mark the join-request notification read.
+	err = notificationservice.Notifier.MarkReadOnAction(adminID, "join_request", requestID)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
 
-	ws.DefaultHub.Subscribe(joinRequest.UserID, joinRequest.GroupID) // subscribe new member to the group room (FR-007)
+	ws.DefaultHub.Subscribe(joinRequest.UserID, joinRequest.GroupID) // subscribe the new member to the group room
 
 	utils.RespondJSON(w, http.StatusOK, map[string]string{
 		"message": "request accepted successfully!",
@@ -147,7 +149,8 @@ func Reject_Join_Request(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = repositories.DeleteRequestNotification(adminID, requestID)
+	// Mark the join-request notification read.
+	err = notificationservice.Notifier.MarkReadOnAction(adminID, "join_request", requestID)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
