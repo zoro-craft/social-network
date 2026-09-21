@@ -1,57 +1,51 @@
-package database
+package main
 
 import (
-    "database/sql"
-    "fmt"
-    "os"
-    "path/filepath"
-    "runtime"
+	"context"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-    "github.com/golang-migrate/migrate/v4"
-    "github.com/golang-migrate/migrate/v4/database/sqlite3"
-    _ "github.com/golang-migrate/migrate/v4/source/file"
-
-    _ "github.com/mattn/go-sqlite3"
+	"zone/internal/database"
+	"zone/internal/routing"
+	"zone/internal/websocket"
 )
 
-var Database *sql.DB
+func main() {
+	// Initialize database
+	if err := database.Init(); err != nil {
+		log.Fatal(err)
+	}
 
-// Init sets up the SQLite database connection and applies all pending migrations to ensure the database schema is up to date.
-func Init() error {
-    _, thisFile, _, _ := runtime.Caller(0)
-    baseDirName := filepath.Dir(thisFile) // always backend/internal/database, in Docker or locally
-    const dbFileName = "social-network.db"
+	// Start the realtime hub goroutine
+	websocket.WirePresence(websocket.DefaultHub)
+	go websocket.DefaultHub.Run()
 
-    dbFile := filepath.Join(baseDirName, dbFileName)
-    if p := os.Getenv("DB_PATH"); p != "" {
-        dbFile = p
-    }
+	// Create central router
+	router := routing.NewRouter()
+	server := &http.Server{Addr: ":8080", Handler: router}
 
-    var err error
-    Database, err = sql.Open("sqlite3", dbFile+"?_foreign_keys=on")
-    if err != nil {
-        return fmt.Errorf("can't open/create social-network.db: %v", err)
-    }
+	go func() {
+		log.Println("Server running on http://localhost:8080")
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+	}()
 
-    if err := Database.Ping(); err != nil {
-        return fmt.Errorf("can't connect to database: %v", err)
-    }
-    //  create a new database driver instance for the given database connection. whit the default configuration
-    driver, err := sqlite3.WithInstance(Database, &sqlite3.Config{})
-    if err != nil {
-        return fmt.Errorf("can't create migration driver: %v", err)
-    }
+	// Graceful shutdown: on SIGINT/SIGTERM close the hub and stop the server.
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	<-stop
 
-    migrationsPath := "file://" + filepath.Join(baseDirName, "migrations", "sqlite")
-    // creat the manger ho is connected to the database and the migration files, and run the migrations
-    m, err := migrate.NewWithDatabaseInstance(migrationsPath, "sqlite3", driver)
-    if err != nil {
-        return fmt.Errorf("can't create migrate instance: %v", err)
-    }
+	websocket.DefaultHub.Close()
 
-    if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-        return fmt.Errorf("migration failed: %v", err)
-    }
-
-    return nil
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		log.Println("Server shutdown:", err)
+	}
+	log.Println("Server stopped")
 }
