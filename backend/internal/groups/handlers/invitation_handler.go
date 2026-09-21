@@ -6,12 +6,15 @@ import (
 	"net/http"
 
 	"zone/internal/auth"
+	"zone/internal/database"
 	"zone/internal/groups/models"
 	"zone/internal/groups/repositories"
 	"zone/internal/groups/services"
 	"zone/internal/utils"
 )
 
+
+// the handler is used to create a group invitation and send a notification to the invited user.
 func InvitationsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, 405, http.StatusText(405))
@@ -41,8 +44,17 @@ func InvitationsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Use a transaction so the invitation and its notification
+	// are created atomically (all succeed or none is committed).
+	tx, err := database.Database.Begin()
+	if err != nil {
+		utils.HandleError(w, 500, "failed to create invitation")
+		return
+	}
+	defer tx.Rollback()
+
 	// Save invitation
-	invitationID, err := repositories.SaveInvitation(invitation)
+	invitationID, err := repositories.SaveInvitation(tx, invitation)
 	if err != nil {
 		if err.Error() == "already invited" {
 			utils.HandleError(w, http.StatusConflict, "already invited")
@@ -62,6 +74,7 @@ func InvitationsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Create notification for the invited user
 	err = repositories.CreateNotification(
+		tx,
 		invitation.InvitedUserID,
 		"group_invtation",
 		&invitationID,
@@ -73,6 +86,12 @@ func InvitationsHandler(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 500, "failed to create notification")
 		return
 	}
+
+	if err := tx.Commit(); err != nil {
+		utils.HandleError(w, 500, "failed to create invitation")
+		return
+	}
+
 	fmt.Println("2")
 
 	utils.RespondJSON(

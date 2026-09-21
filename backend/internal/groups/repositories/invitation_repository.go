@@ -1,16 +1,18 @@
 package repositories
 
 import (
+	"database/sql"
 	"fmt"
 
 	"zone/internal/database"
 	"zone/internal/groups/models"
 )
 
-func SaveInvitation(invit models.GroupInvitation) (int, error) {
+func SaveInvitation(tx *sql.Tx, invit models.GroupInvitation) (int, error) {
 	var Id int
 	// Check if invitation already exists
-	err := database.Database.QueryRow(`
+	err := tx.QueryRow(
+		`
 		SELECT id
 		FROM group_invitations
 		WHERE group_id = ?
@@ -24,7 +26,8 @@ func SaveInvitation(invit models.GroupInvitation) (int, error) {
 		return 0, fmt.Errorf("already invited")
 	}
 
-	result, err := database.Database.Exec(`
+	result, err := tx.Exec(
+		`
 		INSERT INTO group_invitations
 			(group_id, inviter_id, invited_user_id)
 		VALUES (?, ?, ?)
@@ -61,7 +64,6 @@ func InvitedUserIDExists(InvitedUserID int) bool {
 	return exists
 }
 
-
 func GetInvitation(invitationID, userID int) (models.GroupInvitation, error) {
 	var invitation models.GroupInvitation
 
@@ -85,16 +87,7 @@ func GetInvitation(invitationID, userID int) (models.GroupInvitation, error) {
 	return invitation, nil
 }
 
-func UpdateInvitationStatus(invitationID int, status string) error {
-	_, err := database.Database.Exec(`
-		UPDATE group_invitations
-		SET status = ?
-		WHERE id = ?
-	`, status, invitationID)
-
-	return err
-}
-
+// this function is used the get all users that are not members of a specific group .
 func GetAllUsersNotmember(userid int, groupid int) ([]models.User, error) {
 	rows, err := database.Database.Query(`
 		SELECT id, full_name, COALESCE(avatar, '')
@@ -130,4 +123,51 @@ func GetAllUsersNotmember(userid int, groupid int) ([]models.User, error) {
 	}
 
 	return users, rows.Err()
+}
+
+// GetAllMembers retrieves all members of a specific group.
+func GetAllMembers(groupID int) ([]models.User, error) {
+	rows, err := database.Database.Query(`
+		SELECT u.id, u.full_name, COALESCE(u.avatar, '')
+		FROM users u
+		JOIN group_members gm ON u.id = gm.user_id
+		WHERE gm.group_id = ?
+	`, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []models.User
+
+	for rows.Next() {
+		var u models.User
+
+		err := rows.Scan(
+			&u.ID,
+			&u.Full_name,
+			&u.Avatar,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, u)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+// delete the invitation in response
+func DeleteInvitation(tx *sql.Tx, invitationID int) error {
+    _, err := tx.Exec(`
+        DELETE FROM group_invitations
+        WHERE id = ?
+    `, invitationID)
+
+    return err
 }

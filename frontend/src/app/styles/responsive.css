@@ -130,7 +130,8 @@
   }
 
   .glass-groups-grid,
-  .glass-invite-grid {
+  .glass-invite-grid,
+  .glass-member-grid {
     grid-template-columns: 1fr;
   }
 

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"zone/internal/auth"
+	"zone/internal/database"
 	"zone/internal/groups/repositories"
 	"zone/internal/groups/services"
 	"zone/internal/utils"
@@ -52,9 +53,22 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
-	
-	request_id, err := repositories.SaveJoinRequest(group_id, user_id)
+
+	// Use a transaction so the join request and its notification
+	// are created atomically (all succeed or none is committed).
+	tx, err := database.Database.Begin()
 	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+	defer tx.Rollback()
+
+	request_id, err := repositories.SaveJoinRequest(tx, group_id, user_id)
+	if err != nil {
+		if err.Error() == "join request already exists" {
+			utils.HandleError(w, http.StatusConflict, "join request already exists")
+			return
+		}
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
@@ -63,8 +77,13 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 
 	msg := "New join request for your group " + fullname
 	// creat the notifcation
-	err = repositories.CreateNotification(creator_id, "join_request", nil, &request_id, msg)
+	err = repositories.CreateNotification(tx, creator_id, "join_request", nil, &request_id, msg)
 	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}

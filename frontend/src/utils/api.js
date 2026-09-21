@@ -38,9 +38,8 @@ export async function apiRequest(
   }
 
   if (!res.ok) {
-
-    throw new Error(result.error  ||  "Something went wrong!");
-    }
+    throw new Error( result.error || result.message  ||  "Something went wrong!")
+  }
 
   return result;
 }

@@ -16,7 +16,7 @@ var Database *sql.DB
 
 // Init sets up the SQLite database connection and applies all pending migrations to ensure the database schema is up to date.
 func Init() error {
-	const baseDirName = "../../internal/database"
+	const baseDirName = "./internal/database"
 	const dbFileName = "social-network.db"
 
 	dbFile := baseDirName + "/" + dbFileName

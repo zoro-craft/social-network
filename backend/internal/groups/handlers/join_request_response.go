@@ -1,25 +1,24 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"zone/internal/auth"
+	"zone/internal/database"
 	"zone/internal/groups/repositories"
 	ws "zone/internal/websocket"
 	"zone/internal/utils"
 )
 
 func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("221221")
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, 405, http.StatusText(405))
 		return
 	}
 
-	adminID, err := auth.GetUserID(r)
+	user_id, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, 401, http.StatusText(401))
 		return
@@ -44,45 +43,48 @@ func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if joinRequest.Status != "pending" {
-		utils.HandleError(w, 400, "request is not pending")
-		return
-	}
-
 	creatorID, err := repositories.GetGroupCreator(joinRequest.GroupID)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
 
-	if creatorID != adminID {
+	if creatorID != user_id {
 		utils.HandleError(w, 403, http.StatusText(403))
 		return
 	}
 
-	err = repositories.AddGroupMember(
-		joinRequest.GroupID,
-		joinRequest.UserID,
-	)
+	// Use a transaction so adding the member, updating the request
+	// status and removing the notification are applied atomically.
+	tx, err := database.Database.Begin()
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+	defer tx.Rollback()
+
+	err = repositories.AddGroupMember(tx, joinRequest.GroupID, joinRequest.UserID)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
 
-	err = repositories.UpdateJoinRequestStatus(
-		requestID,
-		"accepted",
-	)
-	if err != nil {
-		utils.HandleError(w, 500, http.StatusText(500))
-		return
-	}
-	err = repositories.DeleteRequestNotification(adminID, requestID)
+	err = repositories.DeleteRequest(tx, requestID)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
 
+	err = repositories.DeleteRequestNotification(tx, user_id, requestID)
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
 	ws.DefaultHub.Subscribe(joinRequest.UserID, joinRequest.GroupID) // subscribe new member to the group room (FR-007)
 
 	utils.RespondJSON(w, http.StatusOK, map[string]string{
@@ -91,13 +93,12 @@ func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
 }
 
 func Reject_Join_Request(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("333333")
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, 405, http.StatusText(405))
 		return
 	}
 
-	adminID, err := auth.GetUserID(r)
+	user_id, err := auth.GetUserID(r)
 	if err != nil {
 		utils.HandleError(w, 401, http.StatusText(401))
 		return
@@ -122,33 +123,39 @@ func Reject_Join_Request(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if joinRequest.Status != "pending" {
-		utils.HandleError(w, 400, "request is not pending")
-		return
-	}
-
 	creatorID, err := repositories.GetGroupCreator(joinRequest.GroupID)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
 
-	if creatorID != adminID {
+	if creatorID != user_id {
 		utils.HandleError(w, 403, http.StatusText(403))
 		return
 	}
 
-	err = repositories.UpdateJoinRequestStatus(
-		requestID,
-		"rejected",
-	)
+	// Use a transaction so updating the request status and
+	// removing the notification are applied atomically.
+	tx, err := database.Database.Begin()
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+	defer tx.Rollback()
+
+	err = repositories.DeleteRequest(tx, requestID)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
 
-	err = repositories.DeleteRequestNotification(adminID, requestID)
+	err = repositories.DeleteRequestNotification(tx, user_id, requestID)
 	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
