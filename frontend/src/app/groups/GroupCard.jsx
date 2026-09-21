@@ -16,17 +16,10 @@ export default function GroupCard({ group }) {
         if (!auth.authenticated) return
 
         try {
-            await apiRequest(`/groups/${group.id}/join`, 'POST')
-
+            const res = await apiRequest(`/groups/${group.id}/join`, 'POST')
+            showToast(res.message || 'Join request sent', false)
         } catch (error) {
-
-            if (error.message === 'join request already exists') {
-                showToast('You already requested to join this group')
-                return
-            }
-
-            showToast('Failed to request to join group')
-
+            showToast(error.message || 'Failed to request to join group')
         }
     }
 
