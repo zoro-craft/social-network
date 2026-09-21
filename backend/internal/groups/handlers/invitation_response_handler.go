@@ -8,6 +8,7 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/groups/repositories"
+	notificationservice "zone/internal/notifications/services"
 	ws "zone/internal/websocket"
 	"zone/internal/utils"
 )
@@ -66,12 +67,9 @@ func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
-ws.DefaultHub.Subscribe(user_id, invitation.GroupID) // subscribe new member to the group room (FR-007)
-	// Remove the invitation notification
-	err = repositories.DeleteInvitationNotification(
-		user_id,
-		invitation_id,
-	)
+ws.DefaultHub.Subscribe(user_id, invitation.GroupID) // subscribe the new member to the group room
+	// Mark the invitation notification read.
+	err = notificationservice.Notifier.MarkReadOnAction(user_id, "group_invitation", invitation_id)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
@@ -117,10 +115,8 @@ func RejectInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
-	err = repositories.DeleteInvitationNotification(
-		user_id,
-		invitation_id,
-	)
+	// Mark the invitation notification read.
+	err = notificationservice.Notifier.MarkReadOnAction(user_id, "group_invitation", invitation_id)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
