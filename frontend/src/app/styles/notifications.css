@@ -1,4 +1,24 @@
 
+.glass-nav-bell {
+  position: relative;
+}
+
+.glass-bell-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
 .glass-notifications-page {
   width: 100%;
   max-width: 850px;
@@ -104,6 +124,30 @@
 .glass-notification-actions button:first-child:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
+}
+
+.glass-notifications-load-more {
+  display: block;
+  margin: 24px auto 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.glass-notifications-load-more:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-border);
+}
+
+.glass-notifications-load-more:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .glass-notification-empty {
