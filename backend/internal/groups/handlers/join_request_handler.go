@@ -8,6 +8,7 @@ import (
 	"zone/internal/auth"
 	"zone/internal/groups/repositories"
 	"zone/internal/groups/services"
+	notificationservice "zone/internal/notifications/services"
 	"zone/internal/utils"
 )
 
@@ -63,7 +64,7 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 
 	msg := "New join request for your group " + fullname
 	// creat the notifcation
-	err = repositories.CreateNotification(creator_id, "join_request", nil, &request_id, msg)
+	_, err = notificationservice.Notifier.Notify(creator_id, "join_request", &request_id, &user_id, msg)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
