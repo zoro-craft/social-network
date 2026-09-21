@@ -87,16 +87,6 @@ func GetInvitation(invitationID, userID int) (models.GroupInvitation, error) {
 	return invitation, nil
 }
 
-func UpdateInvitationStatus(tx *sql.Tx, invitationID int, status string) error {
-	_, err := tx.Exec(`
-		UPDATE group_invitations
-		SET status = ?
-		WHERE id = ?
-	`, status, invitationID)
-
-	return err
-}
-
 // this function is used the get all users that are not members of a specific group .
 func GetAllUsersNotmember(userid int, groupid int) ([]models.User, error) {
 	rows, err := database.Database.Query(`
@@ -170,4 +160,14 @@ func GetAllMembers(groupID int) ([]models.User, error) {
 	}
 
 	return users, nil
+}
+
+// delete the invitation in response
+func DeleteInvitation(tx *sql.Tx, invitationID int) error {
+    _, err := tx.Exec(`
+        DELETE FROM group_invitations
+        WHERE id = ?
+    `, invitationID)
+
+    return err
 }

@@ -62,7 +62,7 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback()
-
+	
 	request_id, err := repositories.SaveJoinRequest(tx, group_id, user_id)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,11 +14,7 @@ import (
 // POST /invitations/1/accept
 // POST /invitations/1/reject
 
-// accept ->  check_validation_of_invitation -> change stat -> instrt the user to group_memmber  -> remove the invitation from database
-// reject -> check_validation_of_invitation -> change stat -> remove the invitation from datatbase
-
 func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("3333")
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, 405, http.StatusText(405))
 		return
@@ -35,17 +30,15 @@ func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
+
 	invitation_id, err := strconv.Atoi(parts[2])
 	if err != nil {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
+
 	invitation, err := repositories.GetInvitation(invitation_id, user_id)
 	if err != nil {
-		utils.HandleError(w, 400, http.StatusText(400))
-		return
-	}
-	if invitation.Status != "pending" {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
@@ -59,30 +52,21 @@ func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
-	err = repositories.AddGroupMember(
-		tx,
-		invitation.GroupID,
-		user_id,
-	)
+	err = repositories.AddGroupMember(tx, invitation.GroupID, user_id)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
-	err = repositories.UpdateInvitationStatus(
-		tx,
-		invitation_id,
-		"accepted",
-	)
+
+	// Delete the invitation when the user accept
+	err = repositories.DeleteInvitation(tx, invitation.ID)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
+
 	// Remove the invitation notification
-	err = repositories.DeleteInvitationNotification(
-		tx,
-		user_id,
-		invitation_id,
-	)
+	err = repositories.DeleteInvitationNotification(tx, user_id, invitation_id)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
@@ -122,11 +106,7 @@ func RejectInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
-	if invitation.Status != "pending" {
-		utils.HandleError(w, 400, http.StatusText(400))
-		return
-	}
-
+	
 	// Use a transaction so updating the invitation status and
 	// removing the notification are applied atomically.
 	tx, err := database.Database.Begin()
@@ -136,20 +116,13 @@ func RejectInvitationResponse(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
-	err = repositories.UpdateInvitationStatus(
-		tx,
-		invitation_id,
-		"rejected",
-	)
+	err = repositories.DeleteInvitation(tx, invitation.ID)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
-	err = repositories.DeleteInvitationNotification(
-		tx,
-		user_id,
-		invitation_id,
-	)
+
+	err = repositories.DeleteInvitationNotification( tx, user_id , invitation_id)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return

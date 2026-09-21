@@ -71,15 +71,11 @@ func GetJoinRequest(requestID int) (models.GroupRequest, error) {
 	return request, err
 }
 
-func UpdateJoinRequestStatus(tx *sql.Tx, requestID int, status string) error {
+// delete the request join
+func DeleteRequest(tx *sql.Tx, requestID int) error {
 	_, err := tx.Exec(`
-		UPDATE group_requests
-		SET status = ?
-		WHERE id = ?
-	`, status, requestID)
-	if err != nil {
-		return err
-	}
-
-	return nil
+        DELETE FROM group_requests
+        WHERE id = ?
+    `, requestID)
+	return err
 }
