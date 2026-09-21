@@ -49,7 +49,7 @@ func CreatGroupeHandler(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
-	ws.DefaultHub.Subscribe(user_id, groupe_Id) // subscribe creator to the group room (FR-007)
+	ws.DefaultHub.Subscribe(user_id, groupe_Id) // subscribe the creator to the group room
 
 	utils.RespondJSON(w, http.StatusCreated, map[string]string{"message": " Groupe created successfully!"})
 }
