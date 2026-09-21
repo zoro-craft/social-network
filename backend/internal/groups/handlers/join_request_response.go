@@ -8,8 +8,9 @@ import (
 	"zone/internal/auth"
 	"zone/internal/database"
 	"zone/internal/groups/repositories"
-	ws "zone/internal/websocket"
+	notificationservice "zone/internal/notifications/services"
 	"zone/internal/utils"
+	ws "zone/internal/websocket"
 )
 
 func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
@@ -54,8 +55,7 @@ func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use a transaction so adding the member, updating the request
-	// status and removing the notification are applied atomically.
+	// Use a transaction so adding the member and deleting the request are atomic.
 	tx, err := database.Database.Begin()
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
@@ -75,17 +75,15 @@ func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = repositories.DeleteRequestNotification(tx, user_id, requestID)
-	if err != nil {
-		utils.HandleError(w, 500, http.StatusText(500))
-		return
-	}
-
 	if err := tx.Commit(); err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
-	ws.DefaultHub.Subscribe(joinRequest.UserID, joinRequest.GroupID) // subscribe new member to the group room (FR-007)
+
+	// Resolving the join request marks its notification read.
+	_ = notificationservice.Notifier.MarkReadOnAction(user_id, "join_request", requestID)
+
+	ws.DefaultHub.Subscribe(joinRequest.UserID, joinRequest.GroupID) // subscribe the new member to the group room
 
 	utils.RespondJSON(w, http.StatusOK, map[string]string{
 		"message": "request accepted successfully!",
@@ -134,8 +132,7 @@ func Reject_Join_Request(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use a transaction so updating the request status and
-	// removing the notification are applied atomically.
+	// Use a transaction so deleting the request and marking it read are atomic.
 	tx, err := database.Database.Begin()
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
@@ -149,16 +146,13 @@ func Reject_Join_Request(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = repositories.DeleteRequestNotification(tx, user_id, requestID)
-	if err != nil {
-		utils.HandleError(w, 500, http.StatusText(500))
-		return
-	}
-
 	if err := tx.Commit(); err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
+
+	// Resolving the join request marks its notification read.
+	_ = notificationservice.Notifier.MarkReadOnAction(user_id, "join_request", requestID)
 
 	utils.RespondJSON(w, http.StatusOK, map[string]string{
 		"message": "request rejected successfully!",

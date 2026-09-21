@@ -93,6 +93,9 @@ func btoi(b bool) int {
 func (h *Hub) handleRegister(msg hubMessage) {
 	set := h.connections[msg.client.userID]
 	if len(set) >= maxConnectionsPerUser {
+		// The per-user cap is hit: close the socket so the client's pumps unwind
+		// instead of leaking untracked; handleUnregister stays the only closer of send.
+		msg.client.conn.Close()
 		return
 	}
 	wasOffline := len(set) == 0

@@ -7,6 +7,7 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	notificationservice "zone/internal/notifications/services"
 	"zone/internal/utils"
 )
 
@@ -66,7 +67,7 @@ func RespondRequestAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	action := r.PathValue("action")
+action := r.PathValue("action")
 	if action != "accept" && action != "decline" {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid action")
 		return
@@ -107,6 +108,9 @@ func RespondRequestAPI(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to process request")
 		return
 	}
+
+	// Resolving the follow request marks its notification read.
+	_ = notificationservice.Notifier.MarkReadOnAction(followeeID, "follow_request", followerID)
 
 	utils.RespondJSON(w, http.StatusOK, map[string]string{"status": "success"})
 }

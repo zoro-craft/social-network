@@ -8,6 +8,7 @@ import (
 	"zone/internal/auth"
 	"zone/internal/database"
 	"zone/internal/groups/repositories"
+	notificationservice "zone/internal/notifications/services"
 	"zone/internal/utils"
 	ws "zone/internal/websocket"
 )
@@ -44,8 +45,7 @@ func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use a transaction so adding the member, updating the invitation
-	// status and removing the notification are applied atomically.
+	// Use a transaction so adding the member and deleting the invitation are atomic.
 	tx, err := database.Database.Begin()
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
@@ -59,15 +59,7 @@ func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Delete the invitation when the user accept
 	err = repositories.DeleteInvitation(tx, invitation.ID)
-	if err != nil {
-		utils.HandleError(w, 500, http.StatusText(500))
-		return
-	}
-
-	// Remove the invitation notification
-	err = repositories.DeleteInvitationNotification(tx, user_id, invitation_id)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
@@ -78,7 +70,10 @@ func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ws.DefaultHub.Subscribe(user_id, invitation.GroupID) // subscribe new member to the group room (FR-007)
+	// Resolving the invitation marks its notification read.
+	_ = notificationservice.Notifier.MarkReadOnAction(user_id, "group_invitation", invitation_id)
+
+	ws.DefaultHub.Subscribe(user_id, invitation.GroupID) // subscribe the new member to the group room
 
 	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": " invitation accept successfully!"})
 }
@@ -110,8 +105,7 @@ func RejectInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use a transaction so updating the invitation status and
-	// removing the notification are applied atomically.
+	// Use a transaction so deleting the invitation and marking it read are atomic.
 	tx, err := database.Database.Begin()
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
@@ -125,16 +119,13 @@ func RejectInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = repositories.DeleteInvitationNotification(tx, user_id, invitation_id)
-	if err != nil {
-		utils.HandleError(w, 500, http.StatusText(500))
-		return
-	}
-
 	if err := tx.Commit(); err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
+
+	// Resolving the invitation marks its notification read.
+	_ = notificationservice.Notifier.MarkReadOnAction(user_id, "group_invitation", invitation_id)
 
 	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": " invitation reject successfully!"})
 }

@@ -10,6 +10,7 @@ import (
 	"zone/internal/groups/models"
 	"zone/internal/groups/repositories"
 	"zone/internal/groups/services"
+	notificationservice "zone/internal/notifications/services"
 	"zone/internal/utils"
 )
 
@@ -70,15 +71,14 @@ func InvitationsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	message := "You are invited to join " + groupName
+	message := repositories.GetUserFullName(userID) + " invited you to join " + groupName
 
 	// Create notification for the invited user
-	err = repositories.CreateNotification(
-		tx,
+	_, err = notificationservice.Notifier.Notify(
 		invitation.InvitedUserID,
-		"group_invtation",
+		"group_invitation",
 		&invitationID,
-		nil,
+		&userID,
 		message,
 	)
 	if err != nil {
