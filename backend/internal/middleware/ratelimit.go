@@ -38,10 +38,10 @@ func NewRateLimiter(limit int, window time.Duration) *RateLimiter {
 func (rl *RateLimiter) Middleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now()
-		ip := clientIP(r.RemoteAddr)
+		key := clientKey(r)
 
 		rl.mu.Lock()
-		b := rl.clients[ip]
+		b := rl.clients[key]
 		if now.After(b.reset) {
 			b = bucket{reset: now.Add(rl.window)}
 		}
@@ -53,11 +53,16 @@ func (rl *RateLimiter) Middleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		b.count++
-		rl.clients[ip] = b
+		rl.clients[key] = b
 		rl.mu.Unlock()
 
 		next(w, r)
 	}
+}
+
+// clientKey buckets by the client IP, so every request from the same IP shares one bucket.
+func clientKey(r *http.Request) string {
+	return "ip:" + clientIP(r.RemoteAddr)
 }
 
 func clientIP(remoteAddr string) string {

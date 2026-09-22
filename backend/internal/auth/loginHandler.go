@@ -66,15 +66,22 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		password = r.FormValue("password")
 	}
 
+	tx, err := database.Database.Begin()
+	if err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Server error")
+		return
+	}
+	defer tx.Rollback()
+
 	var dbID int
 	var dbUsername string
 	var dbPasswordHash string
 	var discardEmail string
 
-	err := database.Database.QueryRow(`
-		SELECT id, password, COALESCE(nickname, ''), email FROM users 
-		WHERE email = ? OR (nickname = ? AND nickname != '')
-	`, identify, identify).Scan(&dbID, &dbPasswordHash, &dbUsername, &discardEmail)
+	err = tx.QueryRow(`
+        SELECT id, password, COALESCE(nickname, ''), email FROM users 
+        WHERE email = ? OR (nickname = ? AND nickname != '')
+    `, identify, identify).Scan(&dbID, &dbPasswordHash, &dbUsername, &discardEmail)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -94,7 +101,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Clear old sessions
 	deleteQuery := "DELETE FROM user_sessions WHERE user_id = ?"
-	_, err = database.Database.Exec(deleteQuery, dbID)
+	_, err = tx.Exec(deleteQuery, dbID)
 	if err != nil {
 		log.Println("Error deleting old sessions:", err)
 	}
@@ -106,10 +113,16 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	expirationTime := time.Now().Add(SessionDuration)
-	_, err = database.Database.Exec("INSERT INTO user_sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)", dbID, sessionToken, expirationTime)
+	
+	_, err = tx.Exec("INSERT INTO user_sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)", dbID, sessionToken, expirationTime)
 	if err != nil {
 		log.Println("Error saving session to DB:", err)
 		utils.HandleError(w, http.StatusInternalServerError, "Error creating session, try again later")
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Server error")
 		return
 	}
 
@@ -123,5 +136,4 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteLaxMode,
 	}
 	http.SetCookie(w, &newCookie)
-
 }

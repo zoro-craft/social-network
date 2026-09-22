@@ -1,52 +1,34 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { apiRequest } from "@/utils/api";
-
-const VALID_RELATIONS = ["self", "accepted", "pending", "none"];
-
-const normalizeRelation = (relation) =>
-  VALID_RELATIONS.includes(relation) ? relation : "none";
 
 export function useProfile(id) {
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState(null);
 
-  const loadProfile = useCallback(
-    () =>
-      apiRequest(`/profile/${id}`).then((data) => {
-        if (!data.user) throw new Error(data.error || "User not found");
-        return { ...data, relation: normalizeRelation(data.relation) };
-      }),
-    [id],
-  );
+  const loadProfile = useCallback(async () => {
+    try {
+      const data = await apiRequest(`/profile/${id}`);
+      
+      if (!data.user) {
+        throw new Error(data.error || "User not found");
+      }
 
-  const applyProfile = useCallback((data) => {
-    setProfile(data);
-    setError(null);
-  }, []);
+      const validRelations = ["self", "accepted", "pending", "none"];
+      const relation = validRelations.includes(data.relation) ? data.relation : "none";
 
-  const applyError = useCallback((err) => {
-    setProfile(null);
-    setError(err.message);
-  }, []);
-
-  const reload = useCallback(() => {
-    loadProfile().then(applyProfile, applyError);
-  }, [loadProfile, applyProfile, applyError]);
+      setProfile({ ...data, relation });
+      setError(null);
+    } catch (err) {
+      setProfile(null);
+      setError(err.message);
+    }
+  }, [id]);
 
   useEffect(() => {
-    let cancelled = false;
-    const ifActive = (fn) => (value) => {
-      if (!cancelled) fn(value);
-    };
+    loadProfile();
+  }, [loadProfile]);
 
-    loadProfile().then(ifActive(applyProfile), ifActive(applyError));
-
-    return () => {
-      cancelled = true;
-    };
-  }, [loadProfile, applyProfile, applyError]);
-
-  return { profile, error, reload };
+  return { profile, error, reload: loadProfile };
 }

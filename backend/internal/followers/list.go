@@ -23,20 +23,24 @@ func canViewList(viewerID, profileID int) bool {
 	}
 
 	var isPrivate bool
-	if err := database.Database.QueryRow(
+	err := database.Database.QueryRow(
 		"SELECT is_private FROM users WHERE id = ?", profileID,
-	).Scan(&isPrivate); err != nil {
+	).Scan(&isPrivate)
+	
+	if err != nil {
 		return false
 	}
+
 	if !isPrivate {
 		return true
 	}
 
 	var isFollower bool
-	err := database.Database.QueryRow(
+	err = database.Database.QueryRow(
 		"SELECT EXISTS(SELECT 1 FROM followers WHERE follower_id = ? AND followee_id = ? AND status = 'accepted')",
 		viewerID, profileID,
 	).Scan(&isFollower)
+
 	return err == nil && isFollower
 }
 
@@ -56,6 +60,7 @@ func listHandler(w http.ResponseWriter, r *http.Request, listFollowers bool) {
 	}
 
 	viewerID, _ := auth.GetUserID(r)
+
 	if !canViewList(viewerID, profileID) {
 		utils.RespondJSON(w, http.StatusOK, []UserItem{})
 		return
@@ -66,16 +71,17 @@ func listHandler(w http.ResponseWriter, r *http.Request, listFollowers bool) {
 
 func listUsers(w http.ResponseWriter, profileID int, listFollowers bool) {
 	query := `
-		SELECT u.id, u.first_name, u.last_name, COALESCE(u.nickname, ''), COALESCE(u.avatar, '')
-		FROM followers f
-		JOIN users u ON u.id = f.follower_id
-		WHERE f.followee_id = ? AND f.status = 'accepted'`
+        SELECT u.id, u.first_name, u.last_name, COALESCE(u.nickname, ''), COALESCE(u.avatar, '')
+        FROM followers f
+        JOIN users u ON u.id = f.follower_id
+        WHERE f.followee_id = ? AND f.status = 'accepted'`
+
 	if !listFollowers {
 		query = `
-			SELECT u.id, u.first_name, u.last_name, COALESCE(u.nickname, ''), COALESCE(u.avatar, '')
-			FROM followers f
-			JOIN users u ON u.id = f.followee_id
-			WHERE f.follower_id = ? AND f.status = 'accepted'`
+            SELECT u.id, u.first_name, u.last_name, COALESCE(u.nickname, ''), COALESCE(u.avatar, '')
+            FROM followers f
+            JOIN users u ON u.id = f.followee_id
+            WHERE f.follower_id = ? AND f.status = 'accepted'`
 	}
 
 	rows, err := database.Database.Query(query, profileID)
@@ -94,6 +100,7 @@ func listUsers(w http.ResponseWriter, profileID int, listFollowers bool) {
 		}
 		users = append(users, u)
 	}
+
 	if err := rows.Err(); err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Database error")
 		return

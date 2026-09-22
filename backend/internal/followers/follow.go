@@ -9,6 +9,8 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	"zone/internal/groups/repositories"
+	notificationservice "zone/internal/notifications/services"
 	"zone/internal/utils"
 )
 
@@ -27,10 +29,23 @@ func UnfollowAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := database.Database.Exec(
+	// فتح الـ Transaction حتى في Unfollow باش نحافظو على الاتساق
+	tx, err := database.Database.Begin()
+	if err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Failed to unfollow")
+		return
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.Exec(
 		"DELETE FROM followers WHERE follower_id = ? AND followee_id = ?",
 		followerID, followeeID,
 	); err != nil {
+		utils.HandleError(w, http.StatusInternalServerError, "Failed to unfollow")
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to unfollow")
 		return
 	}
@@ -80,11 +95,11 @@ func toggleFollow(followerID, followeeID int) (string, error) {
 	var isPrivate bool
 	var status sql.NullString
 	err = tx.QueryRow(`
-		SELECT COALESCE(u.is_private, 0), f.status
-		FROM users u
-		LEFT JOIN followers f
-			ON f.followee_id = u.id AND f.follower_id = ?
-		WHERE u.id = ?`,
+        SELECT COALESCE(u.is_private, 0), f.status
+        FROM users u
+        LEFT JOIN followers f
+            ON f.followee_id = u.id AND f.follower_id = ?
+        WHERE u.id = ?`,
 		followerID, followeeID,
 	).Scan(&isPrivate, &status)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -107,7 +122,6 @@ func toggleFollow(followerID, followeeID int) (string, error) {
 		)
 
 	case status.String == "accepted", isPrivate:
-
 		newStatus = "none"
 		_, err = tx.Exec(
 			"DELETE FROM followers WHERE follower_id = ? AND followee_id = ?",
@@ -125,5 +139,22 @@ func toggleFollow(followerID, followeeID int) (string, error) {
 		return "", err
 	}
 
-	return newStatus, tx.Commit()
+if err := tx.Commit(); err != nil {
+		return "", err
+	}
+
+	// A follow that lands pending means the followee's profile is private:
+	// notify the followee, attributed to the requester.
+	if newStatus == "pending" {
+		message := "New follow request from " + repositories.GetUserFullName(followerID)
+		_, _ = notificationservice.Notifier.NotifyFollowRequest(followeeID, followerID, message)
+	}
+
+	// A cancelled pending request is resolved: delete its follow_request notification
+	// and signal the followee so open sessions remove it and refresh the badge.
+	if newStatus == "none" && status.String == "pending" {
+		_ = notificationservice.Notifier.RemoveFollowRequestNotification(followeeID, followerID)
+	}
+
+	return newStatus, nil
 }
