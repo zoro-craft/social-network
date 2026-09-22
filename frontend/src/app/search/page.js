@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import debounce from 'lodash/debounce';
 import { API_BASE } from '@/utils/api';
 import Avatar from '@/components/Avatar';
-import { useAuth } from '@/app/context/AuthContext';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 export default function SearchPage() {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { auth, loading: authLoading } = useAuth();
+  const { auth, loading: authLoading } = useRequireAuth();
 
   useEffect(() => {
     if (!authLoading && !auth.authenticated) {
@@ -38,8 +38,12 @@ export default function SearchPage() {
         router.push('/login');
         return;
       }
+      if (!res.ok) {
+        setResults([]);
+        return;
+      }
       const data = await res.json();
-      setResults(data || []);
+      setResults(Array.isArray(data) ? data : []);
     } catch {
       setResults([]);
     } finally {

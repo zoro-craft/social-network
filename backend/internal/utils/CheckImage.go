@@ -77,6 +77,9 @@ func SaveImageField(r *http.Request, fieldName string, dir string, urlPrefix str
 		return "", fmt.Errorf("error resetting file pointer")
 	}
 
+	// last check -- rendering image
+	// GIFs need special handling: image.Decode only reads the first frame,
+	// which silently flattens animated GIFs into a static image.
 	var gifImg *gif.GIF
 	var img image.Image
 	if ext == ".gif" {
