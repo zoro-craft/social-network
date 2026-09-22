@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Avatar from "@/components/Avatar";
@@ -16,86 +16,134 @@ import UsersModal from "./UsersModal";
 export default function ProfilePage() {
   const { id } = useParams();
   const showToast = useToast();
+
+  // Fetch data
   const { profile, error, reload } = useProfile(id);
-  const { toggleFollow, pending: followPending } = useFollow(id, reload);
-  const [modalType, setModalType] = useState(null);
+  const { toggleFollow, pending } = useFollow(id, reload);
+
+  // Modal states
+  const [modalType, setModalType] = useState(null); // "followers" or "following"
   const [usersList, setUsersList] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
 
-  const openModal = async (type) => {
-    if (!profile || (profile.user.is_private && profile.relation !== "self" && profile.relation !== "accepted")) return;
-    setModalType(type);
-    try {
-      const data = await apiRequest(`/profile/${id}/${type}`);
-      setUsersList(data || []);
-    } catch (err) {
-      setModalType(null);
-      showToast(err.message);
-    }
-  };
-
-  const closeModal = () => {
-    setModalType(null);
-    setUsersList([]);
-  };
-
+  // Loading & Errors
   if (error) {
     return (
       <div className="profile-wrapper">
-        <div className="glass-card profile-error-card">
-          <h2 style={{ marginTop: 0 }}>Profile unavailable</h2>
+        <div className="glass-card">
+          <h2>Profile unavailable</h2>
           <p>{error}</p>
-          <Link href="/posts" className="action-btn btn-edit">Back to posts</Link>
+          <Link href="/posts">Back to posts</Link>
         </div>
       </div>
     );
   }
 
-  if (!profile) return <div className="profile-wrapper">Loading...</div>;
+  if (!profile) {
+    return <div className="profile-wrapper">Loading...</div>;
+  }
 
+  // Extract data
   const { user, relation, followers_count, following_count, posts } = profile;
+  
+  // Check if profile is private 
   const isPrivateHidden = user.is_private && relation !== "self" && relation !== "accepted";
 
+  // Open modal function
+  const openModal = async (type) => {
+    if (isPrivateHidden) return; // Stop if private
+    
+    setModalType(type); // Show modal
+    try {
+      const data = await apiRequest(`/profile/${id}/${type}`);
+      setUsersList(data || []); // Save users
+    } catch (err) {
+      setModalType(null); // Close on error
+      showToast(err.message);
+    }
+  };
+
+  // Render UI
   return (
     <div className="profile-wrapper">
       <div className="profile-layout">
+        
+        {/* Left Sidebar: User Info */}
         <div className="glass-card left-sidebar">
           <Avatar src={user.avatar} name={user.first_name} size={112} />
-          <h2 className="user-name">{user.first_name} {user.last_name}</h2>
-          <p className="user-handle">@{user.nickname || user.first_name}</p>
-          <span className="privacy-badge">{user.is_private ? "Private Profile" : "Public Profile"}</span>
-          {!isPrivateHidden && user.date_of_birth && <p className="profile-dob">Born: {user.date_of_birth.split("T")[0]}</p>}
-          {!isPrivateHidden && user.about_me && <p className="about-me">{user.about_me}</p>}
+          <h2>{user.first_name} {user.last_name}</h2>
+          <p>@{user.nickname || user.first_name}</p>
+          <p>{user.is_private ? "Private Profile" : "Public Profile"}</p>
 
-          <FollowButton relation={relation} isPrivate={user.is_private} onToggle={relation === "self" ? () => setIsEditing(true) : toggleFollow} disabled={followPending} />
+          {/* Show if not private */}
+          {!isPrivateHidden && (
+            <>
+              <p>Born: {user.date_of_birth?.split("T")[0]}</p>
+              <p>{user.about_me}</p>
+            </>
+          )}
+
+          <FollowButton 
+            relation={relation} 
+            isPrivate={user.is_private} 
+            onToggle={relation === "self" ? () => setIsEditing(true) : toggleFollow} 
+            disabled={pending} 
+          />
         </div>
 
+        {/* Right Area: Stats & Posts */}
         <div className="right-area">
+          
+          {/* Stats */}
           <div className="stats-grid">
-            {[
-              { label: "Followers", value: followers_count || 0, type: "followers" },
-              { label: "Following", value: following_count || 0, type: "following" },
-              { label: "Joined", value: user.created_at ? user.created_at.split("-")[0] : "Recently" },
-            ].map(({ label, value, type }) => (
-              <div key={label} className="glass-card stat-item" onClick={type && !isPrivateHidden ? () => openModal(type) : undefined} style={{ cursor: type && !isPrivateHidden ? "pointer" : "default" }}>
-                <p className="stat-label">{label}</p>
-                <p className="stat-value">{value}</p>
-              </div>
-            ))}
+            <div className="glass-card stat-item" onClick={() => openModal("followers")}>
+              <p>Followers</p>
+              <p>{followers_count || 0}</p>
+            </div>
+
+            <div className="glass-card stat-item" onClick={() => openModal("following")}>
+              <p>Following</p>
+              <p>{following_count || 0}</p>
+            </div>
+
+            <div className="glass-card stat-item">
+              <p>Joined</p>
+              <p>{user.created_at ? user.created_at.split("-")[0] : "Recently"}</p>
+            </div>
           </div>
 
+          {/* Posts */}
           <div className="glass-card">
-            <h3 style={{ marginTop: 0 }}>Posts</h3>
+            <h3>Posts</h3>
             <PostGrid posts={posts} isPrivateHidden={isPrivateHidden} />
           </div>
+
         </div>
       </div>
 
+      {/* Modals */}
+      
+      {/* Edit Profile */}
       {isEditing && (
-        <EditProfileModal user={user} onClose={() => setIsEditing(false)} onSaved={async () => { setIsEditing(false); await reload(); showToast("Profile updated", false); }} />
+        <EditProfileModal 
+          user={user} 
+          onClose={() => setIsEditing(false)} 
+          onSaved={async () => { 
+            setIsEditing(false); 
+            await reload(); 
+            showToast("Profile updated"); 
+          }} 
+        />
       )}
 
-      {modalType && <UsersModal type={modalType} users={usersList} onClose={closeModal} />}
+      {/* Users List */}
+      {modalType && (
+        <UsersModal 
+          type={modalType} 
+          users={usersList} 
+          onClose={() => setModalType(null)} 
+        />
+      )}
     </div>
   );
 }
