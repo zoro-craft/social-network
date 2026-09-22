@@ -33,16 +33,16 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "title is required")
 		return
 	}
-	if len(req.Title) >= 10 {
-		utils.HandleError(w, http.StatusBadRequest, "title is to long")
+	if len(req.Title) > 50 {
+		utils.HandleError(w, http.StatusBadRequest, "title is too long")
 		return
 	}
 	if req.Description == "" {
 		utils.HandleError(w, http.StatusBadRequest, "Description is required")
 		return
 	}
-	if len(req.Description) >= 30 {
-		utils.HandleError(w, http.StatusBadRequest, "Description is to long")
+	if len(req.Description) > 100 {
+		utils.HandleError(w, http.StatusBadRequest, "Description is too long")
 		return
 	}
 	if req.EventDate == "" {
@@ -57,8 +57,12 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "both options are required")
 		return
 	}
-	if len(req.FitsOptions) >= 10 || len(req.SecondOptions) >= 10 {
-		utils.HandleError(w, http.StatusBadRequest, "both options is to long")
+	if req.FitsOptions == req.SecondOptions {
+		utils.HandleError(w, http.StatusBadRequest, "Both participation options are required")
+		return
+	}
+	if len(req.FitsOptions) > 20 || len(req.SecondOptions) > 20 {
+		utils.HandleError(w, http.StatusBadRequest, "both options are too long")
 		return
 	}
 	if !utils.IsGroupMember(req.GroupID, userID) {
