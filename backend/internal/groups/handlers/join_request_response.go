@@ -8,8 +8,8 @@ import (
 	"zone/internal/auth"
 	"zone/internal/database"
 	"zone/internal/groups/repositories"
-	ws "zone/internal/websocket"
 	"zone/internal/utils"
+	ws "zone/internal/websocket"
 )
 
 func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
@@ -62,6 +62,13 @@ func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback()
+
+	if repositories.IsMember(joinRequest.UserID, joinRequest.GroupID) {
+		repositories.DeleteRequest(tx, requestID)
+		repositories.DeleteRequestNotification(tx, user_id, requestID)
+		tx.Commit()
+		return
+	}
 
 	err = repositories.AddGroupMember(tx, joinRequest.GroupID, joinRequest.UserID)
 	if err != nil {

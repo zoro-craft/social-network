@@ -16,11 +16,16 @@ func ValidCreateInvitation(invt models.GroupInvitation, userID int) bool {
 	if !repositories.IsMember(userID, invt.GroupID) {
 		return false
 	}
-
+	if repositories.IsMember(invt.InvitedUserID, invt.GroupID) {
+		return false
+	}
 	if invt.InviterID != userID {
+		return false
+	}
+
+	if invt.InvitedUserID == userID {
 		return false
 	}
 
 	return true
 }
-

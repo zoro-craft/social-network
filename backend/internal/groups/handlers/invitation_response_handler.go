@@ -53,6 +53,13 @@ func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
+	if (repositories.IsMember(user_id, invitation.GroupID)) {
+		repositories.DeleteInvitation(tx , invitation.ID)
+		repositories.DeleteInvitationNotification(tx, user_id, invitation_id)
+		tx.Commit()
+		return
+	}
+
 	err = repositories.AddGroupMember(tx, invitation.GroupID, user_id)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
