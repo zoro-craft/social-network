@@ -77,10 +77,18 @@ func SaveImageField(r *http.Request, fieldName string, dir string, urlPrefix str
 		return "", fmt.Errorf("error resetting file pointer")
 	}
 
-	// last check -- rendering image
-	img, _, err := image.Decode(file)
-	if err != nil {
-		return "", fmt.Errorf("invalid or corrupted image file")
+	var gifImg *gif.GIF
+	var img image.Image
+	if ext == ".gif" {
+		gifImg, err = gif.DecodeAll(file)
+		if err != nil {
+			return "", fmt.Errorf("invalid or corrupted image file")
+		}
+	} else {
+		img, _, err = image.Decode(file)
+		if err != nil {
+			return "", fmt.Errorf("invalid or corrupted image file")
+		}
 	}
 
 	newFileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
@@ -106,7 +114,7 @@ func SaveImageField(r *http.Request, fieldName string, dir string, urlPrefix str
 	case ".png":
 		err = png.Encode(dst, img)
 	case ".gif":
-		err = gif.Encode(dst, img, nil)
+		err = gif.EncodeAll(dst, gifImg)
 	}
 
 	if err != nil {
