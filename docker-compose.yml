@@ -22,7 +22,7 @@ services:
     image: caddy:alpine
 
     ports:
-      - "80:80"
+      - "8000:80"
 
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
