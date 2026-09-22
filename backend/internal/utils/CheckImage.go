@@ -84,7 +84,14 @@ func SaveImageField(r *http.Request, fieldName string, dir string, urlPrefix str
 	}
 
 	newFileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
-	fullPath := filepath.Join(".", "uploads", dir, newFileName)
+
+	baseUploadDir := UploadsDir()
+	targetDir := filepath.Join(baseUploadDir, dir)
+	fullPath := filepath.Join(targetDir, newFileName)
+
+	if err := os.MkdirAll(targetDir, os.ModePerm); err != nil {
+		return "", fmt.Errorf("failed to create upload directory: %v", err)
+	}
 
 	dst, err := os.Create(fullPath)
 	if err != nil {
