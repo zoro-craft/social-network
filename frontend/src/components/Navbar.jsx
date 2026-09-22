@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../app/context/AuthContext';
 import { apiRequest } from '@/utils/api';
 import Avatar from './Avatar';
+import NotificationBell from './NotificationBell';
 
 export default function Navbar() {
   const router = useRouter();
@@ -20,11 +21,6 @@ export default function Navbar() {
   const goToSearch = () => {
     setOpen(false);
     router.push('/search');
-  };
-
-  const goToNotifications = () => {
-    setOpen(false);
-    router.push('/notifications');
   };
 
   const goToGroups = () => {
@@ -77,13 +73,7 @@ export default function Navbar() {
             >
               groups
             </button>
-            <button
-              className="glass-nav-search"
-              onClick={goToNotifications}
-              aria-label="Notifications"
-            >
-              🔔
-            </button>
+            <NotificationBell />
           </>
         )}
         

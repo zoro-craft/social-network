@@ -21,8 +21,8 @@ export default function Userlistpage() {
             try {
                 const res = await apiRequest(`/groups/${id}/users`);
                 setUsers(res || []);
-            } catch {
-                showToast("Unable to load users.")
+            } catch (error) {
+                showToast(error.message || "Unable to load users.")
                  router.push("/groups")
             }
         };
@@ -47,9 +47,10 @@ export default function Userlistpage() {
                     invited_user_id: userID,
                 }
             );
+            showToast(response.message || 'Invitation sent', false);
 
         } catch (error) {
-            showToast('Failed to send invitation');
+            showToast(error.message || 'Failed to send invitation');
         }
     };
 

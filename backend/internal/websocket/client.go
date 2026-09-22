@@ -12,7 +12,7 @@ const (
 	// writeWait is the time allowed to write a message to the peer.
 	writeWait = 10 * time.Second
 	// pongWait is the time allowed to read the next pong from the peer.
-	pongWait = 10 * time.Second
+	pongWait = 17 * time.Second
 	// pingPeriod is how often the server pings the peer.
 	pingPeriod = 9 * time.Second
 	// sendBuffer is the outbound queue capacity per connection.

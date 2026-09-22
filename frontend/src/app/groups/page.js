@@ -32,7 +32,7 @@ export default function Groupspage() {
                 setAllGroups(all);
                 setGroups(notMember);
             } catch (error) {
-                showToast('Failed to load groups');
+                showToast(error.message || 'Failed to load groups');
                 console.log(error);
                 setAllGroups([]);
                 setGroups([]);

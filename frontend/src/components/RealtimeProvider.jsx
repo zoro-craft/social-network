@@ -57,7 +57,7 @@ export function RealtimeProvider({ children }) {
     }
 
     const ws = new WebSocket(
-      `ws://${API_BASE.replace(/^https?:\/\//, '')}/ws`
+      `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}${API_BASE}/ws`
     );
     socketRef.current = ws;
 

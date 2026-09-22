@@ -6,6 +6,8 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	"zone/internal/groups/repositories"
+	notificationservice "zone/internal/notifications/services"
 	"zone/internal/utils"
 )
 
@@ -31,15 +33,15 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "title is required")
 		return
 	}
-	if len(req.Title)>=10 {
+	if len(req.Title) >= 10 {
 		utils.HandleError(w, http.StatusBadRequest, "title is to long")
 		return
 	}
-		if req.Description == "" {
+	if req.Description == "" {
 		utils.HandleError(w, http.StatusBadRequest, "Description is required")
 		return
 	}
-	if len(req.Description)>=30 {
+	if len(req.Description) >= 30 {
 		utils.HandleError(w, http.StatusBadRequest, "Description is to long")
 		return
 	}
@@ -55,9 +57,9 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "both options are required")
 		return
 	}
-	if len(req.FitsOptions) >=10|| len(req.SecondOptions) >=10 {
+	if len(req.FitsOptions) >= 10 || len(req.SecondOptions) >= 10 {
 		utils.HandleError(w, http.StatusBadRequest, "both options is to long")
-		return	
+		return
 	}
 	if !utils.IsGroupMember(req.GroupID, userID) {
 		utils.HandleError(w, http.StatusForbidden, "You must be a group member to create an event")
@@ -81,9 +83,13 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, _ := res.LastInsertId()
+	eventID := int(id)
+
+	// Fan out an event_created notification to every group member except the creator.
+	_ = notificationservice.Notifier.NotifyGroupEvent(req.GroupID, eventID, userID, req.Title, repositories.GetUserFullName(userID))
 
 	utils.RespondJSON(w, http.StatusCreated, Event{
-		ID:          int(id),
+		ID:          eventID,
 		GroupID:     req.GroupID,
 		Title:       req.Title,
 		Description: req.Description,

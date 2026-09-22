@@ -26,7 +26,7 @@ export default function GroupDetailsPage() {
                 setGroupInfo(res);
 
             } catch (error) {
-                showToast('Unable to load group');
+                showToast(error.message || 'Unable to load group');
                 router.push("/groups")
             }
         };
@@ -101,9 +101,9 @@ export default function GroupDetailsPage() {
 
                     <button
                         className="glass-action-btn"
-                        onClick={() => goTo('/chat')}
+                        onClick={() => goTo('/members')}
                     >
-                        Go to Chat
+                        Group Members
                     </button>
                 </section>
 

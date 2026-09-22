@@ -1,25 +1,22 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"zone/internal/auth"
+	"zone/internal/database"
 	"zone/internal/groups/repositories"
-	ws "zone/internal/websocket"
+	notificationservice "zone/internal/notifications/services"
 	"zone/internal/utils"
+	ws "zone/internal/websocket"
 )
 
 // POST /invitations/1/accept
 // POST /invitations/1/reject
 
-// accept ->  check_validation_of_invitation -> change stat -> instrt the user to group_memmber  -> remove the invitation from database
-// reject -> check_validation_of_invitation -> change stat -> remove the invitation from datatbase
-
 func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("3333")
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, 405, http.StatusText(405))
 		return
@@ -35,47 +32,49 @@ func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
+
 	invitation_id, err := strconv.Atoi(parts[2])
 	if err != nil {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
+
 	invitation, err := repositories.GetInvitation(invitation_id, user_id)
 	if err != nil {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
-	if invitation.Status != "pending" {
-		utils.HandleError(w, 400, http.StatusText(400))
+
+	// Use a transaction so adding the member and deleting the invitation are atomic.
+	tx, err := database.Database.Begin()
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+	defer tx.Rollback()
+
+	err = repositories.AddGroupMember(tx, invitation.GroupID, user_id)
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
 
-	err = repositories.AddGroupMember(
-		invitation.GroupID,
-		user_id,
-	)
+	err = repositories.DeleteInvitation(tx, invitation.ID)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
-	err = repositories.UpdateInvitationStatus(
-		invitation_id,
-		"accepted",
-	)
-	if err != nil {
+
+	if err := tx.Commit(); err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
-ws.DefaultHub.Subscribe(user_id, invitation.GroupID) // subscribe new member to the group room (FR-007)
-	// Remove the invitation notification
-	err = repositories.DeleteInvitationNotification(
-		user_id,
-		invitation_id,
-	)
-	if err != nil {
-		utils.HandleError(w, 500, http.StatusText(500))
-		return
-	}
+
+	// Resolving the invitation marks its notification read.
+	_ = notificationservice.Notifier.MarkReadOnAction(user_id, "group_invitation", invitation_id)
+
+	ws.DefaultHub.Subscribe(user_id, invitation.GroupID) // subscribe the new member to the group room
+
 	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": " invitation accept successfully!"})
 }
 
@@ -105,25 +104,28 @@ func RejectInvitationResponse(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
-	if invitation.Status != "pending" {
-		utils.HandleError(w, 400, http.StatusText(400))
-		return
-	}
-	err = repositories.UpdateInvitationStatus(
-		invitation_id,
-		"rejected",
-	)
+
+	// Use a transaction so deleting the invitation and marking it read are atomic.
+	tx, err := database.Database.Begin()
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
-	err = repositories.DeleteInvitationNotification(
-		user_id,
-		invitation_id,
-	)
+	defer tx.Rollback()
+
+	err = repositories.DeleteInvitation(tx, invitation.ID)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
+
+	if err := tx.Commit(); err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+
+	// Resolving the invitation marks its notification read.
+	_ = notificationservice.Notifier.MarkReadOnAction(user_id, "group_invitation", invitation_id)
+
 	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": " invitation reject successfully!"})
 }

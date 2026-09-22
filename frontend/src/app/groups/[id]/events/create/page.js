@@ -48,7 +48,7 @@ export default function CreatEvent() {
     setLoading(true);
 
     try {
-      await apiRequest('/events', 'POST', {
+      const res = await apiRequest('/events', 'POST', {
         group_id: groupId,
         title: title.trim(),
         description: description.trim(),
@@ -58,7 +58,7 @@ export default function CreatEvent() {
         secondOptions: secondOptions.trim(),
       });
 
-      showToast('Event created successfully!', false);
+      showToast(res.message || 'Event created successfully!', false);
       router.push(`/groups/${id}`);
     } catch (err) {
       showToast(err.message || 'Failed to create event');

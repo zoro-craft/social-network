@@ -4,139 +4,196 @@ import { useEffect, useState } from "react";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { apiRequest } from "@/utils/api";
 import { useToast } from "@/app/context/ToastContext";
+import { useRealtime } from "@/components/RealtimeProvider";
 
 import {
   handleAcceptInvitation,
   handleRejectInvitation,
   handleAcceptRequest,
   handleRejectRequest,
+  handleAcceptFollow,
+  handleDeclineFollow,
+  handleMarkRead,
 } from "./utils";
-
-import styles from "../styles/notifications.module.css";
 
 export default function NotificationsPage() {
   const { auth, loading } = useRequireAuth();
   const showToast = useToast();
+  const { subscribe } = useRealtime();
 
   const [notifications, setNotifications] = useState([]);
-  const [followRequests, setFollowRequests] = useState([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
+  const removeNotification = (id) => {
+    setNotifications((prev) => {
+      const next = prev.filter((n) => n.id !== id);
+      // Re-anchor the cursor on the oldest row still visible (keyset paging).
+      return next;
+    });
+  };
+
+  // Fetch the first page of unread notifications, newest first, 10 rows + exact unread count.
   useEffect(() => {
     if (!auth.authenticated) return;
-
-    const loadList = async (endpoint, setter) => {
-      try {
-        setter((await apiRequest(endpoint)) || []);
-      } catch {
-        setter([]);
-      }
+    let cancelled = false;
+    apiRequest("/notifications")
+      .then((data) => {
+        if (cancelled) return;
+        const items = data.items || [];
+        setNotifications(items);
+        setHasMore(data.has_more);
+        // This fetch carried the exact unread total; reconcile the mounted bell.
+        window.dispatchEvent(new Event('notifications:changed'));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setNotifications([]);
+        setHasMore(false);
+      });
+    return () => {
+      cancelled = true;
     };
-
-    loadList("/notifications", setNotifications);
-    loadList("/follow/requests", setFollowRequests);
   }, [auth.authenticated]);
 
-  const removeNotification = (notificationId) =>
-    setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+  // Live arrivals prepend; dedupe by id so a row is never shown twice.
+  useEffect(() => {
+    if (!auth.authenticated) return;
+    return subscribe("notification", (payload) => {
+      setNotifications((prev) => {
+        if (prev.some((n) => n.id === payload.id)) return prev;
+        return [payload, ...prev];
+      });
+    });
+  }, [auth.authenticated, subscribe]);
 
-  const respondToFollowRequest = async (followerId, action) => {
+  // Removal signal: a notification was deleted server-side (e.g. a cancelled follow
+  // request); drop the row so every open tab removes it without a refresh.
+  useEffect(() => {
+    if (!auth.authenticated) return;
+    return subscribe("notification_removed", (payload) => {
+      setNotifications((prev) => prev.filter((n) => n.id !== payload.id));
+    });
+  }, [auth.authenticated, subscribe]);
+
+  // Load the next 10 rows older than the oldest row already shown.
+  const loadMore = async () => {
+    if (loadingMore) return;
+    const oldest = notifications[notifications.length - 1];
+    if (!oldest) return;
+    setLoadingMore(true);
     try {
-      await apiRequest(`/follow/${followerId}/${action}`, "POST");
-      setFollowRequests((prev) => prev.filter((req) => req.follower_id !== followerId));
-    } catch (err) {
-      showToast(err.message);
+      const data = await apiRequest(`/notifications?before_id=${oldest.id}`);
+      const items = data.items || [];
+      setNotifications((prev) => {
+        const seen = new Set(prev.map((n) => n.id));
+        return [...prev, ...items.filter((n) => !seen.has(n.id))];
+      });
+      setHasMore(data.has_more);
+    } catch {
+      setHasMore(false);
+    } finally {
+      setLoadingMore(false);
     }
   };
 
-  const respondToNotification = async (handler, notification) => {
-    if (await handler(notification)) removeNotification(notification.id);
+  const respond = async (handler, notification) => {
+    const result = await handler(notification);
+    if (result.ok) {
+      removeNotification(notification.id);
+      window.dispatchEvent(new Event('notifications:changed'));
+    } else if (result.status === 400 || result.status === 404) {
+      showToast("This notification is no longer available");
+    } else {
+      showToast("Something went wrong. Please try again.");
+    }
+  };
+
+  const renderActions = (notification) => {
+    switch (notification.type) {
+      case "group_invitation":
+        return (
+          <div className="glass-notification-actions">
+            <button onClick={() => respond(handleAcceptInvitation, notification)}>
+              Accept
+            </button>
+            <button onClick={() => respond(handleRejectInvitation, notification)}>
+              Decline
+            </button>
+          </div>
+        );
+      case "join_request":
+        return (
+          <div className="glass-notification-actions">
+            <button onClick={() => respond(handleAcceptRequest, notification)}>
+              Accept
+            </button>
+            <button onClick={() => respond(handleRejectRequest, notification)}>
+              Decline
+            </button>
+          </div>
+        );
+      case "follow_request":
+        return (
+          <div className="glass-notification-actions">
+            <button onClick={() => respond(handleAcceptFollow, notification)}>
+              Accept
+            </button>
+            <button onClick={() => respond(handleDeclineFollow, notification)}>
+              Decline
+            </button>
+          </div>
+        );
+      case "event_created":
+        return (
+          <div className="glass-notification-actions">
+            <button onClick={() => respond(handleMarkRead, notification)}>
+              Mark as read
+            </button>
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   if (loading) return <div>Loading...</div>;
   if (!auth.authenticated) return null;
 
   return (
-    <div className={styles.container}>
+    <div className="glass-notifications-page">
       <h1>Notifications</h1>
 
-      {followRequests.length > 0 && (
+      {notifications.length === 0 ? (
+        <p className="glass-notification-empty">No notifications</p>
+      ) : (
         <>
-          <h1 style={{ marginTop: 35 }}>Follow Requests</h1>
-          <div className={styles.notificationList}>
-            {followRequests.map((req) => (
-              <div key={req.follower_id} className={styles.notification}>
-                <div className={styles.content}>
-                  <p>
-                    {req.first_name}
-                    {req.last_name ? ` ${req.last_name}` : ""} wants to follow you
-                  </p>
+          <div className="glass-notifications-list">
+            {notifications.map((notification) => (
+              <div
+                key={notification.id}
+                className={`glass-notification-card ${
+                  notification.is_read ? "glass-notification-read" : "glass-notification-unread"
+                }`}
+              >
+                <div className="glass-notification-content">
+                  <p>{notification.message}</p>
+                  <small>{new Date(notification.created_at).toLocaleString()}</small>
                 </div>
-                <div className={styles.actions}>
-                  <button onClick={() => respondToFollowRequest(req.follower_id, "accept")}>
-                    Accept
-                  </button>
-                  <button onClick={() => respondToFollowRequest(req.follower_id, "decline")}>
-                    Decline
-                  </button>
-                </div>
+                {renderActions(notification)}
               </div>
             ))}
           </div>
-        </>
-      )}
-
-      {notifications.length === 0 ? (
-        <p className={styles.empty}>No notifications</p>
-      ) : (
-        <div className={styles.notificationList}>
-          {notifications.map((notification) => (
-            <div
-              key={notification.id}
-              className={`${styles.notification} ${
-                notification.is_read ? styles.read : styles.unread
-              }`}
+          {hasMore && (
+            <button
+              className="glass-notifications-load-more"
+              onClick={loadMore}
+              disabled={loadingMore}
             >
-              <div className={styles.content}>
-                <p>{notification.message}</p>
-                <small>{new Date(notification.created_at).toLocaleString()}</small>
-              </div>
-
-              {notification.type === "group_invtation" && (
-                <div className={styles.actions}>
-                  <button
-                    onClick={() => respondToNotification(handleAcceptInvitation, notification)}
-                  >
-                    Accept
-                  </button>
-                  <button
-                    onClick={() => respondToNotification(handleRejectInvitation, notification)}
-                  >
-                    Reject
-                  </button>
-                </div>
-              )}
-
-              {notification.type === "join_request" && (
-                <div className={styles.actions}>
-                  <button
-                    onClick={() => respondToNotification(handleAcceptRequest, notification)}
-                  >
-                    Accept
-                  </button>
-                  <button
-                    onClick={() => respondToNotification(handleRejectRequest, notification)}
-                  >
-                    Reject
-                  </button>
-                </div>
-              )}
-
-              {notification.type === "message" && (
-                <span className={styles.messageType}>Message</span>
-              )}
-            </div>
-          ))}
-        </div>
+              {loadingMore ? "Loading..." : "Load more"}
+            </button>
+          )}
+        </>
       )}
     </div>
   );
