@@ -34,16 +34,27 @@
 
 @media (max-width: 640px) {
   .glass-navbar {
-    padding: 0 14px;
+    padding: 0 10px;
+    gap: 10px;
+  }
+
+  .glass-logo {
+    font-size: 15px;
   }
 
   .glass-nav-search {
-    padding: 8px 10px;
-    font-size: 13px;
+    padding: 6px 8px;
+    font-size: 12px;
   }
 
   .glass-nav-actions {
-    gap: 4px;
+    gap: 2px;
+  }
+
+  .glass-avatar-button {
+    gap: 6px;
+    padding: 3px 8px 3px 3px;
+    font-size: 12px;
   }
 
   .glass-page {
@@ -201,3 +212,4 @@
     text-align: center;
   }
 }
+
