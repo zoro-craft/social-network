@@ -100,3 +100,66 @@ func (s *Service) ListHistory(userID, targetID int, msgType string, beforeID, li
 		return nil, false, errors.New("unknown message type")
 	}
 }
+
+// GetConversations assembles the users and groups sidebar with online status,
+// last-message previews, and ordering by last message desc then alphabetical.
+func (s *Service) GetConversations(userID int) ([]models.ConversationUser, []models.ConversationGroup, error) {
+	users, err := s.repo.FollowGraphUsers(userID)
+	if err != nil {
+		return nil, nil, err
+	}
+	groups, err := s.repo.GroupMemberships(userID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for i := range users {
+		users[i].Online = s.push.IsOnline(users[i].UserID)
+		if lm, err := s.repo.LastMessageFor(userID, users[i].UserID, "private"); err == nil && lm != nil {
+			content := lm.Content
+			at := lm.CreatedAt
+			users[i].LastMessage = &content
+			users[i].LastMessageAt = &at
+		}
+	}
+	for i := range groups {
+		if lm, err := s.repo.LastMessageFor(userID, groups[i].GroupID, "group"); err == nil && lm != nil {
+			content := lm.Content
+			at := lm.CreatedAt
+			groups[i].LastMessage = &content
+			groups[i].LastMessageAt = &at
+		}
+	}
+
+	sortUsers(users)
+	sortGroups(groups)
+	return users, groups, nil
+}
+
+// sortUsers orders people by last-message desc, then name asc.
+func sortUsers(users []models.ConversationUser) {
+	sort.SliceStable(users, func(i, j int) bool {
+		ai, aj := users[i].LastMessageAt, users[j].LastMessageAt
+		if ai != nil && aj != nil && *ai != *aj {
+			return *ai > *aj
+		}
+		if (ai == nil) != (aj == nil) {
+			return ai != nil
+		}
+		return users[i].Name < users[j].Name
+	})
+}
+
+// sortGroups orders groups by last-message desc, then title asc.
+func sortGroups(groups []models.ConversationGroup) {
+	sort.SliceStable(groups, func(i, j int) bool {
+		ai, aj := groups[i].LastMessageAt, groups[j].LastMessageAt
+		if ai != nil && aj != nil && *ai != *aj {
+			return *ai > *aj
+		}
+		if (ai == nil) != (aj == nil) {
+			return ai != nil
+		}
+		return groups[i].Title < groups[j].Title
+	})
+}
