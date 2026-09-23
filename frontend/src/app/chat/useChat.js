@@ -128,3 +128,82 @@ export function useChat(auth, subscribe) {
     },
     [],
   );
+
+  // Live arrivals: always refresh the sidebar row preview and ordering, and append to the
+  // thread when the conversation is open.
+  useEffect(() => {
+    if (!auth.authenticated) return;
+    const onMessage = (payload) => {
+      const key = conversationKeyFromPayload(payload, auth.id);
+      const otherID = otherParticipant(payload, auth.id);
+      const sel = selectedRef.current;
+      const isOpen = sel && convKey(sel.type, sel.id) === key;
+
+      if (isOpen) {
+        setMessages((prev) => {
+          const list = prev[key] || [];
+          if (list.some((m) => m.id === payload.id)) return prev;
+          return { ...prev, [key]: [...list, payload] };
+        });
+      }
+
+      if (payload.type === 'private') {
+        setUsers((prev) => {
+          const entry = prev.find((u) => u.user_id === otherID);
+          if (!entry) return prev;
+          const updated = { ...entry, last_message: payload.content, last_message_at: payload.created_at };
+          return [updated, ...prev.filter((u) => u.user_id !== otherID)];
+        });
+      } else {
+        setGroups((prev) => {
+          const entry = prev.find((g) => g.group_id === otherID);
+          if (!entry) return prev;
+          const updated = { ...entry, last_message: payload.content, last_message_at: payload.created_at };
+          return [updated, ...prev.filter((g) => g.group_id !== otherID)];
+        });
+      }
+    };
+    const unsub1 = subscribe('chat_new_message', onMessage);
+    const unsub2 = subscribe('chat_new_group_message', onMessage);
+    return () => {
+      unsub1();
+      unsub2();
+    };
+  }, [auth.authenticated, auth.id, subscribe]);
+
+  // Presence envelopes update the online dots live.
+  useEffect(() => {
+    if (!auth.authenticated) return;
+    return subscribe('presence', (payload) => {
+      setUsers((prev) =>
+        prev.map((u) => (u.user_id === payload.user_id ? { ...u, online: payload.online } : u)),
+      );
+    });
+  }, [auth.authenticated, subscribe]);
+
+  // The bell owns the counts; the page renders them from the chat:unread broadcast.
+  useEffect(() => {
+    if (!auth.authenticated) return;
+    const onUnread = (e) =>
+      setBadges({ users: e.detail.users, groups: e.detail.groups, counts: e.detail.counts });
+    window.addEventListener('chat:unread', onUnread);
+    // Ask the bell to broadcast its current counts so pre-existing unread reaches rows/tabs.
+    window.dispatchEvent(new CustomEvent('chat:sync'));
+    return () => window.removeEventListener('chat:unread', onUnread);
+  }, [auth.authenticated]);
+
+  return {
+    auth,
+    users,
+    groups,
+    selected,
+    messages,
+    hasMore,
+    canChat,
+    badges,
+    convKey,
+    selectConversation,
+    loadOlder,
+    send,
+  };
+}
