@@ -41,3 +41,41 @@ type Service struct {
 func NewService(repo Repository, push Pusher) *Service {
 	return &Service{repo: repo, push: push}
 }
+
+// SendDM validates, persists, and delivers a direct message to the recipient and the sender.
+func (s *Service) SendDM(userID, recipientID int, content string) error {
+	if err := validateContent(content); err != nil {
+		return err
+	}
+	if err := validateSelfDM(userID, recipientID); err != nil {
+		return err
+	}
+	if !s.repo.CanSendDM(userID, recipientID) {
+		return ErrNotAllowed
+	}
+	msg, err := s.repo.InsertMessage(userID, "private", recipientID, content)
+	if err != nil {
+		return err
+	}
+	env := websocket.Envelope{Type: "chat_new_message", Payload: msg}
+	s.push.SendToUser(recipientID, env)
+	s.push.SendToUser(userID, env)
+	return nil
+}
+
+// SendGroup validates, persists, and delivers a group message to every connected member.
+func (s *Service) SendGroup(userID, groupID int, content string) error {
+	if err := validateContent(content); err != nil {
+		return err
+	}
+	if !s.repo.IsGroupMember(userID, groupID) {
+		return ErrNotMember
+	}
+	msg, err := s.repo.InsertMessage(userID, "group", groupID, content)
+	if err != nil {
+		return err
+	}
+	env := websocket.Envelope{Type: "chat_new_group_message", Payload: msg}
+	s.push.SendToRoom(groupID, env)
+	return nil
+}
