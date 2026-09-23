@@ -81,3 +81,65 @@ func (r ChatRepository) InsertMessage(senderID int, msgType string, refID int, c
 	}
 	return row, nil
 }
+
+// ListDM returns a newest-first batch of private messages between two users.
+func (r ChatRepository) ListDM(userID, otherID, beforeID, limit int) ([]models.ChatMessage, bool, error) {
+	query := `
+		SELECT m.id, m.sender_id, u.full_name, m.content, m.created_at, m.type, m.ref_id
+		FROM messages m
+		JOIN users u ON u.id = m.sender_id
+		WHERE m.type = 'private'
+		  AND ((m.sender_id = ? AND m.ref_id = ?) OR (m.sender_id = ? AND m.ref_id = ?))`
+	args := []any{userID, otherID, otherID, userID}
+	if beforeID > 0 {
+		query += " AND m.created_at < (SELECT created_at FROM messages WHERE id = ?)"
+		args = append(args, beforeID)
+	}
+	query += " ORDER BY m.created_at DESC LIMIT ?"
+	args = append(args, limit+1)
+	return queryMessages(limit, query, args...)
+}
+
+// ListGroup returns a newest-first batch of messages in a group.
+func (r ChatRepository) ListGroup(groupID, beforeID, limit int) ([]models.ChatMessage, bool, error) {
+	query := `
+		SELECT m.id, m.sender_id, u.full_name, m.content, m.created_at, m.type, m.ref_id
+		FROM messages m
+		JOIN users u ON u.id = m.sender_id
+		WHERE m.type = 'group' AND m.ref_id = ?`
+	args := []any{groupID}
+	if beforeID > 0 {
+		query += " AND m.created_at < (SELECT created_at FROM messages WHERE id = ?)"
+		args = append(args, beforeID)
+	}
+	query += " ORDER BY m.created_at DESC LIMIT ?"
+	args = append(args, limit+1)
+	return queryMessages(limit, query, args...)
+}
+
+// queryMessages runs a paged history query (limit+1 fetched) and returns rows plus has_more.
+func queryMessages(limit int, query string, args ...any) ([]models.ChatMessage, bool, error) {
+	rows, err := database.Database.Query(query, args...)
+	if err != nil {
+		return nil, false, err
+	}
+	defer rows.Close()
+
+	items := []models.ChatMessage{}
+	for rows.Next() {
+		var m models.ChatMessage
+		if err := rows.Scan(&m.ID, &m.SenderID, &m.SenderName, &m.Content, &m.CreatedAt, &m.Type, &m.RefID); err != nil {
+			return nil, false, err
+		}
+		items = append(items, m)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, false, err
+	}
+
+	hasMore := len(items) > limit
+	if hasMore {
+		items = items[:limit]
+	}
+	return items, hasMore, nil
+}
