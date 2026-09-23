@@ -213,3 +213,32 @@
   }
 }
 
+@media (max-width: 768px) {
+  .glass-chat-page {
+    flex-direction: column;
+    height: calc(100vh - var(--nav-height));
+  }
+
+  .glass-chat-sidebar {
+    flex: none;
+    width: 100%;
+    max-height: 320px;
+  }
+
+  .glass-chat-main {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .glass-chat-bubble {
+    max-width: 85%;
+  }
+}
+
+@media (max-width: 480px) {
+  .glass-chat-emoji-picker {
+    width: calc(100% - 24px);
+    left: 12px;
+    right: 12px;
+  }
+}
