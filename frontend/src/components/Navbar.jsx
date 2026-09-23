@@ -6,6 +6,7 @@ import { useAuth } from '../app/context/AuthContext';
 import { apiRequest } from '@/utils/api';
 import Avatar from './Avatar';
 import NotificationBell from './NotificationBell';
+import ChatBell from './ChatBell';
 
 export default function Navbar() {
   const router = useRouter();
@@ -74,6 +75,7 @@ export default function Navbar() {
               groups
             </button>
             <NotificationBell />
+            <ChatBell />
           </>
         )}
         

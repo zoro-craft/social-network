@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"zone/internal/auth"
+	chathandlers "zone/internal/chat/handlers"
 	"zone/internal/comments"
 	"zone/internal/events"
 	"zone/internal/followers"
@@ -30,6 +31,7 @@ func NewRouter() http.Handler {
 	limitAction := middleware.NewRateLimiter(60, time.Minute)
 	limitRead := middleware.NewRateLimiter(120, time.Minute)
 	limitWS := middleware.NewRateLimiter(300, time.Minute)
+	limitChatSend := middleware.NewRateLimiter(300, time.Minute)
 
 	// guarded applies Auth (handlers read the authenticated user id) plus the IP-keyed limiter.
 	guarded := func(limiter *middleware.RateLimiter, h http.HandlerFunc) http.HandlerFunc {
@@ -96,6 +98,13 @@ mux.HandleFunc("POST /groups/{group_id}/invitations", guarded(limitAction, handl
 	// notifications
 	mux.HandleFunc("GET /notifications", guarded(limitRead, notifhandlers.DefaultHandler.GetNotifications))
 	mux.HandleFunc("POST /notifications/{id}/read", guarded(limitAction, notifhandlers.DefaultHandler.MarkReadByID))
+
+	// chat routes
+	mux.HandleFunc("POST /messages", guarded(limitChatSend, chathandlers.DefaultHandler.SendDMHandler))
+	mux.HandleFunc("GET /messages/{user_id}", guarded(limitRead, chathandlers.DefaultHandler.DMHistoryHandler))
+	mux.HandleFunc("POST /groups/{group_id}/messages", guarded(limitChatSend, chathandlers.DefaultHandler.SendGroupHandler))
+	mux.HandleFunc("GET /groups/{group_id}/messages", guarded(limitRead, chathandlers.DefaultHandler.GroupHistoryHandler))
+	mux.HandleFunc("GET /conversations", guarded(limitRead, chathandlers.DefaultHandler.ConversationsHandler))
 
 	// websocket routes
 	mux.HandleFunc("GET /ws", guarded(limitWS, wshandlers.WSHandler(websocket.DefaultHub)))
