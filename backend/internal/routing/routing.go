@@ -99,6 +99,12 @@ mux.HandleFunc("POST /groups/{group_id}/invitations", guarded(limitAction, handl
 	mux.HandleFunc("GET /notifications", guarded(limitRead, notifhandlers.DefaultHandler.GetNotifications))
 	mux.HandleFunc("POST /notifications/{id}/read", guarded(limitAction, notifhandlers.DefaultHandler.MarkReadByID))
 
+	// chat routes
+	mux.HandleFunc("POST /messages", guarded(limitChatSend, chathandlers.DefaultHandler.SendDMHandler))
+	mux.HandleFunc("GET /messages/{user_id}", guarded(limitRead, chathandlers.DefaultHandler.DMHistoryHandler))
+	mux.HandleFunc("POST /groups/{group_id}/messages", guarded(limitChatSend, chathandlers.DefaultHandler.SendGroupHandler))
+	mux.HandleFunc("GET /groups/{group_id}/messages", guarded(limitRead, chathandlers.DefaultHandler.GroupHistoryHandler))
+	mux.HandleFunc("GET /conversations", guarded(limitRead, chathandlers.DefaultHandler.ConversationsHandler))
 
 	// websocket routes
 	mux.HandleFunc("GET /ws", guarded(limitWS, wshandlers.WSHandler(websocket.DefaultHub)))
