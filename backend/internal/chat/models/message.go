@@ -20,3 +20,28 @@ type ChatMessage struct {
 	Type       string `json:"type"`
 	RefID      int    `json:"ref_id"`
 }
+
+// ConversationUser is a people row in the conversation sidebar.
+type ConversationUser struct {
+	UserID        int     `json:"user_id"`
+	Name          string  `json:"name"`
+	Avatar        string  `json:"avatar"`
+	Online        bool    `json:"online"`
+	LastMessage   *string `json:"last_message"`
+	LastMessageAt *int64  `json:"last_message_at"`
+	CanChat       bool    `json:"can_chat"`
+}
+
+// ConversationGroup is a group row in the conversation sidebar.
+type ConversationGroup struct {
+	GroupID       int     `json:"group_id"`
+	Title         string  `json:"title"`
+	LastMessage   *string `json:"last_message"`
+	LastMessageAt *int64  `json:"last_message_at"`
+}
+
+// LastMessage is the newest message preview for a conversation.
+type LastMessage struct {
+	Content   string
+	CreatedAt int64
+}
