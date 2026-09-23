@@ -55,3 +55,29 @@ func (r ChatRepository) EverMessaged(userID, otherID int) bool {
 	}
 	return exists
 }
+
+// InsertMessage persists a message with an app-set epoch-ms created_at and returns the full payload.
+func (r ChatRepository) InsertMessage(senderID int, msgType string, refID int, content string) (models.ChatMessage, error) {
+	createdAt := time.Now().UnixMilli()
+	res, err := database.Database.Exec(`
+		INSERT INTO messages (sender_id, type, ref_id, content, created_at)
+		VALUES (?, ?, ?, ?, ?)`,
+		senderID, msgType, refID, content, createdAt,
+	)
+	if err != nil {
+		return models.ChatMessage{}, err
+	}
+	id, _ := res.LastInsertId()
+
+	var row models.ChatMessage
+	err = database.Database.QueryRow(`
+		SELECT m.id, m.sender_id, u.full_name, m.content, m.created_at, m.type, m.ref_id
+		FROM messages m
+		JOIN users u ON u.id = m.sender_id
+		WHERE m.id = ?`, id,
+	).Scan(&row.ID, &row.SenderID, &row.SenderName, &row.Content, &row.CreatedAt, &row.Type, &row.RefID)
+	if err != nil {
+		return models.ChatMessage{}, err
+	}
+	return row, nil
+}
