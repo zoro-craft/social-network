@@ -188,3 +188,143 @@
   font-size: 15px;
 }
 
+.glass-chat-thread {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.glass-chat-thread-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.glass-chat-messages {
+  flex: 1 1 auto;
+  max-height: 540px;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-anchor: none;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.glass-chat-bubble {
+  display: flex;
+  flex-direction: column;
+  max-width: 70%;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  align-self: flex-start;
+}
+
+.glass-chat-bubble-own {
+  align-self: flex-end;
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+}
+
+.glass-chat-bubble-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.glass-chat-bubble-own .glass-chat-bubble-name {
+  color: var(--text-secondary);
+}
+
+.glass-chat-bubble-content {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.glass-chat-composer {
+  position: relative;
+  border-top: 1px solid var(--border);
+  padding: 12px;
+  flex-shrink: 0;
+  background: var(--bg-card);
+}
+
+.glass-chat-composer-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.glass-chat-emoji-btn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.glass-chat-emoji-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-border);
+}
+
+.glass-chat-input {
+  flex: 1;
+  min-height: 40px;
+  max-height: 160px;
+  resize: none;
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.glass-chat-input:focus {
+  outline: none;
+  border-color: var(--accent-border);
+}
+
+.glass-chat-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.glass-chat-send {
+  flex-shrink: 0;
+  padding: 10px 18px;
+  border: 1px solid var(--text-primary);
+  border-radius: var(--radius-sm);
+  background: var(--text-primary);
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.glass-chat-send:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.glass-chat-send:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
