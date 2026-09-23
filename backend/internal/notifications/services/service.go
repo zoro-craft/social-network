@@ -95,17 +95,24 @@ func (s *Service) MarkReadByID(userID, id int) error {
 	return s.repo.MarkReadByID(userID, id)
 }
 
-// RemoveFollowRequestNotification deletes the follow_request notification for
-// (recipient, requester) and signals the recipient so open sessions drop it and
-// refresh the badge; it pushes only when a row was actually deleted.
-func (s *Service) RemoveFollowRequestNotification(followeeID, requesterID int) error {
-	id, err := s.repo.DeleteOnAction(followeeID, "follow_request", requesterID)
+// RemoveNotificationOnAction deletes a notification by (recipient, type, ref)
+// and signals the recipient so open sessions drop it and refresh the badge;
+// it pushes only when a row was actually deleted.
+func (s *Service) RemoveNotificationOnAction(recipientID int, notifType string, refID int) error {
+	id, err := s.repo.DeleteOnAction(recipientID, notifType, refID)
 	if err != nil {
 		return err
 	}
 	if id == 0 {
 		return nil
 	}
-	s.push.SendToUser(followeeID, websocket.Envelope{Type: "notification_removed", Payload: map[string]int{"id": id}})
+	s.push.SendToUser(recipientID, websocket.Envelope{Type: "notification_removed", Payload: map[string]int{"id": id}})
 	return nil
+}
+
+// RemoveFollowRequestNotification deletes the follow_request notification for
+// (recipient, requester) and signals the recipient so open sessions drop it and
+// refresh the badge; it pushes only when a row was actually deleted.
+func (s *Service) RemoveFollowRequestNotification(followeeID, requesterID int) error {
+	return s.RemoveNotificationOnAction(followeeID, "follow_request", requesterID)
 }

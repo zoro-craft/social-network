@@ -71,6 +71,23 @@ func GetJoinRequest(requestID int) (models.GroupRequest, error) {
 	return request, err
 }
 
+// GetJoinRequestIDByGroupAndUser returns the join request id for a group and
+// user, or sql.ErrNoRows when none exists.
+func GetJoinRequestIDByGroupAndUser(groupID, userID int) (int, error) {
+	var id int
+
+	err := database.Database.QueryRow(`
+		SELECT id
+		FROM group_requests
+		WHERE group_id = ? AND user_id = ?
+	`, groupID, userID).Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
 // delete the request join
 func DeleteRequest(tx *sql.Tx, requestID int) error {
 	_, err := tx.Exec(`

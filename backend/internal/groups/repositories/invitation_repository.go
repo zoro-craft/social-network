@@ -162,6 +162,23 @@ func GetAllMembers(groupID int) ([]models.User, error) {
 	return users, nil
 }
 
+// GetInvitationIDByGroupAndUser returns the invitation id for a group and
+// invited user, or sql.ErrNoRows when none exists.
+func GetInvitationIDByGroupAndUser(groupID, invitedUserID int) (int, error) {
+	var id int
+
+	err := database.Database.QueryRow(`
+		SELECT id
+		FROM group_invitations
+		WHERE group_id = ? AND invited_user_id = ?
+	`, groupID, invitedUserID).Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
+
 // delete the invitation in response
 func DeleteInvitation(tx *sql.Tx, invitationID int) error {
     _, err := tx.Exec(`

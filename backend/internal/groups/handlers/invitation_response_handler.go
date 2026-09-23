@@ -80,6 +80,16 @@ func AcceptInvitationResponse(w http.ResponseWriter, r *http.Request) {
 	// Resolving the invitation marks its notification read.
 	_ = notificationservice.Notifier.MarkReadOnAction(user_id, "group_invitation", invitation_id)
 
+	// The invited user is now a member, so any join request they sent to the
+	// owner is moot; delete its notification so it also vanishes in realtime.
+	joinRequestID, err := repositories.GetJoinRequestIDByGroupAndUser(invitation.GroupID, user_id)
+	if err == nil {
+		creatorID, creatorErr := repositories.GetGroupCreator(invitation.GroupID)
+		if creatorErr == nil {
+			_ = notificationservice.Notifier.RemoveNotificationOnAction(creatorID, "join_request", joinRequestID)
+		}
+	}
+
 	ws.DefaultHub.Subscribe(user_id, invitation.GroupID) // subscribe the new member to the group room
 
 	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": " invitation accept successfully!"})
