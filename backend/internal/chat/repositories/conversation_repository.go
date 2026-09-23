@@ -66,3 +66,28 @@ func (r ChatRepository) GroupMemberships(userID int) ([]models.ConversationGroup
 	}
 	return groups, rows.Err()
 }
+
+// LastMessageFor returns the newest message preview for a conversation, nil when absent.
+func (r ChatRepository) LastMessageFor(userID, targetID int, msgType string) (*models.LastMessage, error) {
+	query := "SELECT content, created_at FROM messages"
+	args := []any{}
+	switch msgType {
+	case "private":
+		query += " WHERE type = 'private' AND ((sender_id = ? AND ref_id = ?) OR (sender_id = ? AND ref_id = ?))"
+		args = []any{userID, targetID, targetID, userID}
+	case "group":
+		query += " WHERE type = 'group' AND ref_id = ?"
+		args = []any{targetID}
+	}
+	query += " ORDER BY created_at DESC LIMIT 1"
+
+	var lm models.LastMessage
+	err := database.Database.QueryRow(query, args...).Scan(&lm.Content, &lm.CreatedAt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &lm, nil
+}
