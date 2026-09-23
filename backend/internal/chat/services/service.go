@@ -79,3 +79,24 @@ func (s *Service) SendGroup(userID, groupID int, content string) error {
 	s.push.SendToRoom(groupID, env)
 	return nil
 }
+
+// ListHistory returns a newest-first batch of messages with has_more, gated by access.
+func (s *Service) ListHistory(userID, targetID int, msgType string, beforeID, limit int) ([]models.ChatMessage, bool, error) {
+	if limit <= 0 {
+		limit = defaultHistoryBatch
+	}
+	switch msgType {
+	case "private":
+		if !s.repo.CanSendDM(userID, targetID) && !s.repo.EverMessaged(userID, targetID) {
+			return nil, false, ErrNotAllowed
+		}
+		return s.repo.ListDM(userID, targetID, beforeID, limit)
+	case "group":
+		if !s.repo.IsGroupMember(userID, targetID) {
+			return nil, false, ErrNotMember
+		}
+		return s.repo.ListGroup(targetID, beforeID, limit)
+	default:
+		return nil, false, errors.New("unknown message type")
+	}
+}
