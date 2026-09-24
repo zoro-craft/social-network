@@ -10,24 +10,24 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 13px 18px;
+  padding: 12px 16px;
   border-radius: var(--radius);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
   box-shadow: var(--shadow);
   pointer-events: none;
   max-width: 340px;
-  animation: toastIn 0.25s ease;
+  animation: drop 0.24s var(--ease-out);
 }
 
 .glass-toast-error {
-  background: var(--danger-soft);
-  border: 1px solid var(--danger-border);
+  border-left: 3px solid var(--danger);
   color: var(--danger);
 }
 
 .glass-toast-success {
-  background: rgba(125, 200, 140, 0.12);
-  border: 1px solid rgba(125, 200, 140, 0.35);
+  border-left: 3px solid var(--success);
   color: var(--success);
 }

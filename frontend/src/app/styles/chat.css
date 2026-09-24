@@ -33,7 +33,7 @@
   background: transparent;
   color: var(--text-secondary);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: background var(--transition), color var(--transition);
 }
@@ -44,7 +44,7 @@
 }
 
 .glass-chat-tab-active {
-  color: var(--text-primary);
+  color: var(--accent-hover);
   box-shadow: inset 0 -2px 0 var(--accent);
 }
 
@@ -54,8 +54,8 @@
   min-width: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: var(--danger);
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-accent);
   font-size: 11px;
   font-weight: 700;
   line-height: 18px;
@@ -90,7 +90,7 @@
 }
 
 .glass-chat-conv-active {
-  background: var(--bg-elevated);
+  background: var(--accent-soft);
   border-color: var(--accent-border);
 }
 
@@ -153,8 +153,8 @@
   min-width: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: var(--danger);
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-accent);
   font-size: 11px;
   font-weight: 700;
   line-height: 18px;
@@ -198,8 +198,9 @@
 .glass-chat-thread-header {
   padding: 14px 18px;
   border-bottom: 1px solid var(--border);
-  font-size: 15px;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 600;
   color: var(--text-primary);
   flex-shrink: 0;
 }
@@ -236,7 +237,9 @@
 .glass-chat-bubble-name {
   font-size: 11px;
   font-weight: 700;
-  color: var(--accent);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-hover);
   margin-bottom: 4px;
 }
 
@@ -246,7 +249,7 @@
 
 .glass-chat-bubble-content {
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--text-primary);
   word-break: break-word;
   white-space: pre-wrap;
@@ -279,7 +282,7 @@
 
 .glass-chat-emoji-btn:hover {
   background: var(--bg-hover);
-  border-color: var(--accent-border);
+  border-color: var(--border-strong);
 }
 
 .glass-chat-input {
@@ -290,7 +293,7 @@
   padding: 10px 12px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
-  background: var(--bg-elevated);
+  background: var(--bg-input);
   color: var(--text-primary);
   font-size: 14px;
   line-height: 1.5;
@@ -298,7 +301,8 @@
 
 .glass-chat-input:focus {
   outline: none;
-  border-color: var(--accent-border);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .glass-chat-input:disabled {
@@ -309,14 +313,15 @@
 .glass-chat-send {
   flex-shrink: 0;
   padding: 10px 18px;
-  border: 1px solid var(--text-primary);
+  border: 1px solid var(--accent);
   border-radius: var(--radius-sm);
-  background: var(--text-primary);
-  color: var(--bg);
+  background: var(--accent);
+  color: var(--on-accent);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background var(--transition), border-color var(--transition);
+  transition: background var(--transition), border-color var(--transition),
+    opacity var(--transition);
 }
 
 .glass-chat-send:hover {
@@ -341,8 +346,8 @@
   overflow-y: auto;
   padding: 8px;
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  background: var(--bg-elevated);
+  border-radius: var(--radius);
+  background: var(--bg-card);
   box-shadow: var(--shadow);
   z-index: 10;
 }

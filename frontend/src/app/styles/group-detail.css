@@ -29,8 +29,8 @@
 }
 
 .glass-header-card .glass-group-title {
-  font-size: 26px;
-  font-weight: 800;
+  font-size: 28px;
+  font-weight: 600;
 }
 
 .glass-header-card .glass-group-description {
@@ -56,16 +56,17 @@
   color: var(--text-primary);
   font: inherit;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
   transition: background var(--transition), border-color var(--transition),
-    transform 0.1s ease;
+    color var(--transition), transform var(--duration-fast) ease;
 }
 
 .glass-action-btn:hover {
   background: var(--bg-hover);
   border-color: var(--accent-border);
+  color: var(--accent-hover);
 }
 
 .glass-action-btn:active {

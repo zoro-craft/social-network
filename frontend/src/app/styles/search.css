@@ -1,4 +1,3 @@
-
 .glass-search-page {
   max-width: 640px;
   margin: 0 auto;
@@ -8,8 +7,8 @@
 
 .glass-search-input {
   width: 100%;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  background: var(--bg-input);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   color: var(--text-primary);
   padding: 14px 16px;
@@ -24,8 +23,8 @@
 }
 
 .glass-search-input:focus {
-  background: var(--bg-hover);
-  border-color: var(--accent-border);
+  background: var(--bg-card);
+  border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
@@ -54,11 +53,10 @@
   padding: 12px 16px;
   cursor: pointer;
   transition: border-color var(--transition), background var(--transition),
-    transform 0.15s ease, box-shadow var(--transition);
+    box-shadow var(--transition);
 }
 
 .glass-search-item:hover {
-  transform: translateY(-1px);
   background: var(--bg-elevated);
   border-color: var(--border-strong);
   box-shadow: var(--shadow-sm);
