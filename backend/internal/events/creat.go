@@ -3,6 +3,7 @@ package events
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"zone/internal/auth"
 	"zone/internal/database"
@@ -48,6 +49,16 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	if req.EventDate == "" {
 		utils.HandleError(w, http.StatusBadRequest, "event date is required")
 		return
+	}
+
+	if _, err := time.Parse("2006-01-02", req.EventDate); err != nil {
+	utils.HandleError(w, http.StatusBadRequest, "invalid event date format")
+	return
+	}
+	today := time.Now().Format("2006-01-02")
+	if req.EventDate < today {
+	utils.HandleError(w, http.StatusBadRequest, "event date cannot be in the past")
+	return
 	}
 	if req.EventTime == "" {
 		utils.HandleError(w, http.StatusBadRequest, "event time is required")

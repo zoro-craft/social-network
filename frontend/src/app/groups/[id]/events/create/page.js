@@ -21,6 +21,8 @@ export default function CreatEvent() {
   const [secondOptions, setSecondOptions] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const today = new Date().toISOString().split('T')[0];
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -30,6 +32,10 @@ export default function CreatEvent() {
     }
     if (!eventDate) {
       showToast('Event date is required');
+      return;
+    }
+    if (eventDate < today) {
+      showToast('Event date cannot be in the past');
       return;
     }
     if (!eventTime) {
@@ -101,6 +107,7 @@ export default function CreatEvent() {
             <input
               className="glass-input"
               type="date"
+              min={today}
               value={eventDate}
               onChange={(e) => setEventDate(e.target.value)}
               required
@@ -142,11 +149,7 @@ export default function CreatEvent() {
             />
           </div>
 
-          <button
-            className="glass-button"
-            type="submit"
-            disabled={loading}
-          >
+          <button className="glass-button" type="submit" disabled={loading}>
             {loading ? 'Creating...' : 'Create Event'}
           </button>
         </form>
