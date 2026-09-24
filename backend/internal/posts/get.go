@@ -120,7 +120,7 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetPostsByUser(userID, viewerID int) ([]Post, error) {
-	query := postSelect + fromPosts + " WHERE p.user_id = ? AND " + visibleCondition + " ORDER BY p.id DESC"
+	query := postSelect + fromPosts + " WHERE p.user_id = ? AND p.group_id IS NULL AND " + visibleCondition + " ORDER BY p.id DESC"
 
 	rows, err := database.Database.Query(query, userID, viewerID, viewerID, viewerID, viewerID)
 	if err != nil {
