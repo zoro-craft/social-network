@@ -23,28 +23,7 @@ function CreatePostForm() {
   const [selectedViewers, setSelectedViewers] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [groups, setGroups] = useState([]);
   const [selectedGroupId, setSelectedGroupId] = useState(preselectedGroupId || '');
-
-  useEffect(() => {
-    if (!auth.id) return;
-
-    const fetchGroups = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/groups/my-groups`, {
-          credentials: 'include',
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setGroups(data || []);
-        }
-      } catch {
-        setGroups([]);
-      }
-    };
-
-    fetchGroups();
-  }, [auth.id]);
 
   useEffect(() => {
     if (privacy !== 'private' || !auth.id || selectedGroupId) return;
@@ -145,29 +124,6 @@ function CreatePostForm() {
         </p>
 
         <form onSubmit={handleSubmit} className="glass-form">
-          {groups.length > 0 && (
-            <div className="glass-input-group">
-              <select
-                className="glass-input glass-select"
-                value={selectedGroupId}
-                onChange={(e) => {
-                  setSelectedGroupId(e.target.value);
-                  if (e.target.value) {
-                    setPrivacy('public');
-                    setSelectedViewers([]);
-                  }
-                }}
-              >
-                <option value="" className="glass-select-option">Post to your feed</option>
-                {groups.map((g) => (
-                  <option key={g.id} value={g.id} className="glass-select-option">
-                    Group: {g.titel}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
           <div className="glass-input-group">
             <input
               className="glass-input"
