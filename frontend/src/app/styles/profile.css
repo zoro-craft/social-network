@@ -1,3 +1,9 @@
+/* ============================================================
+   PROFILE PAGE — visual upgrade (CSS only)
+   Scoped under .profile-wrapper so nothing leaks to other pages.
+   ============================================================ */
+
+/* ---------- Layout shell ---------- */
 
 .profile-wrapper {
   min-height: calc(100vh - var(--nav-height));
@@ -27,7 +33,7 @@
   height: fit-content;
   overflow-wrap: break-word;
   word-break: break-word;
-  gap: 8px;
+  gap: 10px;
 }
 
 .right-area {
@@ -38,23 +44,105 @@
   gap: 1.5rem;
 }
 
-.user-name {
+/* ---------- Modernized cards (glassmorphism, soft shadows) ---------- */
+
+.profile-wrapper .glass-card {
+  border-radius: 16px;
+  padding: 1.75rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0) 42%),
+    var(--bg-card);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    var(--shadow-sm);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.profile-wrapper .glass-card:hover {
+  border-color: var(--border-strong);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    var(--shadow);
+}
+
+/* Sidebar identity card gets a touch more breathing room */
+.profile-wrapper .left-sidebar {
+  padding: 2rem 1.5rem;
+}
+
+/* ---------- Typography: name, handle, meta ---------- */
+
+.user-name,
+.left-sidebar h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin: 4px 0 0;
   overflow-wrap: break-word;
   word-break: break-word;
   max-width: 100%;
 }
 
-.user-handle {
+.user-handle,
+.left-sidebar h2 + p {
   color: var(--text-secondary);
-  margin: 0.2rem 0 0.5rem;
+  margin: 2px 0 0.6rem;
   font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
   overflow-wrap: break-word;
   word-break: break-word;
   max-width: 100%;
 }
+
+/* "Private / Public Profile" line — restyled as a subtle pill badge */
+.left-sidebar p:nth-of-type(2) {
+  display: inline-block;
+  margin: 2px 0 0.75rem;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* "Born: ..." meta line */
+.left-sidebar p:nth-of-type(3) {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: 2px 0;
+  letter-spacing: 0.01em;
+}
+
+/* "About me" copy */
+.left-sidebar p:nth-of-type(4) {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin: 6px 0 2px;
+  max-width: 26ch;
+}
+
+/* Avatar ring */
+.left-sidebar img {
+  border: 2px solid var(--border-strong);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.04), var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.left-sidebar img:hover {
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow);
+}
+
+/* ---------- Stats (followers / following / joined) ---------- */
 
 .stats-grid {
   display: grid;
@@ -62,108 +150,177 @@
   gap: 1rem;
 }
 
+.profile-wrapper .stats-grid .glass-card {
+  padding: 1.1rem 1rem;
+}
+
 .stat-item {
   text-align: center;
   cursor: pointer;
-  transition: border-color var(--transition), transform var(--transition);
+  transition: all 0.3s ease;
 }
 
 .stat-item:hover {
-  border-color: var(--border-strong);
-  transform: translateY(-1px);
+  border-color: var(--accent-border);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
+.stat-item p:first-child {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+}
+
+.stat-item p:last-child {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Legacy hooks kept in sync */
 .stat-label {
   color: var(--text-muted);
-  font-size: 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
   margin: 0;
 }
 
 .stat-value {
   font-size: 1.5rem;
   font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
   margin: 0.2rem 0 0 0;
 }
 
+/* ---------- Buttons: interactive states ---------- */
+
 .action-btn {
   width: 100%;
-  padding: 10px 16px;
+  padding: 11px 18px;
   margin-top: 12px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-weight: 700;
-  font-size: 14px;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background var(--transition), color var(--transition),
-    border-color var(--transition), transform 0.1s ease;
+  transition: all 0.3s ease;
 }
 
-.action-btn:active {
-  transform: scale(0.98);
+.action-btn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
+.action-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 0 0 1px var(--accent-border);
+}
+
+.action-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  filter: saturate(0.6);
+  box-shadow: none;
+  transform: none;
+}
+
+/* Follow */
 .btn-follow {
   background: var(--accent-soft);
   color: var(--accent-hover);
   border-color: var(--border-strong);
 }
 
-.btn-follow:hover {
-  background: var(--bg-hover);
+.btn-follow:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: var(--accent-border);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  transform: translateY(-1px);
 }
 
+/* Unfollow — danger affordance on hover */
 .btn-unfollow {
   background: var(--bg-elevated);
   color: var(--text-primary);
   border-color: var(--border-strong);
 }
 
-.btn-unfollow:hover {
+.btn-unfollow:hover:not(:disabled) {
   background: var(--danger-soft);
   color: var(--danger);
   border-color: var(--danger-border);
+  box-shadow: 0 4px 14px rgba(224, 125, 125, 0.12);
+  transform: translateY(-1px);
 }
 
+/* Pending / following-request */
 .btn-pending {
   background: rgba(249, 115, 22, 0.15);
   color: #fb923c;
   border-color: rgba(249, 115, 22, 0.35);
 }
 
+.btn-pending:hover:not(:disabled) {
+  background: rgba(249, 115, 22, 0.25);
+  color: #fdba74;
+  border-color: rgba(249, 115, 22, 0.55);
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.15);
+  transform: translateY(-1px);
+}
+
+/* Edit profile */
 .btn-edit {
   background: var(--bg-elevated);
   color: var(--text-primary);
   border-color: var(--border-strong);
 }
 
-.btn-edit:hover {
+.btn-edit:hover:not(:disabled) {
   background: var(--bg-hover);
+  color: var(--accent-hover);
   border-color: var(--accent-border);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  transform: translateY(-1px);
 }
+
+/* ---------- Posts grid ---------- */
 
 .posts-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  margin-top: 12px;
+  gap: 8px;
+  margin-top: 14px;
 }
 
 .post-tile {
   position: relative;
   aspect-ratio: 1 / 1;
   overflow: hidden;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   display: block;
   text-decoration: none;
   cursor: pointer;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  transition: border-color var(--transition), transform var(--transition);
+  transition: all 0.3s ease;
 }
 
 .post-tile:hover {
-  border-color: var(--border-strong);
-  transform: translateY(-1px);
+  border-color: var(--accent-border);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
 .post-tile-img {
@@ -175,15 +332,16 @@
 }
 
 .post-tile:hover .post-tile-img {
-  transform: scale(1.05);
+  transform: scale(1.06);
 }
 
 .placeholder-text {
   color: var(--text-secondary);
   font-size: 0.85rem;
-  line-height: 1.4;
+  line-height: 1.45;
   text-align: center;
   margin: 0;
+  padding: 0.75rem;
   display: -webkit-box;
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
@@ -193,30 +351,37 @@
 .empty-state {
   text-align: center;
   color: var(--text-muted);
-  padding: 2rem 0;
+  padding: 2.5rem 0;
   margin: 0;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
 }
+
+/* ---------- Edit profile form (modal) ---------- */
 
 .edit-form {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin-top: 1rem;
+  margin-top: 1.25rem;
 }
 
 .form-input,
 .form-file {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   color: var(--text-primary);
   padding: 11px 14px;
   font-family: inherit;
   font-size: 0.95rem;
   width: 100%;
   box-sizing: border-box;
-  transition: border-color var(--transition), background var(--transition),
-    box-shadow var(--transition);
+  transition: all 0.3s ease;
+}
+
+.form-input:hover:not(:focus) {
+  border-color: var(--border-strong);
 }
 
 .form-input:focus {
@@ -231,14 +396,16 @@
   border: 1px solid var(--border-strong);
   color: var(--text-primary);
   padding: 8px 16px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   cursor: pointer;
   margin-right: 12px;
   font-family: inherit;
+  transition: all 0.3s ease;
 }
 
 .form-file::file-selector-button:hover {
   background: var(--accent-soft);
+  border-color: var(--accent-border);
 }
 
 .privacy-toggle {
@@ -248,10 +415,16 @@
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   padding: 12px 14px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   cursor: pointer;
   color: var(--text-secondary);
   font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.privacy-toggle:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
 }
 
 .privacy-toggle input {
@@ -271,6 +444,8 @@
   margin: 10px 0;
 }
 
+/* ---------- Users modal (followers / following lists) ---------- */
+
 .users-modal {
   max-width: 400px;
 }
@@ -278,22 +453,38 @@
 .users-modal-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 15px;
+  gap: 6px;
+  margin-top: 16px;
   max-height: 300px;
   overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }
 
 .modal-user-row {
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  padding: 8px 10px;
+  margin: 0; /* neutralize .user-handle margin reused on rows */
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
+}
+
+.modal-user-row:hover {
+  background: var(--accent-soft);
+}
+
+.modal-user-row:hover .modal-user-name {
+  color: var(--accent-hover);
 }
 
 .modal-user-name {
   color: var(--text-primary);
   font-weight: bold;
+  transition: all 0.3s ease;
 }
 
 .modal-user-handle {
@@ -304,4 +495,5 @@
 .users-modal-empty {
   color: var(--text-muted);
   text-align: center;
+  padding: 1rem 0;
 }
