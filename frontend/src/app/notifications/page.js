@@ -109,6 +109,27 @@ export default function NotificationsPage() {
     }
   };
 
+  const markRead = async (notification, index) => {
+    if (notification.is_read) return;
+    removeNotification(notification.id);
+    const result = await handleMarkRead(notification);
+    if (result.ok) {
+      window.dispatchEvent(new Event('notifications:changed'));
+      return;
+    }
+    setNotifications((prev) => {
+      if (prev.some((n) => n.id === notification.id)) return prev;
+      const next = [...prev];
+      next.splice(Math.min(index, next.length), 0, notification);
+      return next;
+    });
+    if (result.status === 400 || result.status === 404) {
+      showToast("This notification is no longer available");
+    } else {
+      showToast("Something went wrong. Please try again.");
+    }
+  };
+
   const renderActions = (notification) => {
     switch (notification.type) {
       case "group_invitation":
@@ -169,12 +190,16 @@ export default function NotificationsPage() {
       ) : (
         <>
           <div className="glass-notifications-list">
-            {notifications.map((notification) => (
+            {notifications.map((notification, index) => (
               <div
                 key={notification.id}
                 className={`glass-notification-card ${
                   notification.is_read ? "glass-notification-read" : "glass-notification-unread"
                 }`}
+                onClick={(e) => {
+                  if (e.target.closest("button, a")) return;
+                  markRead(notification, index);
+                }}
               >
                 <div className="glass-notification-content">
                   <p>{notification.message}</p>

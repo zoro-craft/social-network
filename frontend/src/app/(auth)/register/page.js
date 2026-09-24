@@ -39,6 +39,23 @@ export default function RegisterPage() {
       return;
     }
 
+    const firstName = formData.first_name.trim();
+    const lastName = formData.last_name.trim();
+    const nickname = formData.nickname.trim();
+
+    if (firstName.length < 3) {
+      setError("First name must be at least 3 characters long.");
+      return;
+    }
+    if (lastName.length < 3) {
+      setError("Last name must be at least 3 characters long.");
+      return;
+    }
+    if (nickname && nickname.length < 3) {
+      setError("Nickname must be at least 3 characters long.");
+      return;
+    }
+
     setLoading(true);
 
     const submitData = new FormData();
@@ -71,6 +88,7 @@ export default function RegisterPage() {
                 className="glass-input"
                 name="first_name"
                 required
+                minLength={3}
                 maxLength={30}
                 onChange={handleChange}
               />
@@ -82,6 +100,7 @@ export default function RegisterPage() {
                 className="glass-input"
                 name="last_name"
                 required
+                minLength={3}
                 maxLength={30}
                 onChange={handleChange}
               />
@@ -131,6 +150,7 @@ export default function RegisterPage() {
                 type="text"
                 className="glass-input"
                 name="nickname"
+                minLength={3}
                 maxLength={30}
                 onChange={handleChange}
               />

@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode/utf8"
 	"zone/internal/utils"
 
 	"zone/internal/database"
@@ -83,6 +84,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	var nicknameValue any
 	if nickname != "" {
+		if utf8.RuneCountInString(nickname) < 3 {
+			utils.HandleError(w, http.StatusBadRequest, "Nickname must be at least 3 characters long.")
+			return
+		}
 		taken, err := ValidateNickname(nickname, 0)
 		if taken {
 			utils.HandleError(w, http.StatusConflict, "Nickname already exists")
@@ -151,8 +156,11 @@ func ValidateDOB(dateOfBirth string) (time.Time, error) {
 }
 
 func ValidateName(firstName, lastName string) error {
-	if firstName == "" || lastName == "" {
-		return fmt.Errorf("First & last name  is required.")
+	if utf8.RuneCountInString(firstName) < 3 {
+		return fmt.Errorf("First name must be at least 3 characters long.")
+	}
+	if utf8.RuneCountInString(lastName) < 3 {
+		return fmt.Errorf("Last name must be at least 3 characters long.")
 	}
 	return nil
 }

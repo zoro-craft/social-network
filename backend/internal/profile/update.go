@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"zone/internal/auth"
 	"zone/internal/database"
@@ -118,10 +119,7 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if wasPrivate && !isPrivate {
-		if _, err := tx.Exec(
-			"UPDATE followers SET status = 'accepted' WHERE followee_id = ? AND status = 'pending'",
-			userID,
-		); err != nil {
+		if err := acceptPendingFollowers(tx, userID); err != nil {
 			log.Println("accept pending followers:", err)
 			utils.HandleError(w, http.StatusInternalServerError, "Failed to update profile")
 			return
@@ -134,4 +132,63 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": "Profile updated successfully"})
+}
+
+func acceptPendingFollowers(tx *sql.Tx, userID int) error {
+	type newFollower struct {
+		id       int
+		fullName string
+	}
+
+	rows, err := tx.Query(`
+		SELECT f.follower_id, u.full_name
+		FROM followers f
+		JOIN users u ON u.id = f.follower_id
+		WHERE f.followee_id = ? AND f.status = 'pending'`, userID)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	var followers []newFollower
+	for rows.Next() {
+		var nf newFollower
+		if err := rows.Scan(&nf.id, &nf.fullName); err != nil {
+			return err
+		}
+		followers = append(followers, nf)
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	if _, err := tx.Exec(
+		"UPDATE followers SET status = 'accepted' WHERE followee_id = ? AND status = 'pending'",
+		userID,
+	); err != nil {
+		return err
+	}
+
+	if _, err := tx.Exec(
+		"DELETE FROM notifications WHERE user_id = ? AND type = 'follow_request'",
+		userID,
+	); err != nil {
+		return err
+	}
+
+	for _, f := range followers {
+		name := strings.TrimSpace(f.fullName)
+		if name == "" {
+			name = "Someone"
+		}
+		if _, err := tx.Exec(`
+			INSERT INTO notifications (user_id, actor_id, type, ref_id, message, is_read, created_at)
+			VALUES (?, ?, 'new_follower', ?, ?, 0, ?)`,
+			userID, f.id, f.id, name+" started following you", time.Now().UnixMilli(),
+		); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -29,7 +29,11 @@ func NewHandler(svc *services.Service) *Handler {
 // GetNotifications serves GET /notifications: the recipient's own unread rows, newest first,
 // 10 per page via an id keyset cursor, plus the exact total unread count.
 func (h *Handler) GetNotifications(w http.ResponseWriter, r *http.Request) {
-	userID, _ := auth.GetUserID(r)
+	userID, err := auth.GetUserID(r)
+	if err != nil {
+		utils.HandleError(w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+		return
+	}
 
 	var cursorID int
 	if q := r.URL.Query().Get("before_id"); q != "" {
@@ -54,9 +58,13 @@ func (h *Handler) GetNotifications(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// MarkReadByID serves POST /notifications/{id}/read, owner-scoped.
+
 func (h *Handler) MarkReadByID(w http.ResponseWriter, r *http.Request) {
-	userID, _ := auth.GetUserID(r)
+	userID, err := auth.GetUserID(r)
+	if err != nil {
+		utils.HandleError(w, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+		return
+	}
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil || id <= 0 {

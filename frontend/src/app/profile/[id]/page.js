@@ -131,7 +131,7 @@ export default function ProfilePage() {
           onSaved={async () => { 
             setIsEditing(false); 
             await reload(); 
-            showToast("Profile updated"); 
+            showToast("Profile updated", false); 
           }} 
         />
       )}
