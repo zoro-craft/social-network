@@ -10,13 +10,14 @@ func getReactionSummary(postID, userID int) (Reaction, error) {
 	var resp Reaction
 	resp.PostID = postID
 
-	err := database.Database.QueryRow(`
-		SELECT
-			COALESCE(SUM(CASE WHEN is_like = 1 THEN 1 ELSE 0 END), 0),
-			COALESCE(SUM(CASE WHEN is_like = 0 THEN 1 ELSE 0 END), 0)
-		FROM post_reactions WHERE post_id = ?`,
-		postID,
-	).Scan(&resp.LikeCount, &resp.DislikeCount)
+err := database.Database.QueryRow(`
+    SELECT
+        COUNT(CASE WHEN is_like = 1 THEN 1 END),
+        COUNT(CASE WHEN is_like = 0 THEN 1 END)
+    FROM post_reactions
+    WHERE post_id = ?`,
+    postID,
+).Scan(&resp.LikeCount, &resp.DislikeCount)
 	if err != nil {
 		return resp, err
 	}
