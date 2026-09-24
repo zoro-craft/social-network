@@ -96,18 +96,3 @@ func DeleteRequest(tx *sql.Tx, requestID int) error {
     `, requestID)
 	return err
 }
-
-func DeleteRequestNotification(tx *sql.Tx, userID int, Requsestid int) error {
-	_, err := tx.Exec(
-		`
-		DELETE FROM notifications
-		WHERE user_id = ?
-		AND  request_id = ?
-		AND type = 'join_request'
-	`,
-		userID,
-		Requsestid,
-	)
-
-	return err
-}

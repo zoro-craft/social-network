@@ -64,23 +64,27 @@ func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
-	if repositories.IsMember(joinRequest.UserID, joinRequest.GroupID) {
-		repositories.DeleteRequest(tx, requestID)
-		repositories.DeleteRequestNotification(tx, user_id, requestID)
-		tx.Commit()
-		return
-	}
-
-	err = repositories.AddGroupMember(tx, joinRequest.GroupID, joinRequest.UserID)
-	if err != nil {
-		utils.HandleError(w, 500, http.StatusText(500))
-		return
+	if !repositories.IsMember(joinRequest.UserID, joinRequest.GroupID) {
+		err = repositories.AddGroupMember(tx, joinRequest.GroupID, joinRequest.UserID)
+		if err != nil {
+			utils.HandleError(w, 500, http.StatusText(500))
+			return
+		}
 	}
 
 	err = repositories.DeleteRequest(tx, requestID)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
+	}
+
+	invitationID, errInvit := repositories.GetInvitationIDByGroupAndUser(joinRequest.GroupID, joinRequest.UserID)
+	if errInvit == nil {
+		err = repositories.DeleteInvitation(tx, invitationID)
+		if err != nil {
+			utils.HandleError(w, 500, http.StatusText(500))
+			return
+		}
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -91,10 +95,8 @@ func Accept_Join_Request(w http.ResponseWriter, r *http.Request) {
 	// Resolving the join request marks its notification read.
 	_ = notificationservice.Notifier.MarkReadOnAction(user_id, "join_request", requestID)
 
-	// The requester is now a member, so any invitation the owner sent them is
-	// moot; delete its notification so it also vanishes in realtime.
-	invitationID, err := repositories.GetInvitationIDByGroupAndUser(joinRequest.GroupID, joinRequest.UserID)
-	if err == nil {
+
+	if errInvit == nil {
 		_ = notificationservice.Notifier.RemoveNotificationOnAction(joinRequest.UserID, "group_invitation", invitationID)
 	}
 

@@ -188,19 +188,3 @@ func DeleteInvitation(tx *sql.Tx, invitationID int) error {
 
     return err
 }
-
-
-func DeleteInvitationNotification(tx *sql.Tx, userID int, invitationID int) error {
-	_, err := tx.Exec(
-		`
-		DELETE FROM notifications
-		WHERE user_id = ?
-		AND invitation_id = ?
-		AND type = 'group_invtation'
-	`,
-		userID,
-		invitationID,
-	)
-
-	return err
-}
