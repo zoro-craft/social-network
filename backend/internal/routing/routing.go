@@ -57,15 +57,12 @@ func NewRouter() http.Handler {
 	// profile and users routes
 	mux.HandleFunc("GET /profile/{id}", guarded(limitRead, profile.GetProfileAPI))
 	mux.HandleFunc("POST /profile/edit", guarded(limitAction, profile.EditProfileAPI))
-	mux.HandleFunc("POST /profile/toggle-visibility", guarded(limitAction, profile.SwitchStatus))
 	mux.HandleFunc("GET /users/search", guarded(limitRead, users.SearchUsersAPI))
 
 	// followers routes
 	mux.HandleFunc("GET /profile/{id}/followers", guarded(limitRead, followers.GetFollowersAPI))
 	mux.HandleFunc("GET /profile/{id}/following", guarded(limitRead, followers.GetFollowingAPI))
 	mux.HandleFunc("POST /follow/{id}", guarded(limitAction, followers.ToggleFollowAPI))
-	mux.HandleFunc("POST /follow/{id}/unfollow", guarded(limitAction, followers.UnfollowAPI))
-	mux.HandleFunc("GET /follow/requests", guarded(limitRead, followers.GetRequestsAPI))
 	mux.HandleFunc("POST /follow/{id}/{action}", guarded(limitAction, followers.RespondRequestAPI))
 
 	// media & uploads routes

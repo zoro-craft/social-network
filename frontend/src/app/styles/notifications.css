@@ -158,14 +158,3 @@
   border-radius: var(--radius);
   background: var(--bg-card);
 }
-
-.glass-message-type {
-  flex-shrink: 0;
-  padding: 5px 12px;
-  border-radius: 999px;
-  background: var(--accent-soft);
-  border: 1px solid var(--border-strong);
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 600;
-}

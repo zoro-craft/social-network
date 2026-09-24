@@ -16,43 +16,6 @@ import (
 
 var errUserNotFound = errors.New("follow target does not exist")
 
-func UnfollowAPI(w http.ResponseWriter, r *http.Request) {
-	followerID, err := auth.GetUserID(r)
-	if err != nil {
-		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in")
-		return
-	}
-
-	followeeID, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil || followeeID <= 0 {
-		utils.HandleError(w, http.StatusBadRequest, "Invalid user ID")
-		return
-	}
-
-	// فتح الـ Transaction حتى في Unfollow باش نحافظو على الاتساق
-	tx, err := database.Database.Begin()
-	if err != nil {
-		utils.HandleError(w, http.StatusInternalServerError, "Failed to unfollow")
-		return
-	}
-	defer tx.Rollback()
-
-	if _, err := tx.Exec(
-		"DELETE FROM followers WHERE follower_id = ? AND followee_id = ?",
-		followerID, followeeID,
-	); err != nil {
-		utils.HandleError(w, http.StatusInternalServerError, "Failed to unfollow")
-		return
-	}
-
-	if err := tx.Commit(); err != nil {
-		utils.HandleError(w, http.StatusInternalServerError, "Failed to unfollow")
-		return
-	}
-
-	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": "Unfollowed"})
-}
-
 func ToggleFollowAPI(w http.ResponseWriter, r *http.Request) {
 	followerID, err := auth.GetUserID(r)
 	if err != nil {
@@ -143,15 +106,11 @@ if err := tx.Commit(); err != nil {
 		return "", err
 	}
 
-	// A follow that lands pending means the followee's profile is private:
-	// notify the followee, attributed to the requester.
 	if newStatus == "pending" {
 		message := "New follow request from " + repositories.GetUserFullName(followerID)
 		_, _ = notificationservice.Notifier.NotifyFollowRequest(followeeID, followerID, message)
 	}
 
-	// A cancelled pending request is resolved: delete its follow_request notification
-	// and signal the followee so open sessions remove it and refresh the badge.
 	if newStatus == "none" && status.String == "pending" {
 		_ = notificationservice.Notifier.RemoveFollowRequestNotification(followeeID, followerID)
 	}

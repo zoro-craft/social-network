@@ -30,10 +30,6 @@
   gap: 8px;
 }
 
-.left-sidebar .avatar-img {
-  margin-bottom: 8px;
-}
-
 .right-area {
   flex: 1 1 0;
   min-width: 0;
@@ -58,27 +54,6 @@
   overflow-wrap: break-word;
   word-break: break-word;
   max-width: 100%;
-}
-
-.about-me {
-  color: var(--text-muted);
-  font-style: italic;
-  font-size: 0.9rem;
-  margin: 0.25rem 0 0;
-  overflow-wrap: break-word;
-  word-break: break-word;
-  max-width: 100%;
-}
-
-.privacy-badge {
-  background: var(--accent-soft);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-strong);
-  padding: 0.2rem 1rem;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 4px;
 }
 
 .stats-grid {
@@ -294,11 +269,6 @@
   color: var(--text-muted);
   font-size: 0.9rem;
   margin: 10px 0;
-}
-
-.profile-error-card {
-  padding: 40px;
-  text-align: center;
 }
 
 .users-modal {

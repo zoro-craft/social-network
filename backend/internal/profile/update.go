@@ -12,63 +12,6 @@ import (
 	"zone/internal/utils"
 )
 
-func SwitchStatus(w http.ResponseWriter, r *http.Request) {
-	userID, err := auth.GetUserID(r)
-	if err != nil {
-		utils.HandleError(w, http.StatusUnauthorized, "Not authenticated")
-		return
-	}
-
-	newValue, err := flipPrivacy(userID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			utils.HandleError(w, http.StatusNotFound, "User not found")
-			return
-		}
-		log.Println("toggle visibility:", err)
-		utils.HandleError(w, http.StatusInternalServerError, "Failed to update profile")
-		return
-	}
-
-	utils.RespondJSON(w, http.StatusOK, map[string]any{
-		"message":    "Profile visibility updated",
-		"is_private": newValue,
-	})
-}
-
-func flipPrivacy(userID int) (bool, error) {
-	tx, err := database.Database.Begin()
-	if err != nil {
-		return false, err
-	}
-	defer tx.Rollback()
-
-	var isPrivate bool
-	if err := tx.QueryRow("SELECT is_private FROM users WHERE id = ?", userID).Scan(&isPrivate); err != nil {
-		return false, err
-	}
-
-	if err := setPrivacy(tx, userID, !isPrivate); err != nil {
-		return false, err
-	}
-
-	return !isPrivate, tx.Commit()
-}
-
-func setPrivacy(tx *sql.Tx, userID int, isPrivate bool) error {
-	if _, err := tx.Exec("UPDATE users SET is_private = ? WHERE id = ?", isPrivate, userID); err != nil {
-		return err
-	}
-	if isPrivate {
-		return nil
-	}
-	_, err := tx.Exec(
-		"UPDATE followers SET status = 'accepted' WHERE followee_id = ? AND status = 'pending'",
-		userID,
-	)
-	return err
-}
-
 func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 	userID, err := auth.GetUserID(r)
 	if err != nil {

@@ -182,10 +182,6 @@
     flex: 1;
   }
 
-  .glass-message-type {
-    align-self: flex-start;
-  }
-
   .glass-search-page {
     padding: 24px 16px;
   }
