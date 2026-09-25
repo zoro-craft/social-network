@@ -22,7 +22,8 @@ export default function CreatEvent() {
   const [loading, setLoading] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
-
+  const thisTime = new Date().toISOString().split('T')[1];
+  const Time = thisTime.split('.')[0].slice(0, 5);
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -34,8 +35,8 @@ export default function CreatEvent() {
       showToast('Event date is required');
       return;
     }
-    if (eventDate < today) {
-      showToast('Event date cannot be in the past');
+    if (eventDate === today && eventTime < Time) {
+      showToast('Event time cannot be in the past');
       return;
     }
     if (!eventTime) {
@@ -73,7 +74,6 @@ export default function CreatEvent() {
   };
 
   if (authLoading || !auth.authenticated) return null;
-
   return (
     <div className="glass-page">
       <div className="glass-container glass-container-lg">

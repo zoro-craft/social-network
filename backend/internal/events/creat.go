@@ -50,16 +50,38 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "event date is required")
 		return
 	}
+		if req.EventTime == "" {
+		utils.HandleError(w, http.StatusBadRequest, "event time is required")
+		return
+	}
 
+	if _, err := time.Parse("15:04", req.EventTime); err != nil {
+	utils.HandleError(w, http.StatusBadRequest, "invalid event time format")
+	return
+	}
 	if _, err := time.Parse("2006-01-02", req.EventDate); err != nil {
 	utils.HandleError(w, http.StatusBadRequest, "invalid event date format")
 	return
 	}
+
+	maxDate := time.Now().AddDate(10, 0, 0).Format("2006-01-02")
+	nowTime:=time.Now().Format("15:04")
 	today := time.Now().Format("2006-01-02")
+
+	if req.EventDate == today && req.EventTime < nowTime {
+	utils.HandleError(w, http.StatusBadRequest, "event time cannot be in the past")
+	return
+	}
+	if req.EventDate > maxDate {
+	utils.HandleError(w, http.StatusBadRequest, "event date cannot be more than 10 years in the future")
+	return
+	}
+	
 	if req.EventDate < today {
 	utils.HandleError(w, http.StatusBadRequest, "event date cannot be in the past")
 	return
 	}
+	
 	if req.EventTime == "" {
 		utils.HandleError(w, http.StatusBadRequest, "event time is required")
 		return
