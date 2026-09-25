@@ -1,3 +1,7 @@
+/* ═══════════════════════════════════════════════════════════════
+   RESET — baseline normalisation
+   ═══════════════════════════════════════════════════════════════ */
+
 *,
 *::before,
 *::after {
@@ -10,23 +14,25 @@ body {
 }
 
 html {
-  scrollbar-color: var(--border-strong) var(--bg);
+  scrollbar-color: var(--border-strong) var(--bg-page);
   scrollbar-width: thin;
 }
 
 body {
   margin: 0;
   color: var(--text-primary);
-  /* Deep charcoal with a faint grain, so large surfaces never look flat. */
-  background-color: var(--bg);
-  background-image: var(--surface-grain);
-  background-repeat: repeat;
+  background-color: var(--bg-page);
+  /* Subtle violet radial glow at top of page */
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(110, 107, 240, 0.06), transparent 60%),
+    var(--surface-grain);
+  background-repeat: no-repeat, repeat;
   background-attachment: fixed;
   font-family: var(--font-sans);
   font-size: 15px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  line-height: 1.55;
 }
 
 img {
@@ -47,7 +53,7 @@ textarea {
 }
 
 select option {
-  background: var(--bg-elevated);
+  background: var(--bg-surface);
   color: var(--text-primary);
 }
 
@@ -56,21 +62,21 @@ a {
   text-decoration: none;
 }
 
-/* Serif display type is the main "crafted" signal. */
+/* Clean sans-serif headings — Inter with tight tracking */
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-serif);
-  font-weight: 600;
+  font-family: var(--font-sans);
+  font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   line-height: 1.2;
 }
 
-/* Keyboard-only focus ring, consistent across the whole app. */
+/* Keyboard-only focus ring */
 button:focus-visible,
 a:focus-visible,
 [tabindex]:focus-visible {
@@ -80,18 +86,18 @@ a:focus-visible,
 }
 
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg);
+  background: var(--bg-page);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--border-strong);
   border-radius: 999px;
-  border: 2px solid var(--bg);
+  border: 2px solid var(--bg-page);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -107,4 +113,15 @@ select:-webkit-autofill {
   -webkit-box-shadow: 0 0 0 1000px var(--bg-input) inset;
   box-shadow: 0 0 0 1000px var(--bg-input) inset;
   transition: background-color 9999s ease-in-out 0s;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

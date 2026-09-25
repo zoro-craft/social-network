@@ -1,3 +1,7 @@
+/* ═══════════════════════════════════════════════════════════════
+   POSTS — feed page, post cards, reactions, voting, events
+   ═══════════════════════════════════════════════════════════════ */
+
 .glass-feed-page {
   min-height: calc(100vh - var(--nav-height));
   display: flex;
@@ -19,11 +23,11 @@
 
 .glass-feed-title {
   margin: 0;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 28px;
-  font-weight: 600;
+  font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.03em;
 }
 
 .glass-create-post-button {
@@ -34,25 +38,18 @@
 .glass-post-card {
   width: 100%;
   max-width: var(--content-max);
-  background: var(--bg-card);
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border-color);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 22px;
-  box-shadow:
-    var(--shadow-sm),
-    var(--glass-inset);
+  box-shadow: var(--shadow-sm);
   transition: border-color var(--transition), box-shadow var(--transition);
+  animation: fadeUp 0.25s var(--ease-out) both;
 }
 
 .glass-post-card:hover {
-  border-color: var(--accent-border);
-  box-shadow:
-    var(--shadow),
-    var(--glass-inset),
-    var(--glass-glow);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow);
 }
 
 .glass-post-header {
@@ -71,21 +68,26 @@
 }
 
 .glass-post-title {
-  font-family: var(--font-serif);
-  font-size: 19px;
-  font-weight: 600;
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 8px;
   line-height: 1.35;
+  letter-spacing: -0.01em;
 }
 
+/* Nested inset panel for post body */
 .glass-post-content {
   font-size: 15px;
   line-height: 1.65;
-  color: var(--text-primary);
+  color: var(--text-body);
   white-space: pre-wrap;
   margin: 0 0 8px;
   overflow-wrap: break-word;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
 }
 
 .glass-post-image {
@@ -97,7 +99,7 @@
   margin: 4px 0 12px;
 }
 
-/* ── Reactions ────────────────────────────────────────────────── */
+/* ── Reactions — pill-shaped buttons ── */
 .glass-reactions {
   display: flex;
   gap: 10px;
@@ -110,7 +112,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--bg-elevated);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   color: var(--text-secondary);
@@ -129,11 +131,10 @@
 }
 
 .glass-react-btn:active {
-  transform: translateY(1px);
+  transform: scale(0.95);
 }
 
-/* Active states use compound selectors so they win over
-   .glass-react-btn and .glass-react-btn:hover regardless of order */
+/* Active like/dislike — semantic pill tints */
 .glass-react-btn.glass-react-like,
 .glass-react-btn.glass-react-like:hover {
   background: var(--success-soft);
@@ -162,8 +163,8 @@
   gap: 4px;
   width: 100%;
   padding: 10px 14px;
-  border-radius: var(--radius-md);
-  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   cursor: pointer;
   text-align: left;
@@ -209,13 +210,17 @@
 }
 
 .glass-vote-meta {
+  font-family: var(--font-mono);
   font-size: 12px;
+  font-weight: 500;
   color: var(--text-muted);
 }
 
 .glass-vote-total {
   margin: 12px 0 0;
+  font-family: var(--font-mono);
   font-size: 12px;
+  font-weight: 500;
   color: var(--text-muted);
   text-align: right;
   border-top: 1px solid var(--border);
@@ -229,7 +234,8 @@
   border-radius: var(--radius-pill);
   background: var(--accent-soft);
   border: 1px solid var(--accent-border);
-  color: var(--accent-hover);
+  color: var(--accent);
+  font-family: var(--font-mono);
   font-weight: 600;
   font-size: 13px;
   letter-spacing: 0.01em;

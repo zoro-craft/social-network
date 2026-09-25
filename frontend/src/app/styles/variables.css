@@ -1,88 +1,101 @@
+/* ═══════════════════════════════════════════════════════════════
+   DESIGN SYSTEM — Dark Minimal UI (Linear / Vercel / Notion)
+   Violet accent, Inter + JetBrains Mono, restrained depth
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap');
+
 :root {
   color-scheme: dark;
 
+  /* ── Surfaces ── */
+  --bg-page: #0a0a0c;
+  --bg-surface: #111114;
+  --bg-card: #15151a;
+  --bg-input: #0d0d10;
+  --bg-hover: #1c1c22;
 
+  /* Legacy aliases — keeps every existing var(--bg-*) reference working */
+  --bg: var(--bg-page);
+  --bg-elevated: var(--bg-surface);
+  --bg-navbar: rgba(10, 10, 12, 0.78);
+  --scrim: rgba(4, 4, 6, 0.72);
 
-  --bg: #15181c;
-  --bg-elevated: #1c2026;
-  --bg-card: #1a1e24;
-  --bg-hover: #232a33;
-  --bg-input: #1c2026;
-  --bg-navbar: rgba(21, 24, 28, 0.8);
-  --scrim: rgba(8, 9, 12, 0.62);
+  /* ── Borders ── */
+  --border: #23232a;
+  --border-strong: #34343f;
+  --border-hover: #34343f;
+  --hairline: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 
-  --text-primary: #e9e6e1;
-  --text-secondary: #a6a19a;
-  --text-muted: #7b7670;
+  /* ── Brand accent (violet) ── */
+  --accent: #6e6bf0;
+  --accent-hover: #5b58e0;
+  --accent-dark: #524fcc;
+  --accent-strong: #8e8cf5;
+  --accent-soft: rgba(110, 107, 240, 0.12);
+  --accent-border: rgba(110, 107, 240, 0.30);
+  --on-accent: #ffffff;
 
-  --border: #2a3038;
-  --border-strong: #3b424c;
-  --hairline: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  /* ── Semantic colors ── */
+  --success: #3ecf8e;
+  --success-soft: rgba(62, 207, 142, 0.12);
+  --success-border: rgba(62, 207, 142, 0.30);
+  --danger: #f0605f;
+  --danger-soft: rgba(240, 96, 95, 0.12);
+  --danger-border: rgba(240, 96, 95, 0.30);
+  --warning: #f0b232;
+  --warning-soft: rgba(240, 178, 50, 0.12);
+  --warning-border: rgba(240, 178, 50, 0.30);
 
-  --accent: #c6a15f;
-  --accent-hover: #d8b678;
-  --accent-dark: #a5824a;
-  --accent-strong: #dcc28f;
-  --accent-soft: rgba(198, 161, 95, 0.14);
-  --accent-border: rgba(198, 161, 95, 0.34);
-  --on-accent: #191510;
+  /* ── Typography ── */
+  --text-primary: #f4f4f6;
+  --text-secondary: #a3a3ad;
+  --text-muted: #6b6b75;
+  --text-body: #d6d6df;
 
-  --success: #82b392;
-  --success-soft: rgba(130, 179, 146, 0.14);
-  --success-border: rgba(130, 179, 146, 0.32);
-  --danger: #d78a72;
-  --danger-soft: rgba(215, 138, 114, 0.14);
-  --danger-border: rgba(215, 138, 114, 0.32);
-  --warning: #d19a5c;
-  --warning-soft: rgba(209, 154, 92, 0.14);
-  --warning-border: rgba(209, 154, 92, 0.32);
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular',
+    Menlo, Consolas, monospace;
+  /* Legacy alias — existing rules referencing --font-serif now get Inter */
+  --font-serif: var(--font-sans);
 
-
-  --shadow-sm: 0 1px 2px rgba(8, 9, 12, 0.45);
-  --shadow: 0 2px 6px rgba(8, 9, 12, 0.4),
-    0 14px 34px -18px rgba(8, 9, 12, 0.8);
-  --shadow-lg: 0 4px 10px rgba(8, 9, 12, 0.45),
-    0 30px 60px -24px rgba(8, 9, 12, 0.9);
-
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    Helvetica, Arial, sans-serif;
-  --font-serif: Georgia, "Iowan Old Style", "Palatino Linotype",
-    "Times New Roman", Times, serif;
-
-  --radius-sm: 4px;
-  --radius-md: 7px;
-  --radius: 10px;
-  --radius-lg: 12px;
+  /* ── Shape tokens ── */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius: 12px;
+  --radius-lg: 18px;
   --radius-pill: 999px;
 
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* ── Depth tokens ── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.40);
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.36),
+    0 12px 28px -12px rgba(0, 0, 0, 0.60);
+  --shadow-lg: 0 4px 14px rgba(0, 0, 0, 0.42),
+    0 24px 48px -20px rgba(0, 0, 0, 0.70);
+  --shadow-focus: 0 0 0 3px var(--accent-soft);
+
+  /* ── Motion ── */
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --duration-fast: 0.14s;
+  --duration-fast: 0.12s;
   --duration: 0.2s;
-  --duration-slow: 0.4s;
-  --transition: 0.18s ease;
+  --duration-slow: 0.35s;
+  --transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 
-  --nav-height: 66px;
-  --content-max: 600px;
+  /* ── Layout ── */
+  --nav-height: 64px;
+  --content-max: 640px;
 
-  /* ── Surface grain (baked into an SVG so it needs no asset) ── */
-  --surface-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.05'/></svg>");
+  /* ── Simplified surface system (no heavy frosted glass) ──
+     Minimal, opaque-ish cards with subtle border & shadow instead */
+  --glass-blur: blur(14px) saturate(130%);
+  --glass-border-color: var(--border);
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --glass-glow: 0 0 24px -8px rgba(110, 107, 240, 0.18);
+  --glass-bg: var(--bg-surface);
+  --glass-bg-raised: var(--bg-card);
 
-  /* ── Frosted glass surfaces (shared by every box in the app) ──
-     Two tiers: --glass-bg for page-level cards, --glass-bg-raised (more
-     opaque) for boxes nested inside other glass surfaces. */
-  --glass-blur: blur(16px) saturate(140%);
-  --glass-border-color: rgba(255, 255, 255, 0.09);
-  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    inset 0 -1px 0 rgba(8, 9, 12, 0.3);
-  --glass-glow: 0 0 30px -8px rgba(198, 161, 95, 0.28);
-  --glass-bg:
-    linear-gradient(115deg, transparent 12%, rgba(255, 255, 255, 0.035) 28%, transparent 42%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012) 32%, transparent 58%),
-    radial-gradient(130% 90% at 0% 0%, rgba(198, 161, 95, 0.08), transparent 46%),
-    color-mix(in srgb, var(--bg-card) 76%, transparent);
-  --glass-bg-raised:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01) 40%, transparent 70%),
-    radial-gradient(120% 100% at 0% 0%, rgba(198, 161, 95, 0.06), transparent 50%),
-    color-mix(in srgb, var(--bg-card) 90%, transparent);
+  /* ── Surface grain (subtle) ── */
+  --surface-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.03'/></svg>");
 }
