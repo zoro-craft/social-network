@@ -15,24 +15,24 @@ A Facebook-like social network with followers, posts, groups, private chats, eve
 - **Followers** — follow/unfollow requests. Private profiles require the request to be accepted; public profiles are followed automatically.
 - **Profiles** — public and private profiles showing user info, posts, followers and following. The owner can toggle their profile between public and private.
 - **Posts & comments** — with optional images/GIFs (JPEG, PNG, GIF supported) and three privacy levels:
-  - *public* — everyone
-  - *almost private* — followers only
-  - *private* — selected followers only
+  - _public_ — everyone
+  - _almost private_ — followers only
+  - _private_ — selected followers only
 - **Groups** — create groups, invite users (invitee must accept), browse all groups and request to join (creator accepts/declines). Members can post, comment and invite others.
-- **Events** — group members create events (title, description, day/time) and everyone votes *going* or *not going*.
+- **Events** — group members create events (title, description, day/time) and everyone votes _going_ or _not going_.
 - **Chat** — private one-to-one messages between users who follow each other (either direction), plus a shared chat room per group. Emojis supported.
 - **Notifications** — visible on every page: follow requests, group invitations, group join requests, event creation, and more. Delivered in real time and displayed separately from new private messages.
 - **WebSockets** — real-time messaging and notifications via Gorilla WebSocket.
 
 ## Tech Stack
 
-| Layer    | Technology |
-|----------|------------|
-| Backend  | Go, `net/http`, Gorilla WebSocket, SQLite (`mattn/go-sqlite3`), bcrypt, UUID |
-| Migrations | [golang-migrate](https://github.com/golang-migrate/migrate) |
-| Frontend | Next.js (React), JavaScript |
-| Reverse proxy | Caddy |
-| Infra    | Docker, Docker Compose |
+| Layer         | Technology                                                                   |
+| ------------- | ---------------------------------------------------------------------------- |
+| Backend       | Go, `net/http`, Gorilla WebSocket, SQLite (`mattn/go-sqlite3`), bcrypt, UUID |
+| Migrations    | [golang-migrate](https://github.com/golang-migrate/migrate)                  |
+| Frontend      | Next.js (React), JavaScript                                                  |
+| Reverse proxy | Caddy                                                                        |
+| Infra         | Docker, Docker Compose                                                       |
 
 ## Architecture
 
@@ -103,11 +103,11 @@ The database and uploaded files persist in the `db_data` and `uploads_data` Dock
 
 ### Environment variables
 
-| Variable       | Container | Default        | Description                  |
-|----------------|-----------|----------------|------------------------------|
-| `DB_PATH`      | backend   | `/data/social-network.db` | SQLite database location |
-| `UPLOADS_PATH` | backend   | `/uploads`     | Uploaded images directory    |
-| `API_PROXY_TARGET` | frontend | `http://localhost:8080` | Backend URL for `/api` proxy (dev) |
+| Variable           | Container | Default                   | Description                        |
+| ------------------ | --------- | ------------------------- | ---------------------------------- |
+| `DB_PATH`          | backend   | `/data/social-network.db` | SQLite database location           |
+| `UPLOADS_PATH`     | backend   | `/uploads`                | Uploaded images directory          |
+| `API_PROXY_TARGET` | frontend  | `http://localhost:8080`   | Backend URL for `/api` proxy (dev) |
 
 ### Local development (without Docker)
 
