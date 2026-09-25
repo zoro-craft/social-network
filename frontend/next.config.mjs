@@ -1,6 +1,15 @@
 /** @type {import('next').NextConfig} */
 
+function apiProxyTarget() {
+  if (process.env.API_PROXY_TARGET === undefined) {
+    return 'http://localhost:8080';
+  }
+
+  return process.env.API_PROXY_TARGET.trim();
+}
+
 const nextConfig = {
+  allowedDevOrigins: ['10.98.0.41'],
   images: {
     remotePatterns: [
       {
@@ -22,18 +31,20 @@ const nextConfig = {
     ];
   },
 
-   rewrites() {
-    if (process.env.NODE_ENV === 'development') {
-      return [
-        {
-          source: '/api/:path*',
-          destination: 'http://localhost:8080/:path*',
-        },
-      ];
+  rewrites() {
+    const target = apiProxyTarget();
+
+    if (!target) {
+      return [];
     }
 
-    return [];
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${target}/:path*`,
+      },
+    ];
   },
-};  
+};
 
 export default nextConfig;
