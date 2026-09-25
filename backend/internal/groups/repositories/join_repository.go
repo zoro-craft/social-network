@@ -27,7 +27,7 @@ func SaveJoinRequest(tx *sql.Tx, groupID int, userID int) (int, error) {
 	if err == nil {
 		return 0, fmt.Errorf("join request already exists")
 	}
-
+	// If the error is not sql.ErrNoRows, return the error
 	if err != sql.ErrNoRows {
 		return 0, err
 	}

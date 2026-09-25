@@ -23,11 +23,11 @@ export default function Groupspage() {
         const res = await apiRequest("/groups");
 
         const all = res || [];
-        setAllGroups(all)
-        setGroups(all)
+        // source data
+        setAllGroups(all); 
+        setGroups(all);
       } catch (error) {
         showToast(error.message || "Failed to load groups");
-        console.log(error);
         setAllGroups([]);
       }
     };
@@ -43,7 +43,6 @@ export default function Groupspage() {
   // My Groups
   const showMyGroups = () => {
     const member = allGroups.filter((group) => group.is_member === true);
-
     setGroups(member);
   };
 
@@ -56,8 +55,6 @@ export default function Groupspage() {
       </main>
     );
   }
-
-  if (!auth.authenticated) return null;
 
   return (
     <main className="glass-group-page">
@@ -91,6 +88,7 @@ export default function Groupspage() {
             {groups.length === 0 ? (
               <p className="glass-empty-state">No groups found.</p>
             ) : (
+                // for each group, render a GroupCard component
               groups.map((group) => <GroupCard key={group.id} group={group} />)
             )}
           </div>

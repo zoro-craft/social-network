@@ -29,7 +29,7 @@ func InvitationsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var invitation models.GroupInvitation
-
+	// Decode the request body into the invitation struct
 	err = json.NewDecoder(r.Body).Decode(&invitation)
 	if err != nil {
 		utils.HandleError(w, 400, http.StatusText(400))

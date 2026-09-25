@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -64,7 +63,7 @@ func GetGroupMembersHandler(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusUnauthorized, http.StatusText(401))
 		return
 	}
-
+	// get the group id from the url
 	parts := strings.Split(r.URL.Path, "/")
 
 	if len(parts) < 4 {
@@ -77,7 +76,7 @@ func GetGroupMembersHandler(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid group ID")
 		return
 	}
-
+	// Check if the user is a member of the group
 	exists := repositories.IsMember(user_id, group_id)
 	if !exists {
 		utils.HandleError(w, 403, http.StatusText(403))
@@ -86,7 +85,6 @@ func GetGroupMembersHandler(w http.ResponseWriter, r *http.Request) {
 	// get all members of the group
 	members, err := repositories.GetAllMembers(group_id)
 	if err != nil {
-		fmt.Println(err)
 		utils.HandleError(w, http.StatusInternalServerError, "Could not load members")
 		return
 	}

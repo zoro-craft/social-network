@@ -33,7 +33,6 @@ export default function GroupCard({ group }) {
             <img
                 className="glass-group-icon"
                 src="/group-avatar.jpeg"
-                alt={`${group.titel} avatar`}
             />
 
             <div className="glass-group-info">
@@ -48,14 +47,14 @@ export default function GroupCard({ group }) {
 
             {isMember ? (
                 <button
-                    className="glass-group-action-btn"
+                    className="glass-group-action-btn enter-btn"
                     onClick={enterGroup}
                 >
                     Enter Group
                 </button>
             ) : (
                 <button
-                    className="glass-group-action-btn"
+                    className="glass-group-action-btn request-btn"
                     onClick={join}
                 >
                     Request to join
