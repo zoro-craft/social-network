@@ -33,15 +33,21 @@
 
 .glass-comment-card {
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: var(--glass-bg-raised);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border-color);
   border-radius: var(--radius);
   padding: 14px 16px;
+  box-shadow: var(--glass-inset);
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .glass-comment-card:hover {
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-sm);
+  border-color: var(--accent-border);
+  box-shadow:
+    var(--glass-inset),
+    var(--glass-glow);
 }
 
 .glass-comment-header {

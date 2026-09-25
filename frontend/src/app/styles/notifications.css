@@ -46,19 +46,26 @@
   gap: 20px;
   padding: 16px 20px;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border-color);
   background: var(--bg-card);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-inset);
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .glass-notification-card:hover {
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-sm);
+  border-color: var(--accent-border);
+  box-shadow:
+    var(--glass-inset),
+    var(--glass-glow);
 }
 
 .glass-notification-unread {
   border-left: 3px solid var(--accent);
   background: var(--bg-card);
+  background: var(--glass-bg);
 }
 
 .glass-notification-read {
@@ -156,4 +163,8 @@
   border: 1px dashed var(--border-strong);
   border-radius: var(--radius);
   background: var(--bg-card);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-inset);
 }

@@ -43,15 +43,24 @@
   width: 100%;
   max-width: 440px;
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border-color);
   border-radius: var(--radius-lg);
   padding: 40px 32px;
-  box-shadow: var(--shadow);
+  box-shadow:
+    var(--shadow),
+    var(--glass-inset);
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .glass-container:hover {
-  border-color: var(--border-strong);
+  border-color: var(--accent-border);
+  box-shadow:
+    var(--shadow),
+    var(--glass-inset),
+    var(--glass-glow);
 }
 
 .glass-container-login {

@@ -15,8 +15,11 @@
   font-size: 14px;
   font-weight: 500;
   background: var(--bg-card);
-  border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow);
+  background: var(--glass-bg-raised);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border-color);
+  box-shadow: var(--shadow), var(--glass-inset);
   pointer-events: none;
   max-width: 340px;
   animation: drop 0.24s var(--ease-out);

@@ -13,9 +13,13 @@
   flex: 0 0 320px;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border-color);
   border-radius: var(--radius);
   background: var(--bg-card);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-inset);
   overflow: hidden;
 }
 
@@ -173,9 +177,13 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border-color);
   border-radius: var(--radius);
   background: var(--bg-card);
+  background: var(--glass-bg-raised);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-inset);
   overflow: hidden;
 }
 
@@ -257,10 +265,13 @@
 
 .glass-chat-composer {
   position: relative;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--glass-border-color);
   padding: 12px;
   flex-shrink: 0;
   background: var(--bg-card);
+  background: var(--glass-bg-raised);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
 }
 
 .glass-chat-composer-row {
@@ -345,10 +356,13 @@
   max-height: 200px;
   overflow-y: auto;
   padding: 8px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--glass-border-color);
   border-radius: var(--radius);
   background: var(--bg-card);
-  box-shadow: var(--shadow);
+  background: var(--glass-bg-raised);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--shadow), var(--glass-inset);
   z-index: 10;
 }
 

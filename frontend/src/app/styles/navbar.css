@@ -91,9 +91,12 @@
   min-width: 180px;
   padding: 6px;
   background: var(--bg-card);
-  border: 1px solid var(--border-strong);
+  background: var(--glass-bg-raised);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border-color);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow), var(--glass-inset);
   overflow: hidden;
   animation: drop 0.18s var(--ease-out);
 }
