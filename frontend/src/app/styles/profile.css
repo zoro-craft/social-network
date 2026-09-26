@@ -18,7 +18,7 @@
   max-width: 1100px;
   width: 100%;
   display: flex;
-  gap: 1.75rem;
+  gap: 1.5rem;
   flex-wrap: wrap;
 }
 
@@ -41,7 +41,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 1.5rem;
 }
 
 /* ---------- Cards ---------- */
@@ -53,11 +53,13 @@
 }
 
 .profile-wrapper .glass-card:hover {
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow), var(--glass-glow);
+  border-color: var(--accent-border);
+  box-shadow:
+    var(--shadow),
+    0 0 30px -8px rgba(198, 161, 95, 0.28);
 }
 
-/* Sidebar identity card */
+/* Sidebar identity card gets a touch more breathing room */
 .profile-wrapper .left-sidebar {
   padding: 2rem 1.5rem;
 }
@@ -66,10 +68,10 @@
 
 .user-name,
 .left-sidebar h2 {
-  font-family: var(--font-sans);
+  font-family: var(--font-serif);
   font-size: 1.55rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  letter-spacing: -0.015em;
   line-height: 1.25;
   margin: 4px 0 0;
   overflow-wrap: break-word;
@@ -89,14 +91,14 @@
   max-width: 100%;
 }
 
-/* "Private / Public Profile" — pill badge */
+/* "Private / Public Profile" line — subtle pill badge */
 .left-sidebar p:nth-of-type(2) {
   display: inline-block;
   margin: 2px 0 0.75rem;
   padding: 4px 12px;
   border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
   color: var(--text-secondary);
   font-size: 0.7rem;
   font-weight: 600;
@@ -123,14 +125,14 @@
 
 /* Avatar ring */
 .left-sidebar img {
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   box-shadow: var(--shadow-sm);
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .left-sidebar img:hover {
   border-color: var(--accent-border);
-  box-shadow: var(--shadow), var(--glass-glow);
+  box-shadow: var(--shadow);
 }
 
 /* ---------- Stats (followers / following / joined) ---------- */
@@ -152,7 +154,7 @@
 }
 
 .stat-item:hover {
-  border-color: var(--border-strong);
+  border-color: var(--accent-border);
   box-shadow: var(--shadow);
 }
 
@@ -160,13 +162,13 @@
   color: var(--text-muted);
   font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   margin: 0 0 6px;
 }
 
 .stat-item p:last-child {
-  font-family: var(--font-mono);
+  font-family: var(--font-serif);
   font-size: 1.6rem;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -174,18 +176,18 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Legacy hooks */
+/* Legacy hooks kept in sync */
 .stat-label {
   color: var(--text-muted);
   font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   margin: 0;
 }
 
 .stat-value {
-  font-family: var(--font-mono);
+  font-family: var(--font-serif);
   font-size: 1.6rem;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -197,9 +199,9 @@
 
 .action-btn {
   width: 100%;
-  padding: 0.5rem 1.1rem;
+  padding: 11px 18px;
   margin-top: 12px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
@@ -209,12 +211,12 @@
 }
 
 .action-btn:active:not(:disabled) {
-  transform: scale(0.97);
+  transform: translateY(1px);
 }
 
 .action-btn:focus-visible {
   outline: none;
-  box-shadow: var(--shadow-focus);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .action-btn:disabled {
@@ -229,22 +231,19 @@
   background: var(--accent);
   border-color: var(--accent);
   color: var(--on-accent);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .btn-follow:hover:not(:disabled) {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
   color: var(--on-accent);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 0 20px -4px rgba(110, 107, 240, 0.35);
 }
 
-/* Unfollow — danger on hover */
+/* Unfollow — danger affordance on hover */
 .btn-unfollow {
-  background: var(--bg-surface);
+  background: var(--bg-elevated);
   color: var(--text-primary);
-  border-color: var(--border);
+  border-color: var(--border-strong);
 }
 
 .btn-unfollow:hover:not(:disabled) {
@@ -253,7 +252,7 @@
   border-color: var(--danger-border);
 }
 
-/* Pending */
+/* Pending / following-request */
 .btn-pending {
   background: var(--warning-soft);
   color: var(--warning);
@@ -268,14 +267,14 @@
 
 /* Edit profile */
 .btn-edit {
-  background: var(--bg-surface);
+  background: var(--bg-elevated);
   color: var(--text-primary);
-  border-color: var(--border);
+  border-color: var(--border-strong);
 }
 
 .btn-edit:hover:not(:disabled) {
   background: var(--bg-hover);
-  color: var(--accent);
+  color: var(--accent-hover);
   border-color: var(--border-strong);
 }
 
@@ -296,7 +295,7 @@
   display: block;
   text-decoration: none;
   cursor: pointer;
-  background: var(--bg-surface);
+  background: var(--bg-elevated);
   border: 1px solid var(--border);
   transition: border-color var(--transition), box-shadow var(--transition);
 }
@@ -313,8 +312,9 @@
   display: block;
 }
 
-/* ---------- Text-only post tile — "quote card" ---------- */
+/* ---------- Text-only post tile (no image) — "quote card" ---------- */
 
+/* Tiles holding only text get a warm gold wash + surface grain */
 .post-tile:has(> .placeholder-text) {
   display: flex;
   align-items: center;
@@ -322,22 +322,26 @@
   background:
     linear-gradient(
       160deg,
-      rgba(110, 107, 240, 0.08) 0%,
-      rgba(110, 107, 240, 0.02) 40%,
-      transparent 65%
+      rgba(198, 161, 95, 0.1) 0%,
+      rgba(198, 161, 95, 0.03) 40%,
+      rgba(198, 161, 95, 0) 65%
     ),
+    radial-gradient(120% 90% at 85% -10%, rgba(198, 161, 95, 0.12), transparent 55%),
+    var(--surface-grain),
     var(--bg-card);
   border-color: var(--accent-border);
+  box-shadow: var(--hairline);
   transition: border-color var(--transition), box-shadow var(--transition),
     transform var(--duration) var(--ease-out);
 }
 
+/* Oversized decorative quote mark, tucked into the top-left corner */
 .post-tile:has(> .placeholder-text)::before {
   content: "\201C";
   position: absolute;
   top: 2px;
   left: 14px;
-  font-family: Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 4.4rem;
   line-height: 1;
   color: var(--accent);
@@ -347,6 +351,7 @@
   transition: opacity var(--transition), transform var(--duration) var(--ease-out);
 }
 
+/* Fine inner frame in soft gold */
 .post-tile:has(> .placeholder-text)::after {
   content: "";
   position: absolute;
@@ -357,11 +362,12 @@
   transition: border-color var(--transition);
 }
 
+/* Title typography — serif, italic, centered like an excerpt */
 .placeholder-text {
   position: relative;
   z-index: 1;
   color: var(--text-primary);
-  font-family: var(--font-sans);
+  font-family: var(--font-serif);
   font-style: italic;
   font-size: 0.95rem;
   line-height: 1.55;
@@ -377,11 +383,12 @@
   transition: color var(--transition);
 }
 
+/* Hover: gentle lift, gold glow, the quote mark brightens */
 .post-tile:has(> .placeholder-text):hover {
   transform: translateY(-3px);
   border-color: var(--accent);
   box-shadow: var(--shadow), 0 0 0 1px var(--accent-soft),
-    0 14px 30px -16px rgba(110, 107, 240, 0.35);
+    0 14px 30px -16px rgba(198, 161, 95, 0.5);
 }
 
 .post-tile:has(> .placeholder-text):hover::before {
@@ -418,8 +425,8 @@
 .form-input,
 .form-file {
   background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
   color: var(--text-primary);
   padding: 11px 14px;
   font-family: inherit;
@@ -430,21 +437,21 @@
 }
 
 .form-input:hover:not(:focus) {
-  border-color: var(--border-strong);
+  border-color: var(--text-muted);
 }
 
 .form-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: var(--shadow-focus);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .form-file::file-selector-button {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
   color: var(--text-primary);
   padding: 8px 16px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   cursor: pointer;
   margin-right: 12px;
   font-family: inherit;
@@ -460,10 +467,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg-surface);
+  background: var(--bg-elevated);
   border: 1px solid var(--border);
   padding: 12px 14px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   cursor: pointer;
   color: var(--text-secondary);
   font-size: 14px;
@@ -516,8 +523,8 @@
   align-items: center;
   gap: 12px;
   padding: 8px 10px;
-  margin: 0;
-  border-radius: var(--radius-sm);
+  margin: 0; /* neutralize .user-handle margin reused on rows */
+  border-radius: var(--radius-md);
   transition: background var(--transition);
 }
 
@@ -526,7 +533,7 @@
 }
 
 .modal-user-row:hover .modal-user-name {
-  color: var(--accent);
+  color: var(--accent-hover);
 }
 
 .modal-user-name {

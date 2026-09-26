@@ -1,14 +1,9 @@
-/* ═══════════════════════════════════════════════════════════════
-   COMMENTS — heading, form, list, cards
-   ═══════════════════════════════════════════════════════════════ */
-
 .glass-comments-heading {
   margin: 0 0 16px;
-  font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 600;
   color: var(--text-primary);
-  letter-spacing: -0.02em;
 }
 
 .glass-comment-form {
@@ -38,16 +33,21 @@
 
 .glass-comment-card {
   background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  background: var(--glass-bg-raised);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border-color);
+  border-radius: var(--radius);
   padding: 14px 16px;
+  box-shadow: var(--glass-inset);
   transition: border-color var(--transition), box-shadow var(--transition);
-  animation: fadeUp 0.2s var(--ease-out) both;
 }
 
 .glass-comment-card:hover {
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-sm);
+  border-color: var(--accent-border);
+  box-shadow:
+    var(--glass-inset),
+    var(--glass-glow);
 }
 
 .glass-comment-header {
@@ -75,9 +75,7 @@
 
 .glass-comment-date {
   margin: 0;
-  font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 500;
   color: var(--text-muted);
   white-space: nowrap;
 }
