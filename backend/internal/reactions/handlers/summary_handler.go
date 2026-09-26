@@ -1,23 +1,24 @@
-package reactions
+package handlers
 
 import (
 	"database/sql"
 
 	"zone/internal/database"
+	"zone/internal/reactions/models"
 )
 
-func getReactionSummary(postID, userID int) (Reaction, error) {
-	var resp Reaction
+func getReactionSummary(postID, userID int) (models.Reaction, error) {
+	var resp models.Reaction
 	resp.PostID = postID
 
-err := database.Database.QueryRow(`
+	err := database.Database.QueryRow(`
     SELECT
         COUNT(CASE WHEN is_like = 1 THEN 1 END),
         COUNT(CASE WHEN is_like = 0 THEN 1 END)
     FROM post_reactions
     WHERE post_id = ?`,
-    postID,
-).Scan(&resp.LikeCount, &resp.DislikeCount)
+		postID,
+	).Scan(&resp.LikeCount, &resp.DislikeCount)
 	if err != nil {
 		return resp, err
 	}

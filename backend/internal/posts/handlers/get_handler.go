@@ -1,4 +1,4 @@
-package posts
+package handlers
 
 import (
 	"net/http"
@@ -6,36 +6,10 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	"zone/internal/posts/models"
+	"zone/internal/posts/repositories"
 	"zone/internal/utils"
 )
-
-const postSelect = `
-	SELECT
-		p.id,
-		p.title,
-		p.content,
-		COALESCE(p.image, ''),
-		p.privacy,
-		p.group_id,
-		p.user_id,
-		u.full_name,
-		p.created_at
-`
-
-const reactionSelect = `,
-	(SELECT COUNT(*)
-	 FROM post_reactions
-	 WHERE post_id = p.id AND is_like = 1) AS like_count,
-
-	(SELECT COUNT(*)
-	 FROM post_reactions
-	 WHERE post_id = p.id AND is_like = 0) AS dislike_count
-`
-
-const fromPosts = `
-	FROM posts p
-	JOIN users u ON p.user_id = u.id
-`
 
 func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -71,7 +45,7 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Home posts + reactions
-	query := postSelect + reactionSelect + fromPosts + " WHERE p.group_id IS NULL AND (" + visibleCondition + ")"
+	query := repositories.PostSelect + repositories.ReactionSelect + repositories.FromPosts + " WHERE p.group_id IS NULL AND (" + repositories.VisibleCondition + ")"
 
 	args := []interface{}{viewerID, viewerID, viewerID, viewerID}
 
@@ -90,10 +64,10 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	result := []Post{}
+	result := []models.Post{}
 
 	for rows.Next() {
-		var p Post
+		var p models.Post
 
 		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.FullName, &p.CreatedAt, &p.LikeCount, &p.DislikeCount); err != nil {
 			utils.HandleError(w, http.StatusInternalServerError, "Error scanning post")
@@ -119,54 +93,6 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 	utils.RespondJSON(w, http.StatusOK, result)
 }
 
-func GetPostsByUser(userID, viewerID int) ([]Post, error) {
-	query := postSelect + fromPosts + " WHERE p.user_id = ? AND p.group_id IS NULL AND " + visibleCondition + " ORDER BY p.id DESC"
-
-	rows, err := database.Database.Query(query, userID, viewerID, viewerID, viewerID, viewerID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	result := []Post{}
-
-	for rows.Next() {
-		var p Post
-
-		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.FullName, &p.CreatedAt); err != nil {
-			return nil, err
-		}
-
-		result = append(result, p)
-	}
-
-	return result, rows.Err()
-}
-
-func GetPostsByGroup(groupID int) ([]Post, error) {
-	query := postSelect + reactionSelect + fromPosts + " WHERE p.group_id = ? ORDER BY p.id DESC"
-
-	rows, err := database.Database.Query(query, groupID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	result := []Post{}
-
-	for rows.Next() {
-		var p Post
-
-		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.FullName, &p.CreatedAt, &p.LikeCount, &p.DislikeCount); err != nil {
-			return nil, err
-		}
-
-		result = append(result, p)
-	}
-
-	return result, rows.Err()
-}
-
 func GetPostsByGroupAPI(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		utils.HandleError(w, http.StatusMethodNotAllowed, "Method not allowed")
@@ -190,7 +116,7 @@ func GetPostsByGroupAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts, err := GetPostsByGroup(groupID)
+	posts, err := repositories.GetPostsByGroup(groupID)
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to load group posts")
 		return

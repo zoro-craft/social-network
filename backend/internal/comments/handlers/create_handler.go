@@ -1,4 +1,4 @@
-package comments
+package handlers
 
 import (
 	"net/http"
@@ -6,8 +6,9 @@ import (
 	"strings"
 
 	"zone/internal/auth"
+	"zone/internal/comments/models"
 	"zone/internal/database"
-	"zone/internal/posts"
+	"zone/internal/posts/repositories"
 	"zone/internal/utils"
 )
 
@@ -29,7 +30,7 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !posts.CanViewPost(postID, userID) {
+	if !repositories.CanViewPost(postID, userID) {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid post")
 		return
 	}
@@ -60,7 +61,7 @@ func CreateCommentAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := Comment{
+	c := models.Comment{
 		PostID:  postID,
 		GroupID: groupID,
 		UserID:  userID,

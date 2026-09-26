@@ -1,4 +1,4 @@
-package events
+package handlers
 
 import (
 	"database/sql"
@@ -7,6 +7,7 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	"zone/internal/events/models"
 	"zone/internal/utils"
 )
 
@@ -22,7 +23,7 @@ func VoteEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req voteRequest
+	var req models.VoteRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid request body")
 		return
@@ -98,7 +99,7 @@ func VoteEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	e := Event{
+	e := models.Event{
 		ID:           req.EventID,
 		VoteCounts:   voteCounts,
 		UserResponse: userResponse,
