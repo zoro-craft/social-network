@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"zone/internal/auth"
-	"zone/internal/database"
-	"zone/internal/models"
+	followersrepo "zone/internal/followers/repositories"
 	"zone/internal/posts"
+	profilerepo "zone/internal/profile/repositories"
 	"zone/internal/utils"
 )
 
@@ -22,10 +22,7 @@ func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
 
 	requesterID, _ := auth.GetUserID(r)
 
-	var user models.User
-	err = database.Database.QueryRow(`SELECT id, email, first_name, last_name, COALESCE(date_of_birth, ''), COALESCE(nickname, ''), COALESCE(avatar, ''), COALESCE(about_me, ''), is_private, created_at FROM users WHERE id = ?`, profileID).Scan(
-		&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.DateOfBirth, &user.Nickname, &user.Avatar, &user.AboutMe, &user.IsPrivate, &user.CreatedAt,
-	)
+	user, err := profilerepo.GetUserByID(profileID)
 	if err != nil {
 		utils.HandleError(w, http.StatusNotFound, "User not found")
 		return
@@ -35,8 +32,7 @@ func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
 	if requesterID == user.ID {
 		relation = "self"
 	} else if requesterID != 0 {
-		var status string
-		err := database.Database.QueryRow(`SELECT status FROM followers WHERE follower_id = ? AND followee_id = ?`, requesterID, user.ID).Scan(&status)
+		status, err := followersrepo.GetFollowStatus(requesterID, user.ID)
 		if err == nil {
 			relation = status
 		}
@@ -59,15 +55,8 @@ func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	var followersCount, followingCount int
-	if err := database.Database.QueryRow(`
-		SELECT
-			COALESCE(SUM(followee_id = ?), 0),
-			COALESCE(SUM(follower_id = ?), 0)
-		FROM followers
-		WHERE status = 'accepted' AND (followee_id = ? OR follower_id = ?)`,
-		user.ID, user.ID, user.ID, user.ID,
-	).Scan(&followersCount, &followingCount); err != nil {
+	followersCount, followingCount, err := followersrepo.GetFollowCounts(user.ID)
+	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Database error")
 		return
 	}

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"zone/internal/utils"
 
-	"zone/internal/database"
+	"zone/internal/auth/repositories"
 	"zone/internal/middleware"
 )
 
@@ -25,11 +25,7 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var username, email, firstName, lastName, avatar string
-	err = database.Database.QueryRow(
-		"SELECT COALESCE(nickname, ''), email, COALESCE(first_name, ''), COALESCE(last_name, ''), COALESCE(avatar, '') FROM users WHERE id = ?",
-		userID,
-	).Scan(&username, &email, &firstName, &lastName, &avatar)
+	profile, err := repositories.ProfileByID(userID)
 	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "User not found or database error.")
 		return
@@ -39,11 +35,11 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 		"status": "success",
 		"user": map[string]interface{}{
 			"id":         userID,
-			"nickname":   username,
-			"email":      email,
-			"first_name": firstName,
-			"last_name":  lastName,
-			"avatar":     avatar,
+			"nickname":   profile.Nickname,
+			"email":      profile.Email,
+			"first_name": profile.FirstName,
+			"last_name":  profile.LastName,
+			"avatar":     profile.Avatar,
 		},
 	})
 }

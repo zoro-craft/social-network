@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,6 +10,7 @@ import (
 	"unicode/utf8"
 	"zone/internal/utils"
 
+	"zone/internal/auth/repositories"
 	"zone/internal/database"
 
 	"golang.org/x/crypto/bcrypt"
@@ -71,14 +71,14 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
-	var existingID int
-	err = tx.QueryRow("SELECT id FROM users WHERE email = ?", email).Scan(&existingID)
-	if err == nil {
-		utils.HandleError(w, http.StatusConflict, "Email already exists")
-		return
-	} else if err != sql.ErrNoRows {
+	emailExists, err := repositories.EmailExists(tx, email)
+	if err != nil {
 		log.Println("Database query error checking existing email:", err)
 		utils.HandleError(w, http.StatusInternalServerError, "Database error, please try again")
+		return
+	}
+	if emailExists {
+		utils.HandleError(w, http.StatusConflict, "Email already exists")
 		return
 	}
 
@@ -118,7 +118,16 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = createUser(tx, email, string(hashedPassword), dob.Format("2006-01-02"), firstName, lastName, nicknameValue, aboutMe, avatarPath)
+	err = repositories.CreateUser(tx, repositories.UserInsert{
+		Email:          email,
+		HashedPassword: string(hashedPassword),
+		DateOfBirth:    dob.Format("2006-01-02"),
+		FirstName:      firstName,
+		LastName:       lastName,
+		Nickname:       nicknameValue,
+		AboutMe:        aboutMe,
+		AvatarPath:     avatarPath,
+	})
 	if err != nil {
 		log.Println("Database insert error:", err)
 		utils.HandleError(w, http.StatusInternalServerError, "Could not create account")
@@ -181,32 +190,7 @@ func ValidatePassword(password string) error {
 	return nil
 }
 
+// checks nickname availability
 func ValidateNickname(nickname string, excludeID int) (bool, error) {
-	var query string
-	var args []any
-	if excludeID > 0 {
-		query = "SELECT id FROM users WHERE nickname = ? AND id != ?"
-		args = []any{nickname, excludeID}
-	} else {
-		query = "SELECT id FROM users WHERE nickname = ?"
-		args = []any{nickname}
-	}
-
-	var existingID int
-	err := database.Database.QueryRow(query, args...).Scan(&existingID)
-	if err == nil {
-		return true, nil
-	}
-	if err != sql.ErrNoRows {
-		return false, err
-	}
-	return false, nil
-}
-
-func createUser(tx *sql.Tx, email, hashedPassword, dob, firstName, lastName string, nickname any, aboutMe, avatarPath string) error {
-	_, err := tx.Exec(
-		"INSERT INTO users (email, password, date_of_birth, first_name, last_name, nickname, about_me, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-		email, hashedPassword, dob, firstName, lastName, nickname, aboutMe, avatarPath,
-	)
-	return err
+	return repositories.NicknameTaken(nickname, excludeID)
 }

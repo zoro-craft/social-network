@@ -9,6 +9,7 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	followersrepo "zone/internal/followers/repositories"
 	"zone/internal/groups/repositories"
 	notificationservice "zone/internal/notifications/services"
 	"zone/internal/utils"
@@ -55,16 +56,7 @@ func toggleFollow(followerID, followeeID int) (string, error) {
 	}
 	defer tx.Rollback()
 
-	var isPrivate bool
-	var status sql.NullString
-	err = tx.QueryRow(`
-        SELECT COALESCE(u.is_private, 0), f.status
-        FROM users u
-        LEFT JOIN followers f
-            ON f.followee_id = u.id AND f.follower_id = ?
-        WHERE u.id = ?`,
-		followerID, followeeID,
-	).Scan(&isPrivate, &status)
+	isPrivate, hasStatus, prevStatus, err := followersrepo.GetFollowTargetState(tx, followerID, followeeID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return "", errUserNotFound
 	}
@@ -74,35 +66,26 @@ func toggleFollow(followerID, followeeID int) (string, error) {
 
 	var newStatus string
 	switch {
-	case !status.Valid:
+	case !hasStatus:
 		newStatus = "accepted"
 		if isPrivate {
 			newStatus = "pending"
 		}
-		_, err = tx.Exec(
-			"INSERT INTO followers (follower_id, followee_id, status) VALUES (?, ?, ?)",
-			followerID, followeeID, newStatus,
-		)
+		err = followersrepo.CreateFollow(tx, followerID, followeeID, newStatus)
 
-	case status.String == "accepted", isPrivate:
+	case prevStatus == "accepted", isPrivate:
 		newStatus = "none"
-		_, err = tx.Exec(
-			"DELETE FROM followers WHERE follower_id = ? AND followee_id = ?",
-			followerID, followeeID,
-		)
+		err = followersrepo.DeleteFollow(tx, followerID, followeeID)
 
 	default:
 		newStatus = "accepted"
-		_, err = tx.Exec(
-			"UPDATE followers SET status = 'accepted' WHERE follower_id = ? AND followee_id = ? AND status = 'pending'",
-			followerID, followeeID,
-		)
+		err = followersrepo.AcceptPendingFollow(tx, followerID, followeeID)
 	}
 	if err != nil {
 		return "", err
 	}
 
-if err := tx.Commit(); err != nil {
+	if err := tx.Commit(); err != nil {
 		return "", err
 	}
 
@@ -111,7 +94,7 @@ if err := tx.Commit(); err != nil {
 		_, _ = notificationservice.Notifier.NotifyFollowRequest(followeeID, followerID, message)
 	}
 
-	if newStatus == "none" && status.String == "pending" {
+	if newStatus == "none" && prevStatus == "pending" {
 		_ = notificationservice.Notifier.RemoveFollowRequestNotification(followeeID, followerID)
 	}
 

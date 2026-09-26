@@ -68,7 +68,7 @@ export default function LoginPage() {
           </button>
 
           <div className="glass-footer">
-            Don't have an account?
+            Don&apos;t have an account?
             <Link href="/register">Register</Link>
           </div>
         </form>

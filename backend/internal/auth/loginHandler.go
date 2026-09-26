@@ -11,6 +11,7 @@ import (
 	"time"
 	"zone/internal/utils"
 
+	"zone/internal/auth/repositories"
 	"zone/internal/database"
 
 	"golang.org/x/crypto/bcrypt"
@@ -25,7 +26,7 @@ type LoginReq struct {
 	Password string `json:"password"`
 }
 
-// creates a random 32 byte session token.
+// creates random session token
 func generateSessionToken() string {
 	b := make([]byte, 32)
 	_, err := rand.Read(b)
@@ -73,16 +74,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
-	var dbID int
-	var dbUsername string
-	var dbPasswordHash string
-	var discardEmail string
-
-	err = tx.QueryRow(`
-        SELECT id, password, COALESCE(nickname, ''), email FROM users 
-        WHERE email = ? OR (nickname = ? AND nickname != '')
-    `, identify, identify).Scan(&dbID, &dbPasswordHash, &dbUsername, &discardEmail)
-
+	creds, err := repositories.CredentialsByIdentifier(tx, identify)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			utils.HandleError(w, http.StatusUnauthorized, "Invalid credentials")
@@ -92,30 +84,27 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify password
-	err = bcrypt.CompareHashAndPassword([]byte(dbPasswordHash), []byte(password))
+	// verify password
+	err = bcrypt.CompareHashAndPassword([]byte(creds.Password), []byte(password))
 	if err != nil {
 		utils.HandleError(w, http.StatusUnauthorized, "Invalid credentials")
 		return
 	}
 
-	// Clear old sessions
-	deleteQuery := "DELETE FROM user_sessions WHERE user_id = ?"
-	_, err = tx.Exec(deleteQuery, dbID)
-	if err != nil {
+	// clear old sessions
+	if err := repositories.DeleteUserSessions(tx, creds.ID); err != nil {
 		log.Println("Error deleting old sessions:", err)
 	}
 
-	// Create new session token
+	// create new session token
 	sessionToken := generateSessionToken()
 	if sessionToken == "" {
 		utils.HandleError(w, http.StatusInternalServerError, "Server error")
 		return
 	}
 	expirationTime := time.Now().Add(SessionDuration)
-	
-	_, err = tx.Exec("INSERT INTO user_sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)", dbID, sessionToken, expirationTime)
-	if err != nil {
+
+	if err := repositories.CreateSession(tx, creds.ID, sessionToken, expirationTime); err != nil {
 		log.Println("Error saving session to DB:", err)
 		utils.HandleError(w, http.StatusInternalServerError, "Error creating session, try again later")
 		return
@@ -126,7 +115,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set session cookie
+	// set session cookie
 	newCookie := http.Cookie{
 		Name:     "session_token",
 		Value:    sessionToken,

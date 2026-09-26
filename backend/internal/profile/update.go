@@ -6,10 +6,11 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	followersrepo "zone/internal/followers/repositories"
+	profilerepo "zone/internal/profile/repositories"
 	"zone/internal/utils"
 )
 
@@ -47,10 +48,8 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var emailTaken bool
-	if err := database.Database.QueryRow(
-		"SELECT EXISTS(SELECT 1 FROM users WHERE email = ? AND id != ?)", email, userID,
-	).Scan(&emailTaken); err != nil {
+	emailTaken, err := profilerepo.EmailTakenByOther(email, userID)
+	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Database error")
 		return
 	}
@@ -92,8 +91,8 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
-	var wasPrivate bool
-	if err := tx.QueryRow("SELECT is_private FROM users WHERE id = ?", userID).Scan(&wasPrivate); err != nil {
+	wasPrivate, err := profilerepo.GetPrivacyFlag(tx, userID)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			utils.HandleError(w, http.StatusNotFound, "User not found")
 			return
@@ -102,24 +101,25 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := tx.Exec(`
-		UPDATE users SET
-			first_name = ?, last_name = ?, email = ?, date_of_birth = ?,
-			nickname = CASE WHEN ? <> '' THEN ? ELSE nickname END,
-			about_me = ?, is_private = ?,
-			avatar = CASE WHEN ? THEN ? ELSE avatar END
-		WHERE id = ?`,
-		firstName, lastName, email, dob,
-		nickname, nickname, aboutMe, isPrivate,
-		updateAvatar, avatarPath, userID,
-	); err != nil {
+	if err := profilerepo.UpdateProfile(tx, profilerepo.ProfileUpdate{
+		UserID:       userID,
+		FirstName:    firstName,
+		LastName:     lastName,
+		Email:        email,
+		DateOfBirth:  dob,
+		Nickname:     nickname,
+		AboutMe:      aboutMe,
+		IsPrivate:    isPrivate,
+		UpdateAvatar: updateAvatar,
+		AvatarPath:   avatarPath,
+	}); err != nil {
 		log.Println("update profile:", err)
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to update profile")
 		return
 	}
 
 	if wasPrivate && !isPrivate {
-		if err := acceptPendingFollowers(tx, userID); err != nil {
+		if err := followersrepo.AcceptPendingFollowers(tx, userID); err != nil {
 			log.Println("accept pending followers:", err)
 			utils.HandleError(w, http.StatusInternalServerError, "Failed to update profile")
 			return
@@ -132,63 +132,4 @@ func EditProfileAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": "Profile updated successfully"})
-}
-
-func acceptPendingFollowers(tx *sql.Tx, userID int) error {
-	type newFollower struct {
-		id       int
-		fullName string
-	}
-
-	rows, err := tx.Query(`
-		SELECT f.follower_id, u.full_name
-		FROM followers f
-		JOIN users u ON u.id = f.follower_id
-		WHERE f.followee_id = ? AND f.status = 'pending'`, userID)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	var followers []newFollower
-	for rows.Next() {
-		var nf newFollower
-		if err := rows.Scan(&nf.id, &nf.fullName); err != nil {
-			return err
-		}
-		followers = append(followers, nf)
-	}
-	if err := rows.Err(); err != nil {
-		return err
-	}
-
-	if _, err := tx.Exec(
-		"UPDATE followers SET status = 'accepted' WHERE followee_id = ? AND status = 'pending'",
-		userID,
-	); err != nil {
-		return err
-	}
-
-	if _, err := tx.Exec(
-		"DELETE FROM notifications WHERE user_id = ? AND type = 'follow_request'",
-		userID,
-	); err != nil {
-		return err
-	}
-
-	for _, f := range followers {
-		name := strings.TrimSpace(f.fullName)
-		if name == "" {
-			name = "Someone"
-		}
-		if _, err := tx.Exec(`
-			INSERT INTO notifications (user_id, actor_id, type, ref_id, message, is_read, created_at)
-			VALUES (?, ?, 'new_follower', ?, ?, 0, ?)`,
-			userID, f.id, f.id, name+" started following you", time.Now().UnixMilli(),
-		); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

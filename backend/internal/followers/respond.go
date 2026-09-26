@@ -1,12 +1,12 @@
 package followers
 
 import (
-	"database/sql"
 	"net/http"
 	"strconv"
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	followersrepo "zone/internal/followers/repositories"
 	notificationservice "zone/internal/notifications/services"
 	"zone/internal/utils"
 )
@@ -24,7 +24,7 @@ func RespondRequestAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-action := r.PathValue("action")
+	action := r.PathValue("action")
 	if action != "accept" && action != "decline" {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid action")
 		return
@@ -37,17 +37,11 @@ action := r.PathValue("action")
 	}
 	defer tx.Rollback()
 
-	var result sql.Result
+	var rowsAffected int64
 	if action == "accept" {
-		result, err = tx.Exec(
-			"UPDATE followers SET status = 'accepted' WHERE follower_id = ? AND followee_id = ? AND status = 'pending'",
-			followerID, followeeID,
-		)
+		rowsAffected, err = followersrepo.AcceptFollowRequest(tx, followerID, followeeID)
 	} else {
-		result, err = tx.Exec(
-			"DELETE FROM followers WHERE follower_id = ? AND followee_id = ? AND status = 'pending'",
-			followerID, followeeID,
-		)
+		rowsAffected, err = followersrepo.DeclineFollowRequest(tx, followerID, followeeID)
 	}
 
 	if err != nil {
@@ -55,8 +49,7 @@ action := r.PathValue("action")
 		return
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil || rowsAffected == 0 {
+	if rowsAffected == 0 {
 		utils.HandleError(w, http.StatusNotFound, "Request not found")
 		return
 	}
