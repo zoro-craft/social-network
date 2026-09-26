@@ -1,4 +1,4 @@
-package events
+package handlers
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	"zone/internal/events/models"
 	"zone/internal/groups/repositories"
 	notificationservice "zone/internal/notifications/services"
 	"zone/internal/utils"
@@ -24,7 +25,7 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req createEventRequest
+	var req models.CreateEventRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid request body")
 		return
@@ -50,38 +51,38 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "event date is required")
 		return
 	}
-		if req.EventTime == "" {
+	if req.EventTime == "" {
 		utils.HandleError(w, http.StatusBadRequest, "event time is required")
 		return
 	}
 
 	if _, err := time.Parse("15:04", req.EventTime); err != nil {
-	utils.HandleError(w, http.StatusBadRequest, "invalid event time format")
-	return
+		utils.HandleError(w, http.StatusBadRequest, "invalid event time format")
+		return
 	}
 	if _, err := time.Parse("2006-01-02", req.EventDate); err != nil {
-	utils.HandleError(w, http.StatusBadRequest, "invalid event date format")
-	return
+		utils.HandleError(w, http.StatusBadRequest, "invalid event date format")
+		return
 	}
 
 	maxDate := time.Now().AddDate(10, 0, 0).Format("2006-01-02")
-	nowTime:=time.Now().Format("15:04")
+	nowTime := time.Now().Format("15:04")
 	today := time.Now().Format("2006-01-02")
 
 	if req.EventDate == today && req.EventTime < nowTime {
-	utils.HandleError(w, http.StatusBadRequest, "event time cannot be in the past")
-	return
+		utils.HandleError(w, http.StatusBadRequest, "event time cannot be in the past")
+		return
 	}
 	if req.EventDate > maxDate {
-	utils.HandleError(w, http.StatusBadRequest, "event date cannot be more than 10 years in the future")
-	return
+		utils.HandleError(w, http.StatusBadRequest, "event date cannot be more than 10 years in the future")
+		return
 	}
-	
+
 	if req.EventDate < today {
-	utils.HandleError(w, http.StatusBadRequest, "event date cannot be in the past")
-	return
+		utils.HandleError(w, http.StatusBadRequest, "event date cannot be in the past")
+		return
 	}
-	
+
 	if req.EventTime == "" {
 		utils.HandleError(w, http.StatusBadRequest, "event time is required")
 		return
@@ -125,7 +126,7 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	// Fan out an event_created notification to every group member except the creator.
 	_ = notificationservice.Notifier.NotifyGroupEvent(req.GroupID, eventID, userID, req.Title, repositories.GetUserFullName(userID))
 
-	utils.RespondJSON(w, http.StatusCreated, Event{
+	utils.RespondJSON(w, http.StatusCreated, models.Event{
 		ID:          eventID,
 		GroupID:     req.GroupID,
 		Title:       req.Title,

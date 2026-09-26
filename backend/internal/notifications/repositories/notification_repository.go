@@ -46,8 +46,7 @@ const selectColumns = `
 	SELECT n.id, n.user_id, n.actor_id, n.type, n.ref_id, n.message, n.is_read, n.created_at
 	FROM notifications n`
 
-// InsertFollowRequest persists a follow_request notification for (recipient, requester),
-// reusing an existing row (reset to unread, refreshed) so repeated sends never duplicate.
+// InsertFollowRequest persists a follow_request notification for (recipient, requester), reusing the existing row.
 func (r NotificationRepository) InsertFollowRequest(recipientID, requesterID int, message string) (models.Notification, error) {
 	createdAt := time.Now().UnixMilli()
 	var id int
@@ -97,9 +96,7 @@ func (r NotificationRepository) InsertFollowRequest(recipientID, requesterID int
 	return row, nil
 }
 
-// ListUnread returns up to 10 unread notifications for a user, newest first.
-// Keyset cursor on id: cursorID=0 means the first page. hasMore reports whether
-// more unread rows exist beyond the returned page.
+// ListUnread returns up to 10 unread notifications for a user, newest first, keyset-paginated on id.
 func (r NotificationRepository) ListUnread(userID int, cursorID int) ([]models.Notification, bool, error) {
 	query := selectColumns + " WHERE n.user_id = ? AND n.is_read = 0"
 	args := []any{userID}
@@ -184,8 +181,7 @@ func (r NotificationRepository) MarkReadByID(userID, id int) error {
 	return nil
 }
 
-// DeleteOnAction deletes a notification by (user, type, ref_id) and returns its id,
-// or 0 when no row matches.
+// DeleteOnAction deletes a notification by (user, type, ref_id) and returns its id, or 0 when absent.
 func (r NotificationRepository) DeleteOnAction(userID int, notifType string, refID int) (int, error) {
 	var id int
 	err := database.Database.QueryRow(

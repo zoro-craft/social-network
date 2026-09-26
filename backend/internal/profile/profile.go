@@ -6,7 +6,8 @@ import (
 
 	"zone/internal/auth"
 	followersrepo "zone/internal/followers/repositories"
-	"zone/internal/posts"
+	postmodels "zone/internal/posts/models"
+	postrepositories "zone/internal/posts/repositories"
 	profilerepo "zone/internal/profile/repositories"
 	"zone/internal/utils"
 )
@@ -42,16 +43,16 @@ func GetProfileAPI(w http.ResponseWriter, r *http.Request) {
 		user.Email = ""
 	}
 
-	var userPosts []posts.Post
+	var userPosts []postmodels.Post
 	if user.IsPrivate && relation != "self" && relation != "accepted" {
 		user.DateOfBirth = ""
 		user.AboutMe = ""
-		userPosts = []posts.Post{}
+		userPosts = []postmodels.Post{}
 	} else {
 		var err error
-		userPosts, err = posts.GetPostsByUser(profileID, requesterID)
+		userPosts, err = postrepositories.GetPostsByUser(profileID, requesterID)
 		if err != nil || userPosts == nil {
-			userPosts = []posts.Post{}
+			userPosts = []postmodels.Post{}
 		}
 	}
 

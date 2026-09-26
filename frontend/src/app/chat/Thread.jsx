@@ -1,53 +1,58 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
+// Stable empty array so an unloaded conversation's items reference never changes per render.
+const EMPTY = [];
+
+// Thread panel: message bubbles, open-at-bottom scroll, and top paging.
 export default function Thread({ chat }) {
-  const listRef = useRef(null);
-  const lastSeenRef = useRef(null);
-  const prevHeightRef = useRef(0);
+  const listRef = useRef(null); // the scrollable message list element.
+  const prevKeyRef = useRef(null); // the last rendered conversation key.
+  const lastStateRef = useRef(null); // last scroll snapshot for prepend preservation.
   const { auth, selected, messages, hasMore, loadOlder, convKey } = chat;
 
   const key = selected ? convKey(selected.type, selected.id) : null;
-  const items = useMemo(() => (key ? messages[key] || [] : []), [key, messages]);
+  const items = key ? messages[key] || EMPTY : EMPTY;
   const more = key ? !!hasMore[key] : false;
 
-  // Keep the view in place after the list changes: scroll to the newest on open / new
-  // message, and shift down by the added height when an older batch is prepended so the
-  // view never jumps to the top.
+  // Scroll the message list to the newest message.
+  const scrollToBottom = () => {
+    const el = listRef.current;
+    if (!el) return;
+    // Defer to the next tick so the browser paints the new content before the scroll lands.
+    setTimeout(() => {
+      el.scrollTop = el.scrollHeight;
+    }, 0);
+  };
+
   useEffect(() => {
     const el = listRef.current;
+    const switched = prevKeyRef.current !== key;
+    prevKeyRef.current = key;
     if (!el || items.length === 0) return;
-    const heightBefore = prevHeightRef.current;
-    prevHeightRef.current = el.scrollHeight;
-    const firstId = items[0].id;
-    const lastId = items[items.length - 1].id;
-    const seen = lastSeenRef.current;
-    const isNewConversation = !seen || seen.key !== key;
-    const hasNewMessage = seen && seen.key === key && seen.lastId !== lastId;
-    const hasOlderBatch = seen && seen.key === key && seen.firstId !== firstId;
-    lastSeenRef.current = { key, firstId, lastId };
 
-    if (isNewConversation || hasNewMessage) {
-      const scrollToBottom = () => {
-        el.scrollTop = el.scrollHeight;
-      };
-      requestAnimationFrame(scrollToBottom);
-      requestAnimationFrame(scrollToBottom);
+    const prev = lastStateRef.current;
+    const lastId = items[items.length - 1].id;
+    const height = el.scrollHeight;
+    lastStateRef.current = { key, lastId, count: items.length, height };
+
+    // Open or a new message: land at the newest message, even while still loading.
+    if (switched || !prev || prev.key !== key || (prev.key === key && prev.lastId !== lastId)) {
+      scrollToBottom();
       return;
     }
 
-    if (hasOlderBatch) {
-      const added = el.scrollHeight - heightBefore;
+    // Older batch prepended in place: shift the viewport down so it never jumps to the top.
+    if (prev.key === key && prev.lastId === lastId && items.length > prev.count) {
+      const added = height - prev.height;
       if (added > 0) {
         el.scrollTop += added;
       }
     }
   }, [key, items]);
 
-  // Older history loads when scrolled to the very top. Poll the scroll position so a
-  // throttled top-load fires as soon as the cooldown elapses even while the user just
-  // hangs at the top, without needing to scroll away and back.
+  // Load older history when pinned at the top; poll so a throttled load fires on cooldown.
   const handleScroll = () => {
     const el = listRef.current;
     if (el && el.scrollTop <= 0 && more) {

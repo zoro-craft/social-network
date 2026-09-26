@@ -1,4 +1,4 @@
-package reactions
+package models
 
 type Reaction struct {
 	PostID       int    `json:"post_id"`

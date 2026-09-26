@@ -1,12 +1,13 @@
-package comments
+package handlers
 
 import (
 	"net/http"
 	"strconv"
 
 	"zone/internal/auth"
+	"zone/internal/comments/models"
 	"zone/internal/database"
-	"zone/internal/posts"
+	"zone/internal/posts/repositories"
 	"zone/internal/utils"
 )
 
@@ -35,7 +36,7 @@ func GetCommentsAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !posts.CanViewPost(postID, viewerID) {
+	if !repositories.CanViewPost(postID, viewerID) {
 		utils.HandleError(w, http.StatusNotFound, "Post not found")
 		return
 	}
@@ -79,9 +80,9 @@ func GetCommentsAPI(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	result := []Comment{}
+	result := []models.Comment{}
 	for rows.Next() {
-		var c Comment
+		var c models.Comment
 		if err := rows.Scan(&c.ID, &c.PostID, &c.GroupID, &c.Content, &c.Image, &c.UserID, &c.FirstName, &c.Avatar, &c.CreatedAt); err == nil {
 			result = append(result, c)
 		}

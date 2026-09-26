@@ -1,4 +1,4 @@
-package posts
+package handlers
 
 import (
 	"net/http"
@@ -7,6 +7,7 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	"zone/internal/posts/models"
 	"zone/internal/utils"
 )
 
@@ -33,7 +34,7 @@ func CreatePostAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p := Post{
+	p := models.Post{
 		Title:   strings.TrimSpace(r.FormValue("title")),
 		Content: strings.TrimSpace(r.FormValue("content")),
 		Privacy: strings.TrimSpace(r.FormValue("privacy")),

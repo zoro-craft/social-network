@@ -1,4 +1,4 @@
-package events
+package models
 
 type VoteCount struct {
 	Option string `json:"option"`
@@ -19,12 +19,12 @@ type Event struct {
 	UserResponse string      `json:"user_response,omitempty"`
 }
 
-type voteRequest struct {
+type VoteRequest struct {
 	EventID int    `json:"event_id"`
 	Vote    string `json:"vote"`
 }
 
-type createEventRequest struct {
+type CreateEventRequest struct {
 	GroupID       int    `json:"group_id"`
 	Title         string `json:"title"`
 	Description   string `json:"description"`

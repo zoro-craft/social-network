@@ -10,6 +10,7 @@ export const handleAcceptInvitation = async (notification) => {
   }
 };
 
+// Reject an invitation using the notification's ref_id (migration 000024 renamed invitation_id).
 export const handleRejectInvitation = async (notification) => {
   try {
     await apiRequest(`/invitations/${notification.ref_id}/reject`, "POST");
@@ -29,6 +30,7 @@ export const handleAcceptRequest = async (notification) => {
   }
 };
 
+// Reject a join request using the notification's ref_id (migration 000024 renamed request_id).
 export const handleRejectRequest = async (notification) => {
   try {
     await apiRequest(`/join_requests/${notification.ref_id}/reject`, "POST");
@@ -48,6 +50,7 @@ export const handleAcceptFollow = async (notification) => {
   }
 };
 
+// Decline a follow request through the followers endpoint, keyed by the acting user id.
 export const handleDeclineFollow = async (notification) => {
   try {
     await apiRequest(`/follow/${notification.ref_id}/decline`, "POST");

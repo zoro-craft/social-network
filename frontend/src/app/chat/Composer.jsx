@@ -3,15 +3,17 @@
 import { useRef, useState } from 'react';
 import EmojiPicker from './EmojiPicker';
 
+// Composer panel: message input, Enter-to-send, and the emoji picker toggle.
 export default function Composer({ chat }) {
-  const [text, setText] = useState('');
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [text, setText] = useState(''); // draft message content.
+  const [pickerOpen, setPickerOpen] = useState(false); // whether the emoji picker is open.
   const inputRef = useRef(null);
   const { selected, canChat, send, convKey } = chat;
 
   const key = selected ? convKey(selected.type, selected.id) : null;
   const disabled = !key || canChat[key] === false;
 
+  // Send the current draft and clear it on success.
   const handleSend = async () => {
     const content = text;
     if (!content.trim()) return;
@@ -22,6 +24,7 @@ export default function Composer({ chat }) {
     }
   };
 
+  // Enter sends; Shift+Enter inserts a new line instead.
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -29,6 +32,7 @@ export default function Composer({ chat }) {
     }
   };
 
+  // Insert a picked emoji at the cursor and restore focus to the input.
   const insertEmoji = (emoji) => {
     const el = inputRef.current;
     const start = el.selectionStart ?? text.length;

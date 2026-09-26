@@ -26,8 +26,7 @@ func NewHandler(svc *services.Service) *Handler {
 	return &Handler{svc: svc}
 }
 
-// GetNotifications serves GET /notifications: the recipient's own unread rows, newest first,
-// 10 per page via an id keyset cursor, plus the exact total unread count.
+// GetNotifications serves GET /notifications: the recipient's unread rows, newest first, 10 per page, plus the unread total.
 func (h *Handler) GetNotifications(w http.ResponseWriter, r *http.Request) {
 	userID, err := auth.GetUserID(r)
 	if err != nil {

@@ -3,33 +3,8 @@ node_modules
 .next
 bugs/
 
-# AI / agent tooling
-.agents/
-.claude/
-.opencode/
-.specify/
-specs/
-.cursor/
-.cursorrules
-.windsurf/
-.codeium/
-.continue/
-.aider*
-.gemini/
-.copilot/
-.github/copilot-instructions.md
-skills-lock.json
-AGENTS.md
-CLAUDE.md
-flows/
-inputs/
-grill-me/
-
-# TDD test files (private, constitution VII)
-backend/internal/**/*_test.go
-frontend/tests/
-frontend/playwright.config.js
-frontend/test-results/
-frontend/playwright-report/
-frontend/test/
-frontend/src/utils/*.test.js
+# Go build artifacts
+*.exe
+*.test
+*.out
+vendor/
