@@ -6,13 +6,14 @@ import { useAuth } from '@/app/context/AuthContext';
 import { useRealtime } from '@/components/RealtimeProvider';
 import { conversationKeyFromPayload } from '@/utils/chat';
 
+// Navbar chat icon that owns the browser-only unread counts and broadcasts them.
 export default function ChatBell() {
   const router = useRouter();
   const { auth } = useAuth();
   const { subscribe } = useRealtime();
-  const [total, setTotal] = useState(0);
-  const countsRef = useRef({});
-  const openRef = useRef(new Set());
+  const [total, setTotal] = useState(0); // app-wide unread total.
+  const countsRef = useRef({}); // per-conversation unread counts.
+  const openRef = useRef(new Set()); // conversation keys currently open (not counted).
 
   // Broadcast the current counts so the chat page can render tab and row badges.
   const sync = () => {

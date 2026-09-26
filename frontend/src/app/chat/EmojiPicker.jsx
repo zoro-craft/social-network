@@ -1,5 +1,6 @@
 'use client';
 
+// Fixed set of common emojis shown in the picker.
 const EMOJIS = [
   '😀', '😄', '😁', '😂', '🤣', '😊', '😍', '😘',
   '😎', '🤩', '😢', '😭', '😡', '🤔', '🙄', '😴',
@@ -8,6 +9,7 @@ const EMOJIS = [
   '🌙', '⚽', '🎮', '🚀', '💯', '✅', '❌', '🍕',
 ];
 
+// Grid of emoji buttons; clicking one calls onPick with the emoji.
 export default function EmojiPicker({ onPick }) {
   return (
     <div className="glass-chat-emoji-picker">

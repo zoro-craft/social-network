@@ -7,21 +7,23 @@ import { conversationKeyFromPayload, otherParticipant } from '@/utils/chat';
 const BATCH = 10;
 const PAGING_COOLDOWN = 2000;
 
+// useChat owns all chat state and realtime wiring for the /chat page.
 export function useChat(auth, subscribe) {
-  const [users, setUsers] = useState([]);
-  const [groups, setGroups] = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [messages, setMessages] = useState({});
-  const [hasMore, setHasMore] = useState({});
-  const [canChat, setCanChat] = useState({});
-  const [badges, setBadges] = useState({ users: 0, groups: 0, counts: {} });
+  const [users, setUsers] = useState([]); // sidebar users tab.
+  const [groups, setGroups] = useState([]); // sidebar groups tab.
+  const [selected, setSelected] = useState(null); // currently open conversation.
+  const [messages, setMessages] = useState({}); // per-key thread messages.
+  const [hasMore, setHasMore] = useState({}); // per-key older-history availability.
+  const [canChat, setCanChat] = useState({}); // per-key send permission.
+  const [badges, setBadges] = useState({ users: 0, groups: 0, counts: {} }); // unread totals from the bell.
 
-  const selectedRef = useRef(selected);
+  const selectedRef = useRef(selected); // latest selected read by socket callbacks.
   // eslint-disable-next-line react-hooks/refs -- latest-value ref read by socket callbacks
   selectedRef.current = selected;
-  const loadingMoreRef = useRef({});
-  const lastFetchRef = useRef({});
+  const loadingMoreRef = useRef({}); // per-key in-flight older-batch guard.
+  const lastFetchRef = useRef({}); // per-key last fetch time for the cooldown.
 
+  // Build a stable key for a conversation in state maps and window events.
   const convKey = (type, id) => (type === 'group' ? `group:${id}` : `private:${id}`);
 
   // Snapshot semantics: fetch the sidebar once on page mount only.
@@ -58,9 +60,13 @@ export function useChat(auth, subscribe) {
       const data = await apiRequest(`${path}${query}`);
       const batch = (data.messages || []).slice().reverse();
       setMessages((prev) => {
+        // Fresh load: the server batch is authoritative and replaces the cached thread.
+        if (!isMore) {
+          return { ...prev, [key]: batch };
+        }
         const seen = new Set((prev[key] || []).map((m) => m.id));
         const fresh = batch.filter((m) => !seen.has(m.id));
-        const merged = isMore ? [...fresh, ...(prev[key] || [])] : [...fresh];
+        const merged = [...fresh, ...(prev[key] || [])];
         return { ...prev, [key]: merged };
       });
       setHasMore((prev) => ({ ...prev, [key]: !!data.has_more }));
@@ -72,16 +78,15 @@ export function useChat(auth, subscribe) {
     }
   }, []);
 
+  // Always re-fetch the newest batch on select so messages that arrived while closed show up.
   const selectConversation = useCallback(
     (type, id, name) => {
       const key = convKey(type, id);
       setSelected({ type, id, name });
       window.dispatchEvent(new CustomEvent('chat:open', { detail: { key } }));
-      if (!messages[key]) {
-        loadHistory(type, id, null, false);
-      }
+      loadHistory(type, id, null, false);
     },
-    [messages, loadHistory],
+    [loadHistory],
   );
 
   // fetchOlder prepends the batch older than the oldest loaded message.
@@ -96,8 +101,7 @@ export function useChat(auth, subscribe) {
     });
   }, [messages, loadHistory]);
 
-  // loadOlder is polled by Thread while the user stays at the very top; the 2s cooldown
-  // naturally gates how often the next older batch can load.
+  // Polled by Thread while pinned at the top; the 2s cooldown gates older-batch loads.
   const loadOlder = useCallback(() => {
     const sel = selectedRef.current;
     if (!sel) return;
@@ -129,8 +133,7 @@ export function useChat(auth, subscribe) {
     [],
   );
 
-  // Live arrivals: always refresh the sidebar row preview and ordering, and append to the
-  // thread when the conversation is open.
+  // Live arrivals: refresh sidebar rows always, and append to the thread when it is open.
   useEffect(() => {
     if (!auth.authenticated) return;
     const onMessage = (payload) => {

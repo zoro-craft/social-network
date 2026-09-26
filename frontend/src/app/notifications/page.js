@@ -16,15 +16,17 @@ import {
   handleMarkRead,
 } from "./utils";
 
+// Notifications page: live list of unread notifications with actions and load-more.
 export default function NotificationsPage() {
   const { auth, loading } = useRequireAuth();
   const showToast = useToast();
   const { subscribe } = useRealtime();
 
-  const [notifications, setNotifications] = useState([]);
-  const [hasMore, setHasMore] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [notifications, setNotifications] = useState([]); // unread rows, newest first.
+  const [hasMore, setHasMore] = useState(false); // whether older rows remain.
+  const [loadingMore, setLoadingMore] = useState(false); // in-flight older-batch fetch.
 
+  // Drop a notification row from the local list.
   const removeNotification = (id) => {
     setNotifications((prev) => {
       const next = prev.filter((n) => n.id !== id);
@@ -67,8 +69,7 @@ export default function NotificationsPage() {
     });
   }, [auth.authenticated, subscribe]);
 
-  // Removal signal: a notification was deleted server-side (e.g. a cancelled follow
-  // request); drop the row so every open tab removes it without a refresh.
+  // Removal signal: a row was deleted server-side; drop it so open tabs stay in sync.
   useEffect(() => {
     if (!auth.authenticated) return;
     return subscribe("notification_removed", (payload) => {
@@ -97,6 +98,7 @@ export default function NotificationsPage() {
     }
   };
 
+  // Run a server action on a notification, dropping the row on success.
   const respond = async (handler, notification) => {
     const result = await handler(notification);
     if (result.ok) {
@@ -109,6 +111,7 @@ export default function NotificationsPage() {
     }
   };
 
+  // Mark a notification read, restoring the row on failure.
   const markRead = async (notification, index) => {
     if (notification.is_read) return;
     removeNotification(notification.id);
@@ -130,6 +133,7 @@ export default function NotificationsPage() {
     }
   };
 
+  // Render the action buttons for a notification, by its type.
   const renderActions = (notification) => {
     switch (notification.type) {
       case "group_invitation":

@@ -2,16 +2,20 @@
 
 import { useState } from 'react';
 
+// Format a timestamp for a conversation row.
 function formatTime(ts) {
   return new Date(ts).toLocaleString();
 }
 
+// Sidebar with Users|Groups tabs and conversation rows.
 export default function ChatSidebar({ chat }) {
-  const [tab, setTab] = useState('users');
+  const [tab, setTab] = useState('users'); // active tab: 'users' or 'groups'.
   const { users, groups, selected, badges, selectConversation, convKey } = chat;
 
+  // Whether this conversation is the currently selected one.
   const isSelected = (type, id) => selected && selected.type === type && selected.id === id;
 
+  // Render a single conversation row (user or group).
   const renderRow = (entry, type, id, name) => {
     const key = convKey(type, id);
     const badgeCount = badges.counts[key] || 0;

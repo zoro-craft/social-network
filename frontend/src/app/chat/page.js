@@ -8,6 +8,7 @@ import Thread from './Thread';
 import Composer from './Composer';
 import { useChat } from './useChat';
 
+// Chat page: sidebar, thread, and composer, guarded by auth.
 export default function ChatPage() {
   const { auth, loading } = useRequireAuth();
   const { subscribe } = useRealtime();
