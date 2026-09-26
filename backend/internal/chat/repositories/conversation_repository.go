@@ -7,9 +7,7 @@ import (
 	"zone/internal/database"
 )
 
-// FollowGraphUsers lists every user with an accepted follow in either direction, plus every
-// user with whom the caller has ever exchanged a private message (kept visible after an
-// unfollow), including per-entry can_chat via the same gate as sending.
+// FollowGraphUsers lists accepted-follow users plus ever-messaged users (kept after unfollow), with per-entry can_chat.
 func (r ChatRepository) FollowGraphUsers(userID int) ([]models.ConversationUser, error) {
 	rows, err := database.Database.Query(`
 		SELECT DISTINCT u.id, u.full_name, COALESCE(u.avatar, '')

@@ -101,8 +101,7 @@ func (s *Service) ListHistory(userID, targetID int, msgType string, beforeID, li
 	}
 }
 
-// GetConversations assembles the users and groups sidebar with online status,
-// last-message previews, and ordering by last message desc then alphabetical.
+// GetConversations assembles the users and groups sidebar with online status, last-message previews, and ordering.
 func (s *Service) GetConversations(userID int) ([]models.ConversationUser, []models.ConversationGroup, error) {
 	users, err := s.repo.FollowGraphUsers(userID)
 	if err != nil {

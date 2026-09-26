@@ -47,8 +47,7 @@ func (s *Service) Notify(recipientID int, notifType string, refID *int, actorID 
 	return row, nil
 }
 
-// NotifyFollowRequest persists a follow_request notification for (recipient, requester),
-// reusing an existing row so repeated sends never duplicate, then pushes it live.
+// NotifyFollowRequest persists a follow_request notification for (recipient, requester) without duplicating, then pushes it live.
 func (s *Service) NotifyFollowRequest(recipientID, requesterID int, message string) (models.Notification, error) {
 	row, err := s.repo.InsertFollowRequest(recipientID, requesterID, message)
 	if err != nil {
@@ -58,8 +57,7 @@ func (s *Service) NotifyFollowRequest(recipientID, requesterID int, message stri
 	return row, nil
 }
 
-// ListUnread returns the recipient's unread notifications, newest first,
-// keyset-paginated on id, plus whether more rows exist beyond the page.
+// ListUnread returns the recipient's unread notifications, newest first, keyset-paginated on id.
 func (s *Service) ListUnread(userID int, cursorID int) ([]models.Notification, bool, error) {
 	return s.repo.ListUnread(userID, cursorID)
 }
@@ -95,9 +93,7 @@ func (s *Service) MarkReadByID(userID, id int) error {
 	return s.repo.MarkReadByID(userID, id)
 }
 
-// RemoveNotificationOnAction deletes a notification by (recipient, type, ref)
-// and signals the recipient so open sessions drop it and refresh the badge;
-// it pushes only when a row was actually deleted.
+// RemoveNotificationOnAction deletes a notification by (recipient, type, ref) and signals the recipient.
 func (s *Service) RemoveNotificationOnAction(recipientID int, notifType string, refID int) error {
 	id, err := s.repo.DeleteOnAction(recipientID, notifType, refID)
 	if err != nil {
@@ -110,9 +106,7 @@ func (s *Service) RemoveNotificationOnAction(recipientID int, notifType string, 
 	return nil
 }
 
-// RemoveFollowRequestNotification deletes the follow_request notification for
-// (recipient, requester) and signals the recipient so open sessions drop it and
-// refresh the badge; it pushes only when a row was actually deleted.
+// RemoveFollowRequestNotification deletes the follow_request for (recipient, requester) and signals the recipient.
 func (s *Service) RemoveFollowRequestNotification(followeeID, requesterID int) error {
 	return s.RemoveNotificationOnAction(followeeID, "follow_request", requesterID)
 }
