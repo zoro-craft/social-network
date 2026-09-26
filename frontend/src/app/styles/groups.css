@@ -119,24 +119,69 @@
   width: 100%;
   margin-top: auto;
   padding: 11px 16px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
-  background: var(--bg-elevated);
-  color: var(--text-primary);
   font: inherit;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   cursor: pointer;
   transition: background var(--transition), border-color var(--transition),
-    color var(--transition), transform var(--duration-fast) ease;
-}
-
-.glass-group-action-btn:hover {
-  background: var(--bg-hover);
-  border-color: var(--accent-border);
-  color: var(--accent-hover);
+    color var(--transition), box-shadow var(--transition),
+    transform var(--duration-fast) ease;
 }
 
 .glass-group-action-btn:active {
   transform: translateY(1px);
+}
+
+.glass-group-action-btn:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.glass-group-action-btn.enter-btn {
+  background: #6366f1;
+  border-color: #6366f1;
+  color: #ffffff;
+  box-shadow: var(--shadow-sm),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.glass-group-action-btn.enter-btn:hover:not(:disabled) {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: #ffffff;
+  box-shadow: var(--shadow-sm),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 0 22px -4px rgba(99, 102, 241, 0.55);
+}
+
+.glass-group-action-btn.request-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f4f4f6;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--hairline);
+}
+
+.glass-group-action-btn.request-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  box-shadow: var(--shadow-sm), var(--hairline);
+}
+
+.glass-group-action-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-group-action-btn {
+    transition: none;
+  }
 }

@@ -23,7 +23,7 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 401, http.StatusText(401))
 		return
 	}
-
+	// Extract the group_id from the URL path
 	parts := strings.Split(r.URL.Path, "/")
 
 	if len(parts) < 4 {
@@ -37,6 +37,7 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// validate the join request  
 	if !services.JoinRequestValidator(group_id, user_id) {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
