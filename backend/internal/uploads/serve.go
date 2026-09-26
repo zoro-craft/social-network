@@ -8,7 +8,7 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
-	"zone/internal/posts"
+	"zone/internal/posts/repositories"
 	"zone/internal/utils"
 )
 
@@ -46,7 +46,7 @@ func ServeImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !posts.CanViewPost(postID, userID) {
+	if !repositories.CanViewPost(postID, userID) {
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}

@@ -5,15 +5,15 @@ import (
 
 	"zone/internal/auth"
 	chathandlers "zone/internal/chat/handlers"
-	"zone/internal/comments"
-	"zone/internal/events"
+	commenthandlers "zone/internal/comments/handlers"
+	eventhandlers "zone/internal/events/handlers"
 	"zone/internal/followers"
 	"zone/internal/groups/handlers"
 	"zone/internal/middleware"
 	notifhandlers "zone/internal/notifications/handlers"
-	"zone/internal/posts"
+	posthandlers "zone/internal/posts/handlers"
 	"zone/internal/profile"
-	"zone/internal/reactions"
+	reactionhandlers "zone/internal/reactions/handlers"
 	"zone/internal/uploads"
 	"zone/internal/users"
 	"zone/internal/utils"
@@ -31,14 +31,14 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("/me", middleware.Auth(auth.MeHandler))
 
 	// posts routes
-	mux.HandleFunc("GET /posts", middleware.Auth(posts.GetPostsAPI))
-	mux.HandleFunc("GET /posts/{id}", middleware.Auth(posts.GetPostByIDAPI))
-	mux.HandleFunc("POST /posts/create", middleware.Auth(posts.CreatePostAPI))
+	mux.HandleFunc("GET /posts", middleware.Auth(posthandlers.GetPostsAPI))
+	mux.HandleFunc("GET /posts/{id}", middleware.Auth(posthandlers.GetPostByIDAPI))
+	mux.HandleFunc("POST /posts/create", middleware.Auth(posthandlers.CreatePostAPI))
 
 	// comments routes
-	mux.HandleFunc("GET /posts/{id}/comment", middleware.Auth(comments.GetCommentsAPI))
-	mux.HandleFunc("POST /posts/{id}/comment", middleware.Auth(comments.CreateCommentAPI))
-	mux.HandleFunc("POST /posts/react", middleware.Auth(reactions.ReactToPost))
+	mux.HandleFunc("GET /posts/{id}/comment", middleware.Auth(commenthandlers.GetCommentsAPI))
+	mux.HandleFunc("POST /posts/{id}/comment", middleware.Auth(commenthandlers.CreateCommentAPI))
+	mux.HandleFunc("POST /posts/react", middleware.Auth(reactionhandlers.ReactToPost))
 
 	// profile and users routes
 	mux.HandleFunc("GET /profile/{id}", middleware.Auth(profile.GetProfileAPI))
@@ -59,7 +59,7 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("POST /groups", middleware.Auth(handlers.CreatGroupeHandler))
 	mux.HandleFunc("GET /groups", middleware.Auth(handlers.GetAllGroupsHandler))
 	mux.HandleFunc("POST /groups/{group_id}", middleware.Auth(handlers.GetGroupInfo))
-	mux.HandleFunc("GET /groups/{group_id}/posts", middleware.Auth(posts.GetPostsByGroupAPI))
+	mux.HandleFunc("GET /groups/{group_id}/posts", middleware.Auth(posthandlers.GetPostsByGroupAPI))
 
 	// join request
 	mux.HandleFunc("POST /groups/{group_id}/join", middleware.Auth(handlers.Join_Request_handler))
@@ -74,9 +74,9 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("GET /groups/{group_id}/members", middleware.Auth(handlers.GetGroupMembersHandler))
 
 	// events routes
-	mux.HandleFunc("POST /events", middleware.Auth(events.CreateEvent))
-	mux.HandleFunc("GET /events", middleware.Auth(events.GetEvents))
-	mux.HandleFunc("POST /events/vote", middleware.Auth(events.VoteEvent))
+	mux.HandleFunc("POST /events", middleware.Auth(eventhandlers.CreateEvent))
+	mux.HandleFunc("GET /events", middleware.Auth(eventhandlers.GetEvents))
+	mux.HandleFunc("POST /events/vote", middleware.Auth(eventhandlers.VoteEvent))
 
 	// notifications
 	mux.HandleFunc("GET /notifications", middleware.Auth(notifhandlers.DefaultHandler.GetNotifications))

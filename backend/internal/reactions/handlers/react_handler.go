@@ -1,4 +1,4 @@
-package reactions
+package handlers
 
 import (
 	"database/sql"
@@ -7,7 +7,8 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
-	"zone/internal/posts"
+	"zone/internal/posts/repositories"
+	"zone/internal/reactions/models"
 	"zone/internal/utils"
 )
 
@@ -23,7 +24,7 @@ func ReactToPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req Reaction
+	var req models.Reaction
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid request body")
 		return
@@ -34,7 +35,7 @@ func ReactToPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !posts.CanViewPost(req.PostID, userID) {
+	if !repositories.CanViewPost(req.PostID, userID) {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid post")
 		return
 	}

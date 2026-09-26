@@ -1,4 +1,4 @@
-package posts
+package handlers
 
 import (
 	"net/http"
@@ -6,6 +6,8 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	"zone/internal/posts/models"
+	"zone/internal/posts/repositories"
 	"zone/internal/utils"
 )
 
@@ -26,9 +28,9 @@ func GetPostByIDAPI(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusUnauthorized, "You must be logged in")
 		return
 	}
-	var p Post
+	var p models.Post
 
-	query := postSelect + fromPosts + " WHERE p.id = ? AND (" + visibleCondition + ")"
+	query := repositories.PostSelect + repositories.FromPosts + " WHERE p.id = ? AND (" + repositories.VisibleCondition + ")"
 
 	err = database.Database.QueryRow(query, postID, viewerID, viewerID, viewerID, viewerID).Scan(
 		&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy,

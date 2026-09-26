@@ -1,4 +1,4 @@
-package events
+package handlers
 
 import (
 	"database/sql"
@@ -8,6 +8,7 @@ import (
 
 	"zone/internal/auth"
 	"zone/internal/database"
+	"zone/internal/events/models"
 	"zone/internal/utils"
 )
 
@@ -28,10 +29,10 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, http.StatusBadRequest, "Invalid group_id")
 		return
 	}
-	
+
 	if !utils.IsGroupMember(groupID, userID) {
-    utils.HandleError(w, http.StatusForbidden, "You must be a group member")
-    return
+		utils.HandleError(w, http.StatusForbidden, "You must be a group member")
+		return
 	}
 
 	rows, err := database.Database.Query(`
@@ -45,9 +46,9 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	events := []Event{}
+	events := []models.Event{}
 	for rows.Next() {
-		var e Event
+		var e models.Event
 		var optionsJSON string
 		if err := rows.Scan(&e.ID, &e.GroupID, &e.Title, &e.Description, &e.EventDate, &e.EventTime, &e.CreatedBy, &e.CreatedAt, &optionsJSON); err != nil {
 			utils.HandleError(w, http.StatusInternalServerError, "Could not load events")
@@ -81,9 +82,8 @@ func parseOptions(optionsJSON string) ([]string, error) {
 	return options, err
 }
 
-
-func loadVoteSummary(eventID int, userID int) ([]VoteCount, string, error) {
-	voteCounts := []VoteCount{}
+func loadVoteSummary(eventID int, userID int) ([]models.VoteCount, string, error) {
+	voteCounts := []models.VoteCount{}
 
 	countRows, err := database.Database.Query(
 		"SELECT response, COUNT(*) FROM event_responses WHERE event_id = ? GROUP BY response",
@@ -95,7 +95,7 @@ func loadVoteSummary(eventID int, userID int) ([]VoteCount, string, error) {
 	defer countRows.Close()
 
 	for countRows.Next() {
-		var vc VoteCount
+		var vc models.VoteCount
 		if err := countRows.Scan(&vc.Option, &vc.Count); err != nil {
 			return nil, "", err
 		}
