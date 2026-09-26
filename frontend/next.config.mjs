@@ -9,7 +9,6 @@ function apiProxyTarget() {
 }
 
 const nextConfig = {
-  allowedDevOrigins: ['10.98.0.41'],
   images: {
     remotePatterns: [
       {
