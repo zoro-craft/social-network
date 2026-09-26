@@ -43,7 +43,9 @@
   border-radius: var(--radius-lg);
   padding: 22px;
   box-shadow: var(--shadow-sm);
-  transition: border-color var(--transition), box-shadow var(--transition);
+  transition:
+    border-color var(--transition),
+    box-shadow var(--transition);
   animation: fadeUp 0.25s var(--ease-out) both;
 }
 
@@ -75,6 +77,7 @@
   margin: 0 0 8px;
   line-height: 1.35;
   letter-spacing: -0.01em;
+  overflow-wrap: break-word;
 }
 
 /* Nested inset panel for post body */
@@ -120,8 +123,11 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: background var(--transition), border-color var(--transition),
-    color var(--transition), transform var(--duration-fast) ease;
+  transition:
+    background var(--transition),
+    border-color var(--transition),
+    color var(--transition),
+    transform var(--duration-fast) ease;
 }
 
 .glass-react-btn:hover {
@@ -169,7 +175,9 @@
   cursor: pointer;
   text-align: left;
   color: var(--text-primary);
-  transition: border-color var(--transition), background var(--transition);
+  transition:
+    border-color var(--transition),
+    background var(--transition);
 }
 
 .glass-vote-option:hover {
