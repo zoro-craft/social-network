@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -23,7 +25,7 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 401, http.StatusText(401))
 		return
 	}
-	// Extract the group_id from the URL path
+
 	parts := strings.Split(r.URL.Path, "/")
 
 	if len(parts) < 4 {
@@ -37,7 +39,6 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// validate the join request  
 	if !services.JoinRequestValidator(group_id, user_id) {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
@@ -79,7 +80,6 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 
 	msg := "New join request for your group " + fullname
 
-
 	if err := tx.Commit(); err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
@@ -99,4 +99,76 @@ func Join_Request_handler(w http.ResponseWriter, r *http.Request) {
 			"message": "join request  created successfully!",
 		},
 	)
+}
+
+func CancelJoinRequestHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		utils.HandleError(w, 405, http.StatusText(405))
+		return
+	}
+	user_id, err := auth.GetUserID(r)
+	if err != nil {
+		utils.HandleError(w, 401, http.StatusText(401))
+		return
+	}
+
+	group_id, err := strconv.Atoi(r.PathValue("group_id"))
+	if err != nil || group_id <= 0 {
+		utils.HandleError(w, 400, "Invalid group id")
+		return
+	}
+
+	request_id, err := repositories.GetJoinRequestIDByGroupAndUser(group_id, user_id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			utils.HandleError(w, 404, "No pending join request")
+			return
+		}
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+
+	creator_id, err := repositories.GetGroupCreator(group_id)
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+
+	tx, err := database.Database.Begin()
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+	defer tx.Rollback()
+
+	res, err := tx.Exec(
+		`DELETE FROM group_requests
+		WHERE id = ? AND user_id = ? AND group_id = ? AND status = 'pending'`,
+		request_id, user_id, group_id,
+	)
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+	if affected == 0 {
+		utils.HandleError(w, 404, "No pending join request")
+		return
+	}
+
+	if err := repositories.DeleteRequestNotification(tx, creator_id, request_id); err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		utils.HandleError(w, 500, http.StatusText(500))
+		return
+	}
+
+	utils.RespondJSON(w, http.StatusOK, map[string]string{"message": "join request cancelled successfully!"})
 }

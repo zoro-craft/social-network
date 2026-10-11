@@ -9,6 +9,7 @@ import (
 	"zone/internal/auth"
 	"zone/internal/database"
 	"zone/internal/posts/repositories"
+	"zone/internal/stories"
 	"zone/internal/utils"
 )
 
@@ -21,6 +22,21 @@ func ServeImage(w http.ResponseWriter, r *http.Request) {
 	userID, err := auth.GetUserID(r)
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Story images have their own audience rules, so they bypass the post switch.
+	if strings.HasPrefix(r.URL.Path, "/uploads/stories/") {
+		serveStoryImage(w, r, userID)
+		return
+	}
+
+	if strings.HasPrefix(r.URL.Path, "/uploads/groups/") {
+		if !groupImageExists(r.URL.Path) {
+			http.NotFound(w, r)
+			return
+		}
+		http.ServeFile(w, r, filepath.Join(utils.UploadsDir(), "groups", filepath.Base(r.URL.Path)))
 		return
 	}
 
@@ -54,6 +70,32 @@ func ServeImage(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, filepath.Join(dir, filepath.Base(r.URL.Path)))
 }
 
+// serveStoryImage serves a story only to its author and their accepted followers,
+// and only while the story is still unexpired.
+func serveStoryImage(w http.ResponseWriter, r *http.Request, userID int) {
+	var storyID int
+	err := database.Database.QueryRow(
+		"SELECT id FROM stories WHERE image = ?",
+		"/uploads/stories/"+filepath.Base(r.URL.Path),
+	).Scan(&storyID)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.NotFound(w, r)
+			return
+		}
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	if !stories.CanViewStory(storyID, userID) {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		return
+	}
+
+	http.ServeFile(w, r, filepath.Join(utils.UploadsDir(), "stories", filepath.Base(r.URL.Path)))
+}
+
 func postImagePostID(imagePrefix, urlPath string) (string, int, error) {
 	var postID int
 	err := database.Database.QueryRow(
@@ -70,4 +112,13 @@ func commentImagePostID(imagePrefix, urlPath string) (string, int, error) {
 		imagePrefix+filepath.Base(urlPath),
 	).Scan(&postID)
 	return filepath.Join(utils.UploadsDir(), "comments"), postID, err
+}
+
+func groupImageExists(urlPath string) bool {
+	var groupID int
+	err := database.Database.QueryRow(
+		"SELECT id FROM user_groups WHERE image = ?",
+		"/uploads/groups/"+filepath.Base(urlPath),
+	).Scan(&groupID)
+	return err == nil
 }

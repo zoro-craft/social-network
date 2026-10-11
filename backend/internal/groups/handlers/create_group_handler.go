@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"zone/internal/auth"
 	"zone/internal/database"
@@ -13,7 +14,6 @@ import (
 
 	"zone/internal/utils"
 )
-
 
 func CreatGroupeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -26,19 +26,41 @@ func CreatGroupeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var groupe models.Groupe
-	err = json.NewDecoder(r.Body).Decode(&groupe)
-	if err != nil {
-		utils.HandleError(w, 400, http.StatusText(400))
-		return
-	}
-	groupe.Admin = user_id
+	var group models.Groupe
+	isMultipart := strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data")
 
-	// Validate the group data
-	if !services.ValidateGroup(groupe) {
+	if isMultipart {
+		r.Body = http.MaxBytesReader(w, r.Body, utils.MaxImageFormSize)
+		if err := r.ParseMultipartForm(utils.MaxUploadSize); err != nil {
+			utils.HandleError(w, 400, "Invalid form data or file too large")
+			return
+		}
+		group.Title = strings.TrimSpace(r.FormValue("titel"))
+		group.Description = strings.TrimSpace(r.FormValue("description"))
+	} else {
+		if err := json.NewDecoder(r.Body).Decode(&group); err != nil {
+			utils.HandleError(w, 400, http.StatusText(400))
+			return
+		}
+		group.Title = strings.TrimSpace(group.Title)
+		group.Description = strings.TrimSpace(group.Description)
+		group.Image = ""
+	}
+	group.Admin = user_id
+
+	if !services.ValidateGroup(group) {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
+
+	if isMultipart {
+		group.Image, err = utils.SaveImageField(r, "image", "groups", "/uploads/groups/")
+		if err != nil {
+			utils.HandleError(w, 400, err.Error())
+			return
+		}
+	}
+
 	// start a transaction
 	tx, err := database.Database.Begin()
 	if err != nil {
@@ -47,14 +69,14 @@ func CreatGroupeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback()
 
-	groupe_Id, err := repositories.SaveGroup(tx, groupe)
+	groupID, err := repositories.SaveGroup(tx, group)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
 	}
-	ws.DefaultHub.Subscribe(user_id, groupe_Id) // subscribe the creator to the group room
+	ws.DefaultHub.Subscribe(user_id, groupID) // subscribe the creator to the group room
 
-	err = repositories.AddGroupMember(tx, groupe_Id, user_id)
+	err = repositories.AddGroupMember(tx, groupID, user_id)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return
@@ -65,5 +87,5 @@ func CreatGroupeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.RespondJSON(w, http.StatusCreated, map[string]string{"message": " Groupe created successfully!"})
+	utils.RespondJSON(w, http.StatusCreated, map[string]any{"message": "Group created successfully!", "group_id": groupID})
 }

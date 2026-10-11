@@ -44,10 +44,10 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Home posts + reactions
-	query := repositories.PostSelect + repositories.ReactionSelect + repositories.FromPosts + " WHERE p.group_id IS NULL AND (" + repositories.VisibleCondition + ")"
+	// Home posts + reaction counts + the viewer's own reaction
+	query := repositories.PostSelect + repositories.ReactionSelect + repositories.UserReactionSelect + repositories.FromPosts + " WHERE p.group_id IS NULL AND (" + repositories.VisibleCondition + ")"
 
-	args := []interface{}{viewerID, viewerID, viewerID, viewerID}
+	args := []interface{}{viewerID, viewerID, viewerID, viewerID, viewerID}
 
 	if beforeID > 0 {
 		query += " AND p.id < ?"
@@ -69,7 +69,7 @@ func GetPostsAPI(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var p models.Post
 
-		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.FullName, &p.CreatedAt, &p.LikeCount, &p.DislikeCount); err != nil {
+		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.FullName, &p.Avatar, &p.CreatedAt, &p.LikeCount, &p.DislikeCount, &p.UserReaction); err != nil {
 			utils.HandleError(w, http.StatusInternalServerError, "Error scanning post")
 			return
 		}
@@ -116,7 +116,7 @@ func GetPostsByGroupAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts, err := repositories.GetPostsByGroup(groupID)
+	posts, err := repositories.GetPostsByGroup(groupID, userID)
 	if err != nil {
 		utils.HandleError(w, http.StatusInternalServerError, "Failed to load group posts")
 		return

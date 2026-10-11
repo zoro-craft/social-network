@@ -30,11 +30,12 @@ func GetPostByIDAPI(w http.ResponseWriter, r *http.Request) {
 	}
 	var p models.Post
 
-	query := repositories.PostSelect + repositories.FromPosts + " WHERE p.id = ? AND (" + repositories.VisibleCondition + ")"
+	query := repositories.PostSelect + repositories.ReactionSelect + repositories.UserReactionSelect + repositories.FromPosts + " WHERE p.id = ? AND (" + repositories.VisibleCondition + ")"
 
-	err = database.Database.QueryRow(query, postID, viewerID, viewerID, viewerID, viewerID).Scan(
+	err = database.Database.QueryRow(query, viewerID, postID, viewerID, viewerID, viewerID, viewerID).Scan(
 		&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy,
-		&p.GroupID, &p.UserID, &p.FullName, &p.CreatedAt,
+		&p.GroupID, &p.UserID, &p.FullName, &p.Avatar, &p.CreatedAt,
+		&p.LikeCount, &p.DislikeCount, &p.UserReaction,
 	)
 
 	if err != nil {

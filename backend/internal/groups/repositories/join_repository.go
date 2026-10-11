@@ -27,7 +27,7 @@ func SaveJoinRequest(tx *sql.Tx, groupID int, userID int) (int, error) {
 	if err == nil {
 		return 0, fmt.Errorf("join request already exists")
 	}
-	// If the error is not sql.ErrNoRows, return the error
+
 	if err != sql.ErrNoRows {
 		return 0, err
 	}
@@ -79,7 +79,7 @@ func GetJoinRequestIDByGroupAndUser(groupID, userID int) (int, error) {
 	err := database.Database.QueryRow(`
 		SELECT id
 		FROM group_requests
-		WHERE group_id = ? AND user_id = ?
+		WHERE group_id = ? AND user_id = ? AND status = 'pending'
 	`, groupID, userID).Scan(&id)
 	if err != nil {
 		return 0, err
@@ -94,5 +94,20 @@ func DeleteRequest(tx *sql.Tx, requestID int) error {
         DELETE FROM group_requests
         WHERE id = ?
     `, requestID)
+	return err
+}
+
+func DeleteRequestNotification(tx *sql.Tx, userID int, requestID int) error {
+	_, err := tx.Exec(
+		`
+		DELETE FROM notifications
+		WHERE user_id = ?
+		AND  ref_id = ?
+		AND type = 'join_request'
+	`,
+		userID,
+		requestID,
+	)
+
 	return err
 }

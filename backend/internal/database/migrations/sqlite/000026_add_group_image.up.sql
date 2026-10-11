@@ -1,0 +1,1 @@
+ALTER TABLE user_groups ADD COLUMN image TEXT NOT NULL DEFAULT '';

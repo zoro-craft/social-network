@@ -181,10 +181,25 @@ func GetInvitationIDByGroupAndUser(groupID, invitedUserID int) (int, error) {
 
 // delete the invitation in response
 func DeleteInvitation(tx *sql.Tx, invitationID int) error {
-    _, err := tx.Exec(`
+	_, err := tx.Exec(`
         DELETE FROM group_invitations
         WHERE id = ?
     `, invitationID)
 
-    return err
+	return err
+}
+
+func DeleteInvitationNotification(tx *sql.Tx, userID int, invitationID int) error {
+	_, err := tx.Exec(
+		`
+		DELETE FROM notifications
+		WHERE user_id = ?
+		AND ref_id = ?
+		AND type = 'group_invitation'
+	`,
+		userID,
+		invitationID,
+	)
+
+	return err
 }

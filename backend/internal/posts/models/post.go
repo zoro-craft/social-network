@@ -9,7 +9,9 @@ type Post struct {
 	GroupID      *int   `json:"group_id,omitempty"`
 	UserID       int    `json:"user_id"`
 	FullName     string `json:"full_name"`
+	Avatar       string `json:"avatar"`
 	CreatedAt    string `json:"created_at"`
 	LikeCount    int    `json:"like_count"`
 	DislikeCount int    `json:"dislike_count"`
+	UserReaction string `json:"user_reaction,omitempty"`
 }

@@ -31,8 +31,6 @@ func GetAllGroupsHandler(w http.ResponseWriter, r *http.Request) {
 	utils.RespondJSON(w, http.StatusOK, groups)
 }
 
-
-
 func GetGroupInfo(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		utils.HandleError(w, 405, http.StatusText(405))
@@ -43,7 +41,7 @@ func GetGroupInfo(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 401, http.StatusText(401))
 		return
 	}
-	// Extract the group_id from the URL path
+
 	parts := strings.Split(r.URL.Path, "/")
 
 	if len(parts) < 3 {
@@ -56,14 +54,14 @@ func GetGroupInfo(w http.ResponseWriter, r *http.Request) {
 		utils.HandleError(w, 400, http.StatusText(400))
 		return
 	}
-	// Check if the user is a member of the group
+
 	exists := repositories.IsMember(user_id, group_id)
 	if !exists {
 		utils.HandleError(w, 403, http.StatusText(403))
 		return
 	}
-	// Get the group info from the database
-	groupinfo, err := repositories.GetGroupbyid(group_id)
+
+	groupinfo, err := repositories.GetGroupbyid(group_id, user_id)
 	if err != nil {
 		utils.HandleError(w, 500, http.StatusText(500))
 		return

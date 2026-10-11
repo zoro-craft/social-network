@@ -15,7 +15,14 @@ import (
 	"time"
 )
 
-const MaxUploadSize = 5 * 1024 * 1024
+const (
+	MaxUploadSize = 5 * 1024 * 1024
+
+	// Ceiling for a whole multipart body, not just the file in it. The difference
+	// covers the envelope (boundaries, part headers, text fields), so an image of
+	// exactly MaxUploadSize still fits instead of being rejected as "too large".
+	MaxImageFormSize = MaxUploadSize + (1 << 20)
+)
 
 var AllowedImageExtensions = map[string]bool{
 	".jpg":  true,
@@ -42,6 +49,9 @@ func SaveImageField(r *http.Request, fieldName string, dir string, urlPrefix str
 	defer file.Close()
 	if header.Size == 0 || header.Filename == "" {
 		return "", nil
+	}
+	if header.Size > MaxUploadSize {
+		return "", fmt.Errorf("image is too large (max 5 MB)")
 	}
 	ext := strings.ToLower(filepath.Ext(header.Filename))
 
@@ -127,12 +137,22 @@ func SaveImageField(r *http.Request, fieldName string, dir string, urlPrefix str
 	return urlPrefix + newFileName, nil
 }
 
+// ServeUpload serves a single file from one subdirectory of the uploads root,
+// e.g. /uploads/reels/clip.mp4. Only "<subdir>/<name>" is accepted: r.URL.Path is
+// already percent-decoded at this point, so /uploads/reels/%2e%2e/%2e%2e/data/db
+// arrives as "reels/../../data/db" and ServeMux does not reject it, since it only
+// canonicalises the still-escaped form of the path.
 func ServeUpload(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	rel := strings.TrimPrefix(r.URL.Path, "/uploads")
-	http.ServeFile(w, r, filepath.Join(UploadsDir(), rel))
+	subDir, name, found := strings.Cut(strings.TrimPrefix(r.URL.Path, "/uploads/"), "/")
+	if !found || subDir == "" || name == "" || strings.Contains(name, "/") {
+		http.NotFound(w, r)
+		return
+	}
+
+	http.ServeFile(w, r, filepath.Join(UploadsDir(), subDir, name))
 }

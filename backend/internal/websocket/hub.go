@@ -8,7 +8,7 @@ type hubMessage struct {
 	roomID int
 	env    Envelope
 	count  int
-	resp   chan int
+	resp   chan any
 }
 
 // Hub is the shared realtime registry: one goroutine owns all state.
@@ -65,6 +65,12 @@ func (h *Hub) Run() {
 				msg.resp <- btoi(h.isOnline(msg.userID))
 			case "count":
 				msg.resp <- len(h.connections[msg.userID])
+			case "online_users":
+				ids := make([]int, 0, len(h.connections))
+				for id := range h.connections {
+					ids = append(ids, id)
+				}
+				msg.resp <- ids
 			}
 		case <-h.done:
 			h.handleCloseAll()
@@ -209,12 +215,25 @@ func (h *Hub) CanAccept(userID int) bool {
 	return h.ConnectionCount(userID) < maxConnectionsPerUser
 }
 
+// OnlineUserIDs returns the ids of every user with at least one open connection.
+func (h *Hub) OnlineUserIDs() []int {
+	resp := make(chan any, 1)
+	select {
+	case h.query <- hubMessage{kind: "online_users", resp: resp}:
+		ids, _ := (<-resp).([]int)
+		return ids
+	case <-h.done:
+		return nil
+	}
+}
+
 // queryBool sends a query message and waits for the hub's reply.
 func (h *Hub) queryBool(kind string, userID int) int {
-	resp := make(chan int, 1)
+	resp := make(chan any, 1)
 	select {
 	case h.query <- hubMessage{kind: kind, userID: userID, resp: resp}:
-		return <-resp
+		v, _ := (<-resp).(int)
+		return v
 	case <-h.done:
 		return 0
 	}

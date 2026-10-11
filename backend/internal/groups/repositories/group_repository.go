@@ -10,8 +10,8 @@ import (
 // SaveGroup saves a new group to the database and returns the generated group ID.
 func SaveGroup(tx *sql.Tx, groupe models.Groupe) (int, error) {
 	result, err := tx.Exec(
-		`INSERT INTO user_groups (creator_id, title, description) VALUES (?, ?, ?)`,
-		groupe.Admin, groupe.Title, groupe.Description,
+		`INSERT INTO user_groups (creator_id, title, description, image) VALUES (?, ?, ?, ?)`,
+		groupe.Admin, groupe.Title, groupe.Description, groupe.Image,
 	)
 	if err != nil {
 		return 0, err
@@ -74,22 +74,31 @@ func GetAllGroups(userID int) ([]models.Groupe, error) {
 			ug.creator_id,
 			ug.title,
 			ug.description,
+			ug.image,
 			EXISTS (
 				SELECT 1
 				FROM group_members gm
 				WHERE gm.group_id = ug.id
 				AND gm.user_id = ?
-			) AS is_member
+			) AS is_member,
+			EXISTS (
+				SELECT 1
+				FROM group_requests gr
+				WHERE gr.group_id = ug.id
+				AND gr.user_id = ?
+				AND gr.status = 'pending'
+			) AS is_pending,
+			(SELECT COUNT(*) FROM group_members gm WHERE gm.group_id = ug.id) AS member_count
 		FROM user_groups ug
 		ORDER BY ug.id DESC
-	`, userID)
+	`, userID, userID)
 
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var groups []models.Groupe
+	groups := make([]models.Groupe, 0)
 
 	for rows.Next() {
 		var group models.Groupe
@@ -99,7 +108,10 @@ func GetAllGroups(userID int) ([]models.Groupe, error) {
 			&group.Admin,
 			&group.Title,
 			&group.Description,
+			&group.Image,
 			&group.IsMember,
+			&group.IsPending,
+			&group.MemberCount,
 		)
 
 		if err != nil {
@@ -132,7 +144,6 @@ func GetGroupCreator(group_id int) (int, error) {
 	return creatorID, nil
 }
 
-
 // GetUserFullName retrieves the full name of a user based on their user ID.
 func GetUserFullName(user_id int) string {
 	var fullName string
@@ -149,20 +160,46 @@ func GetUserFullName(user_id int) string {
 	return fullName
 }
 
-
 // get the group info by group id
-func GetGroupbyid(group_id int) (models.Groupe, error) {
+func GetGroupbyid(group_id int, userIDs ...int) (models.Groupe, error) {
 	var group models.Groupe
+	userID := 0
+	if len(userIDs) > 0 {
+		userID = userIDs[0]
+	}
 
 	err := database.Database.QueryRow(`
-		SELECT id, creator_id, title, description
-		FROM user_groups
-		WHERE id = ?
-	`, group_id).Scan(
+		SELECT
+			ug.id,
+			ug.creator_id,
+			ug.title,
+			ug.description,
+			ug.image,
+			EXISTS (
+				SELECT 1
+				FROM group_members gm
+				WHERE gm.group_id = ug.id
+				AND gm.user_id = ?
+			) AS is_member,
+			EXISTS (
+				SELECT 1
+				FROM group_requests gr
+				WHERE gr.group_id = ug.id
+				AND gr.user_id = ?
+				AND gr.status = 'pending'
+			) AS is_pending,
+			(SELECT COUNT(*) FROM group_members gm WHERE gm.group_id = ug.id) AS member_count
+		FROM user_groups ug
+		WHERE ug.id = ?
+	`, userID, userID, group_id).Scan(
 		&group.Id,
 		&group.Admin,
 		&group.Title,
 		&group.Description,
+		&group.Image,
+		&group.IsMember,
+		&group.IsPending,
+		&group.MemberCount,
 	)
 
 	if err != nil {

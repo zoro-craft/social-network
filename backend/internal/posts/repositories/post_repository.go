@@ -15,6 +15,7 @@ const PostSelect = `
 		p.group_id,
 		p.user_id,
 		u.full_name,
+		COALESCE(u.avatar, ''),
 		p.created_at
 `
 
@@ -26,6 +27,15 @@ const ReactionSelect = `,
 	(SELECT COUNT(*)
 	 FROM post_reactions
 	 WHERE post_id = p.id AND is_like = 0) AS dislike_count
+`
+
+// The reacting viewer id fills the single `?` below.
+const UserReactionSelect = `,
+	COALESCE((
+		SELECT CASE WHEN is_like = 1 THEN 'like' ELSE 'dislike' END
+		FROM post_reactions
+		WHERE post_id = p.id AND user_id = ?
+	), '') AS user_reaction
 `
 
 const FromPosts = `
@@ -72,9 +82,9 @@ func CanViewPost(postID, viewerID int) bool {
 }
 
 func GetPostsByUser(userID, viewerID int) ([]models.Post, error) {
-	query := PostSelect + FromPosts + " WHERE p.user_id = ? AND p.group_id IS NULL AND " + VisibleCondition + " ORDER BY p.id DESC"
+	query := PostSelect + ReactionSelect + UserReactionSelect + FromPosts + " WHERE p.user_id = ? AND p.group_id IS NULL AND " + VisibleCondition + " ORDER BY p.id DESC"
 
-	rows, err := database.Database.Query(query, userID, viewerID, viewerID, viewerID, viewerID)
+	rows, err := database.Database.Query(query, viewerID, userID, viewerID, viewerID, viewerID, viewerID)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +95,7 @@ func GetPostsByUser(userID, viewerID int) ([]models.Post, error) {
 	for rows.Next() {
 		var p models.Post
 
-		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.FullName, &p.CreatedAt); err != nil {
+		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.FullName, &p.Avatar, &p.CreatedAt, &p.LikeCount, &p.DislikeCount, &p.UserReaction); err != nil {
 			return nil, err
 		}
 
@@ -95,10 +105,10 @@ func GetPostsByUser(userID, viewerID int) ([]models.Post, error) {
 	return result, rows.Err()
 }
 
-func GetPostsByGroup(groupID int) ([]models.Post, error) {
-	query := PostSelect + ReactionSelect + FromPosts + " WHERE p.group_id = ? ORDER BY p.id DESC"
+func GetPostsByGroup(groupID, viewerID int) ([]models.Post, error) {
+	query := PostSelect + ReactionSelect + UserReactionSelect + FromPosts + " WHERE p.group_id = ? ORDER BY p.id DESC"
 
-	rows, err := database.Database.Query(query, groupID)
+	rows, err := database.Database.Query(query, viewerID, groupID)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +119,7 @@ func GetPostsByGroup(groupID int) ([]models.Post, error) {
 	for rows.Next() {
 		var p models.Post
 
-		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.FullName, &p.CreatedAt, &p.LikeCount, &p.DislikeCount); err != nil {
+		if err := rows.Scan(&p.ID, &p.Title, &p.Content, &p.Image, &p.Privacy, &p.GroupID, &p.UserID, &p.FullName, &p.Avatar, &p.CreatedAt, &p.LikeCount, &p.DislikeCount, &p.UserReaction); err != nil {
 			return nil, err
 		}
 
