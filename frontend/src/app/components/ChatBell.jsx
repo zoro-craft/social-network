@@ -3,17 +3,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
-import { useRealtime } from '@/components/RealtimeProvider';
+import { useRealtime } from '@/app/components/RealtimeProvider';
 import { conversationKeyFromPayload } from '@/utils/chat';
+import Icon from './Icon';
 
-// Navbar chat icon that owns the browser-only unread counts and broadcasts them.
 export default function ChatBell() {
   const router = useRouter();
   const { auth } = useAuth();
   const { subscribe } = useRealtime();
-  const [total, setTotal] = useState(0); // app-wide unread total.
-  const countsRef = useRef({}); // per-conversation unread counts.
-  const openRef = useRef(new Set()); // conversation keys currently open (not counted).
+  const [total, setTotal] = useState(0);
+  const countsRef = useRef({});
+  const openRef = useRef(new Set());
 
   // Broadcast the current counts so the chat page can render tab and row badges.
   const sync = () => {
@@ -86,11 +86,11 @@ export default function ChatBell() {
 
   return (
     <button
-      className="glass-nav-search glass-nav-bell glass-chat-bell"
+      className="glass-nav-icon glass-nav-bell glass-chat-bell"
       onClick={() => router.push('/chat')}
       aria-label="Chat"
     >
-      💬
+      <Icon name="chat" />
       {total > 0 && <span className="glass-bell-badge">{total}</span>}
     </button>
   );

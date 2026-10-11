@@ -1,8 +1,9 @@
 import './globals.css';
 import { AuthProvider } from '@/app/context/AuthContext';
 import { ToastProvider } from '@/app/context/ToastContext';
-import { RealtimeProvider } from '@/components/RealtimeProvider';
-import Navbar from '@/components/Navbar';
+import { RealtimeProvider } from '@/app/components/RealtimeProvider';
+import Navbar from '@/app/components/Navbar';
+import AppShell from '@/app/components/AppShell';
 
 export const metadata = {
   title: 'Social Network',
@@ -17,7 +18,7 @@ export default function RootLayout({ children }) {
           <RealtimeProvider>
             <ToastProvider>
               <Navbar />
-              {children}
+              <AppShell>{children}</AppShell>
             </ToastProvider>
           </RealtimeProvider>
         </AuthProvider>

@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
-import { useRealtime } from '@/components/RealtimeProvider';
+import { useRealtime } from '@/app/components/RealtimeProvider';
 import ChatSidebar from './ChatSidebar';
 import Thread from './Thread';
 import Composer from './Composer';

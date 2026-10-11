@@ -1,0 +1,410 @@
+/* ═══════════════════════════════════════════════════════════════
+   REELS — full-height snap-scrolling video column
+   ═══════════════════════════════════════════════════════════════
+
+   The column owns its scrolling, so the slide is sized from the column
+   rather than the page: height fills it, width follows the 9:16 ratio.
+   That keeps a portrait video uncropped on any viewport instead of
+   letting object-fit: cover trim the sides. */
+
+.glass-reels-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* ── Header: title, feed/saved tabs, create button ── */
+
+.glass-reels-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.glass-reels-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.glass-reels-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--bg-input);
+}
+
+.glass-reels-tab {
+  padding: 6px 16px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.glass-reels-tab:hover {
+  color: var(--text-primary);
+}
+
+.glass-reels-tab-active {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.glass-reels-tab-active:hover {
+  color: var(--on-accent);
+}
+
+/* ── The scrolling column ── */
+
+.glass-reels-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+
+.glass-reels-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.glass-reels-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 60vh;
+  text-align: center;
+}
+
+/* ── One slide ── */
+
+.glass-reel {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: min(100%, calc((100vh - var(--nav-height) - 96px) * 9 / 16));
+  aspect-ratio: 9 / 16;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: #000;
+  box-shadow: var(--shadow);
+}
+
+.glass-reel-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Sits over the video; children place themselves in the corners. */
+.glass-reel-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  /* Keeps white text legible over a bright frame. */
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.72) 0%,
+    rgba(0, 0, 0, 0.28) 32%,
+    transparent 58%
+  );
+  pointer-events: none;
+}
+
+.glass-reel-overlay > * {
+  pointer-events: auto;
+}
+
+/* ── Mute toggle, top right ── */
+
+.glass-reel-mute {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  background: rgba(10, 10, 12, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.glass-reel-mute:hover {
+  background: rgba(10, 10, 12, 0.78);
+  transform: scale(1.06);
+}
+
+/* ── Caption block, bottom left ── */
+
+.glass-reel-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  color: #fff;
+}
+
+.glass-reel-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.glass-reel-author-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.glass-reel-author-name:hover {
+  text-decoration: underline;
+}
+
+.glass-reel-caption {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.92);
+  overflow-wrap: break-word;
+}
+
+.glass-reel-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+/* The mono timestamp is too small for the view icon to sit at 1em. */
+.glass-reel-time svg {
+  font-size: 14px;
+}
+
+/* ── Action rail, bottom right ── */
+
+.glass-reel-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.glass-reel-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: #fff;
+  cursor: pointer;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.6));
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.glass-reel-action:hover {
+  transform: scale(1.1);
+}
+
+.glass-reel-action:active {
+  transform: scale(0.94);
+}
+
+.glass-reel-action > span:first-child {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.glass-reel-action-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.glass-reel-action-liked,
+.glass-reel-action-saved {
+  color: var(--accent-strong);
+}
+
+/* ── Comment drawer ── */
+
+.glass-reel-comments-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  background: var(--scrim);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fade 0.18s ease;
+}
+
+.glass-reel-comments {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 520px;
+  max-height: 78vh;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-lg);
+  animation: sheetUp 0.24s var(--ease-out);
+}
+
+.glass-reel-comments-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.glass-reel-comments-head h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.glass-reel-comments-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.glass-reel-comment {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.glass-reel-comment-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.glass-reel-comment-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.glass-reel-comment-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-body);
+  overflow-wrap: break-word;
+}
+
+.glass-reel-comment-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.glass-reel-comment-form {
+  flex-shrink: 0;
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.glass-reel-comment-form .glass-input {
+  flex: 1;
+}
+
+.glass-reel-comment-form .glass-button {
+  width: auto;
+  flex-shrink: 0;
+}
+
+/* ── Video preview on the create page ── */
+
+.glass-reel-preview {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 9 / 16;
+  object-fit: contain;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #000;
+}
+
+@keyframes sheetUp {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

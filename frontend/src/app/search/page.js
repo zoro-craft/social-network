@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import debounce from 'lodash/debounce';
 import { API_BASE } from '@/utils/api';
-import Avatar from '@/components/Avatar';
+import Avatar from '@/app/components/Avatar';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 export default function SearchPage() {

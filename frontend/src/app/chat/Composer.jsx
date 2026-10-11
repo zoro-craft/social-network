@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import EmojiPicker from './EmojiPicker';
+import Icon from '@/app/components/Icon';
 
 // Composer panel: message input, Enter-to-send, and the emoji picker toggle.
 export default function Composer({ chat }) {
@@ -56,7 +57,7 @@ export default function Composer({ chat }) {
           disabled={disabled}
           aria-label="Toggle emoji picker"
         >
-          😊
+          <Icon name="smile" />
         </button>
         <textarea
           ref={inputRef}

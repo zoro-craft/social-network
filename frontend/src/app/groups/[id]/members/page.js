@@ -1,7 +1,7 @@
 'use client';
 
 import { apiRequest } from "@/utils/api";
-import Avatar from "@/components/Avatar";
+import Avatar from "@/app/components/Avatar";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useRequireAuth } from '@/hooks/useRequireAuth';

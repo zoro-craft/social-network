@@ -1,0 +1,229 @@
+/* ═══════════════════════════════════════════════════════════════
+   APP SHELL — a groups/online gutter and the content column
+   ═══════════════════════════════════════════════════════════════
+
+   Flex, not grid: the gutter returns null when nobody is signed in,
+   so the content column has to be the one that grows. With a fixed
+   grid template an anonymous visitor's page would be squeezed into a
+   300px first column. */
+
+/* `--side-gap` is the single knob the breakpoints below reuse. */
+.glass-shell {
+  --side-gap: 24px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: var(--side-gap);
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
+}
+
+/* One-viewport pages (/reels): no bottom padding, and the column owns
+   its own scrolling so the shell never adds a stray scrollbar. */
+.glass-shell-immersive {
+  max-width: none;
+  height: calc(100vh - var(--nav-height));
+  padding: 0;
+  overflow: hidden;
+}
+
+.glass-shell-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.glass-shell-immersive .glass-shell-main {
+  height: 100%;
+  min-height: 0;
+}
+
+/* The gutter stays put while the content column scrolls past it. */
+.glass-shell-side {
+  position: sticky;
+  top: calc(var(--nav-height) + 24px);
+  flex: 0 0 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: calc(100vh - var(--nav-height) - 48px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* ── Card: one titled block of the gutter ── */
+
+.glass-side-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.glass-side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.glass-side-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.glass-side-count {
+  min-width: 20px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--bg-hover);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.glass-side-action {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.glass-side-action:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+.glass-side-empty {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* ── List rows ── */
+
+.glass-side-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.glass-side-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  font: inherit;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.glass-side-row:hover {
+  background: var(--bg-hover);
+}
+
+.glass-side-row-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.glass-side-row-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.glass-side-row-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Avatars and presence ── */
+
+.glass-side-avatar {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+}
+
+.glass-side-thumb {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.glass-side-dot {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  /* The ring is the card's own surface, so the dot reads as cut out of it. */
+  box-shadow: 0 0 0 2px var(--bg-surface);
+  transition: background var(--transition);
+}
+
+.glass-side-dot-online {
+  background: var(--success);
+}
+
+/* ── Full-width call to action at the foot of a card ── */
+
+.glass-side-cta {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition),
+    color var(--transition);
+}
+
+.glass-side-cta:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}

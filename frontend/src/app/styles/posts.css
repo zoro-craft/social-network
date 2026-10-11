@@ -1,3 +1,7 @@
+/* ═══════════════════════════════════════════════════════════════
+   POSTS — feed page, post cards, reactions, voting, events
+   ═══════════════════════════════════════════════════════════════ */
+
 .glass-feed-page {
   min-height: calc(100vh - var(--nav-height));
   display: flex;
@@ -19,37 +23,74 @@
 
 .glass-feed-title {
   margin: 0;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 28px;
-  font-weight: 600;
+  font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.03em;
 }
 
 .glass-create-post-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: auto;
+  margin-top: 0;
+}
+
+.glass-feed-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ── Feed list + states ───────────────────────────────────────── */
+.glass-feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: var(--content-max);
+}
+
+.glass-feed-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: var(--content-max);
+  padding: 48px 24px;
+  color: var(--text-muted);
+}
+
+.glass-feed-empty p {
+  margin: 0;
+}
+
+.glass-feed-empty svg {
+  color: var(--text-muted);
 }
 
 /* ── Post card ────────────────────────────────────────────────── */
 .glass-post-card {
   width: 100%;
   max-width: var(--content-max);
-  background: var(--bg-card);
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border-color);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 22px;
-  box-shadow: var(--shadow-sm), var(--glass-inset);
+  box-shadow: var(--shadow-sm);
   transition:
     border-color var(--transition),
     box-shadow var(--transition);
+  animation: fadeUp 0.25s var(--ease-out) both;
 }
 
 .glass-post-card:hover {
-  border-color: var(--accent-border);
-  box-shadow: var(--shadow), var(--glass-inset), var(--glass-glow);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow);
 }
 
 .glass-post-header {
@@ -62,28 +103,85 @@
   color: var(--text-muted);
 }
 
+.glass-post-author-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.glass-post-author-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
 .glass-post-author {
+  font-size: 14px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.glass-post-time {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Privacy chip */
+.glass-post-privacy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.glass-post-privacy-private {
+  background: var(--warning-soft);
+  border-color: var(--warning-border);
+  color: var(--warning);
+}
+
+.glass-post-privacy-almost_private {
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+  color: var(--accent);
 }
 
 .glass-post-title {
-  font-family: var(--font-serif);
-  font-size: 19px;
-  font-weight: 600;
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 8px;
   line-height: 1.35;
+  letter-spacing: -0.01em;
   overflow-wrap: break-word;
 }
 
+/* Nested inset panel for post body */
 .glass-post-content {
   font-size: 15px;
   line-height: 1.65;
-  color: var(--text-primary);
+  color: var(--text-body);
   white-space: pre-wrap;
   margin: 0 0 8px;
   overflow-wrap: break-word;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
 }
 
 .glass-post-image {
@@ -95,7 +193,7 @@
   margin: 4px 0 12px;
 }
 
-/* ── Reactions ────────────────────────────────────────────────── */
+/* ── Reactions — pill-shaped buttons ── */
 .glass-reactions {
   display: flex;
   gap: 10px;
@@ -108,7 +206,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--bg-elevated);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   color: var(--text-secondary);
@@ -130,11 +228,25 @@
 }
 
 .glass-react-btn:active {
-  transform: translateY(1px);
+  transform: scale(0.95);
 }
 
-/* Active states use compound selectors so they win over
-   .glass-react-btn and .glass-react-btn:hover regardless of order */
+/* Icons render at 1em, so give them a nudge above the 13px label rather than
+   shrinking them to match the text exactly. */
+.glass-react-btn svg {
+  font-size: 15px;
+}
+
+.glass-react-count {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Comment sits apart from the vote pair */
+.glass-react-comment {
+  margin-left: auto;
+}
+
+/* Active like/dislike — semantic pill tints */
 .glass-react-btn.glass-react-like,
 .glass-react-btn.glass-react-like:hover {
   background: var(--success-soft);
@@ -163,8 +275,8 @@
   gap: 4px;
   width: 100%;
   padding: 10px 14px;
-  border-radius: var(--radius-md);
-  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   cursor: pointer;
   text-align: left;
@@ -212,17 +324,84 @@
 }
 
 .glass-vote-meta {
+  font-family: var(--font-mono);
   font-size: 12px;
+  font-weight: 500;
   color: var(--text-muted);
 }
 
 .glass-vote-total {
   margin: 12px 0 0;
+  font-family: var(--font-mono);
   font-size: 12px;
+  font-weight: 500;
   color: var(--text-muted);
   text-align: right;
   border-top: 1px solid var(--border);
   padding-top: 10px;
+}
+
+/* ── Loading skeleton ─────────────────────────────────────────── */
+.glass-post-skeleton {
+  pointer-events: none;
+}
+
+.glass-skeleton-avatar,
+.glass-skeleton-line {
+  display: block;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--bg-hover) 25%,
+    var(--bg-card) 50%,
+    var(--bg-hover) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.glass-skeleton-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.glass-skeleton-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.glass-skeleton-line {
+  height: 10px;
+  width: 100%;
+  margin: 10px 0 0;
+}
+
+.glass-skeleton-line--short {
+  width: 40%;
+  margin: 0;
+}
+
+.glass-skeleton-line--tiny {
+  width: 22%;
+  height: 8px;
+  margin: 0;
+}
+
+.glass-skeleton-line--wide {
+  width: 75%;
+}
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
 }
 
 .glass-event-datetime {
@@ -232,7 +411,8 @@
   border-radius: var(--radius-pill);
   background: var(--accent-soft);
   border: 1px solid var(--accent-border);
-  color: var(--accent-hover);
+  color: var(--accent);
+  font-family: var(--font-mono);
   font-weight: 600;
   font-size: 13px;
   letter-spacing: 0.01em;

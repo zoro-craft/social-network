@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Avatar from "@/components/Avatar";
+import Avatar from "@/app/components/Avatar";
 
 function UsersModal({ type, users, onClose }) {
   return (

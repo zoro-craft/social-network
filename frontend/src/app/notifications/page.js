@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { apiRequest } from "@/utils/api";
 import { useToast } from "@/app/context/ToastContext";
-import { useRealtime } from "@/components/RealtimeProvider";
+import { useRealtime } from "@/app/components/RealtimeProvider";
 
 import {
   handleAcceptInvitation,

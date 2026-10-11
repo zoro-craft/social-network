@@ -3,17 +3,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
-import { useRealtime } from '@/components/RealtimeProvider';
+import { useRealtime } from '@/app/components/RealtimeProvider';
 import { apiRequest } from '@/utils/api';
+import Icon from './Icon';
 
-// Navbar bell showing the server-supplied exact unread total.
 export default function NotificationBell() {
   const router = useRouter();
   const { auth } = useAuth();
   const { subscribe } = useRealtime();
-  const [unread, setUnread] = useState(0); // exact unread notification total.
+  const [unread, setUnread] = useState(0);
 
-  // Fetch the server-supplied exact unread total for the badge.
+  // refreshUnread fetches the server-supplied exact unread total for the badge.
   const refreshUnread = useCallback(async () => {
     try {
       const data = await apiRequest('/notifications');
@@ -23,7 +23,7 @@ export default function NotificationBell() {
     }
   }, []);
 
-  // Initial and sign-in catch-up: show the server-supplied exact unread total.
+  // initial + sign-in catch-up: the badge shows the server-supplied exact unread total
   useEffect(() => {
     if (!auth.authenticated) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -33,19 +33,21 @@ export default function NotificationBell() {
     refreshUnread();
   }, [auth.authenticated, refreshUnread]);
 
-  // Live updates: refetch the exact total on each new notification.
+  // live updates: refetch the server-supplied exact total on each new notification
   useEffect(() => {
     if (!auth.authenticated) return;
     return subscribe('notification', refreshUnread);
   }, [auth.authenticated, subscribe, refreshUnread]);
 
-  // Removal signal: refetch so the badge mimics the server-side deletion.
+  // removal signal: a notification was deleted server-side (e.g. a cancelled follow
+  // request); refetch so the badge mimics the removal.
   useEffect(() => {
     if (!auth.authenticated) return;
     return subscribe('notification_removed', refreshUnread);
   }, [auth.authenticated, subscribe, refreshUnread]);
 
-  // After acting on a notification, refresh the badge to the exact unread total.
+  // after acting on a notification in the list, refresh the badge so the
+  // current session reflects the exact unread total
   useEffect(() => {
     if (!auth.authenticated) return;
     window.addEventListener('notifications:changed', refreshUnread);
@@ -54,11 +56,11 @@ export default function NotificationBell() {
 
   return (
     <button
-      className="glass-nav-search glass-nav-bell"
+      className="glass-nav-icon glass-nav-bell"
       onClick={() => router.push('/notifications')}
       aria-label="Notifications"
     >
-      🔔
+      <Icon name="bell" />
       {unread > 0 && <span className="glass-bell-badge">{unread}</span>}
     </button>
   );

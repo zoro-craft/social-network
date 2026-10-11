@@ -1,3 +1,7 @@
+/* ═══════════════════════════════════════════════════════════════
+   LAYOUT — page shells, glass containers, section headings
+   ═══════════════════════════════════════════════════════════════ */
+
 .glass-subtitle,
 .glass-muted-text {
   margin: 0;
@@ -11,10 +15,11 @@
 
 .glass-section-title {
   margin: 0 0 18px;
-  font-family: var(--font-serif);
-  font-size: 21px;
-  font-weight: 600;
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 700;
   color: var(--text-primary);
+  letter-spacing: -0.02em;
 }
 
 .glass-empty-state {
@@ -23,6 +28,8 @@
   text-align: center;
   font-size: 14px;
   color: var(--text-muted);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
 }
 
 .glass-page {
@@ -42,25 +49,17 @@
 .glass-container {
   width: 100%;
   max-width: 440px;
-  background: var(--bg-card);
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border-color);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 40px 32px;
-  box-shadow:
-    var(--shadow),
-    var(--glass-inset);
+  box-shadow: var(--shadow);
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .glass-container:hover {
-  border-color: var(--accent-border);
-  box-shadow:
-    var(--shadow),
-    var(--glass-inset),
-    var(--glass-glow);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow), var(--glass-glow);
 }
 
 .glass-container-login {
@@ -81,11 +80,12 @@
 
 .glass-container h2 {
   margin: 0 0 4px;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 26px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
   text-align: center;
+  letter-spacing: -0.02em;
 }
 
 .glass-container p {
@@ -103,4 +103,32 @@
   margin-bottom: 24px;
   padding-bottom: 20px;
   border-bottom: 1px solid var(--border);
+}
+
+/* ── Entrance animation — subtle fade-up ── */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes drop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

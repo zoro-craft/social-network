@@ -8,7 +8,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useImageInput } from '@/hooks/useImageInput';
 import { API_BASE } from '@/utils/api';
 import formatDate from '@/utils/format';
-import Avatar from '@/components/Avatar';
+import Avatar from '@/app/components/Avatar';
 
 export default function CommentPage() {
   const { id } = useParams();

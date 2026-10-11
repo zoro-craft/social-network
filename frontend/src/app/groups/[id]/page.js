@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useToast } from '@/app/context/ToastContext';
 import { useEffect, useState } from 'react';
-import { apiRequest } from '@/utils/api';
+import { API_BASE, apiRequest } from '@/utils/api';
 import GroupPosts from '@/app/groups/GroupPosts';
 import GroupEvent from '@/app/groups/Groupevents';
 
@@ -66,14 +66,22 @@ export default function GroupDetailsPage() {
                 <header className="glass-header-card">
                     <img
                         className="glass-group-icon glass-group-icon--lg"
-                        src="/group-avatar.jpeg"
+                        src={group.image ? `${API_BASE}${group.image}` : '/group-avatar.jpeg'}
                         alt={`${group.titel} avatar`}
+                        onError={(event) => {
+                            event.currentTarget.onerror = null;
+                            event.currentTarget.src = '/group-avatar.jpeg';
+                        }}
                     />
 
                     <div className="glass-header-info">
                         <h1 className="glass-group-title">{group.titel}</h1>
                         <p className="glass-group-description">{group.description}</p>
-
+                        {typeof group.member_count === 'number' && (
+                            <p className="glass-group-member-count">
+                                {group.member_count} member{group.member_count === 1 ? '' : 's'}
+                            </p>
+                        )}
                     </div>
                 </header>
 

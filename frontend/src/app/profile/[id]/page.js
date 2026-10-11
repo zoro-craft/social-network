@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import Avatar from "@/components/Avatar";
+import Avatar from "@/app/components/Avatar";
 import { apiRequest } from "@/utils/api";
 import { useToast } from "@/app/context/ToastContext";
 import { useProfile } from "./useProfile";

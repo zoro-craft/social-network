@@ -238,3 +238,116 @@
     right: 12px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   APP SHELL, REELS, STORIES
+   ═══════════════════════════════════════════════════════════════
+
+   The gutter collapses before the content column ever gets narrow,
+   which leaves the feed a comfortable width down to the phone
+   breakpoints. */
+
+@media (max-width: 1024px) {
+  .glass-shell {
+    --side-gap: 0;
+  }
+
+  .glass-shell-side {
+    display: none;
+  }
+}
+
+/* Reels go edge to edge: no gutters, no rounded corners. The video is
+   allowed to crop at this size, since a 9:16 slide plus the phone's
+   own padding would otherwise be too small to read. */
+@media (max-width: 768px) {
+  .glass-shell-immersive {
+    padding: 0;
+  }
+
+  .glass-reels-head {
+    padding: 16px 16px 0;
+    margin-bottom: 12px;
+  }
+
+  .glass-reels-title {
+    font-size: 22px;
+  }
+
+  .glass-reels-scroll {
+    gap: 0;
+  }
+
+  .glass-reel {
+    max-width: 100%;
+    border: none;
+    border-radius: 0;
+  }
+
+  .glass-reel-comments {
+    max-height: 88vh;
+  }
+
+  /* The rails have no room to spare on a phone, so the labels go and
+     the rings tighten up instead. */
+  .glass-story-tile {
+    width: 62px;
+  }
+
+  .glass-story-ring {
+    width: 58px;
+    height: 58px;
+  }
+
+  .glass-story-viewer {
+    padding: 0;
+  }
+
+  .glass-story-viewer-inner {
+    max-width: 100%;
+    max-height: 100vh;
+    border: none;
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  /* With both gutters gone the shell is a bare column — the feed and
+     the sidebars' former owners need the full width and their own
+     top padding back. */
+  .glass-shell {
+    padding: 16px 16px 40px;
+  }
+
+  .glass-shell-immersive {
+    padding: 0;
+  }
+
+  .glass-reel-actions {
+    gap: 16px;
+  }
+
+  .glass-reel-action > span:first-child {
+    font-size: 26px;
+  }
+
+  .glass-story-label {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .glass-reel-caption {
+    /* The action rail already eats the right third. */
+    max-width: 60%;
+    font-size: 13px;
+  }
+
+  .glass-reel-comments {
+    max-height: 92vh;
+  }
+
+  .glass-group-search {
+    max-width: none;
+  }
+}

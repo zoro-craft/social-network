@@ -6,7 +6,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useImageInput } from '@/hooks/useImageInput';
 import { API_BASE } from '@/utils/api';
-import Avatar from '@/components/Avatar';
+import Avatar from '@/app/components/Avatar';
 
 function CreatePostForm() {
   const router = useRouter();
@@ -23,7 +23,23 @@ function CreatePostForm() {
   const [selectedViewers, setSelectedViewers] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const [groups, setGroups] = useState([]);
   const [selectedGroupId, setSelectedGroupId] = useState(preselectedGroupId || '');
+
+  useEffect(() => {
+    if (!auth.id) return;
+
+    const fetchGroups = async () => {
+      try {
+        const data = await apiRequest('/groups');
+        setGroups((data || []).filter((group) => group.is_member));
+      } catch {
+        setGroups([]);
+      }
+    };
+
+    fetchGroups();
+  }, [auth.id]);
 
   useEffect(() => {
     if (privacy !== 'private' || !auth.id || selectedGroupId) return;
@@ -124,6 +140,29 @@ function CreatePostForm() {
         </p>
 
         <form onSubmit={handleSubmit} className="glass-form">
+          {groups.length > 0 && (
+            <div className="glass-input-group">
+              <select
+                className="glass-input glass-select"
+                value={selectedGroupId}
+                onChange={(e) => {
+                  setSelectedGroupId(e.target.value);
+                  if (e.target.value) {
+                    setPrivacy('public');
+                    setSelectedViewers([]);
+                  }
+                }}
+              >
+                <option value="" className="glass-select-option">Post to your feed</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id} className="glass-select-option">
+                    Group: {g.titel}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="glass-input-group">
             <input
               className="glass-input"

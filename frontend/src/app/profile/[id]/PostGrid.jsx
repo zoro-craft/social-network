@@ -1,9 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { API_BASE } from "@/utils/api";
+import Icon from "@/app/components/Icon";
 
 function PostGrid({ posts, isPrivateHidden }) {
-  if (isPrivateHidden) return <p className="empty-state">🔒 Private account.</p>;
+  if (isPrivateHidden) return <p className="empty-state"><Icon name="lock" /> Private account.</p>;
   if (!posts?.length) return <p className="empty-state">No posts yet.</p>;
 
   return (

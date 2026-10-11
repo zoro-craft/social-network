@@ -1,7 +1,9 @@
 import Image from 'next/image';
 import { API_BASE } from '@/utils/api';
 
-export default function Avatar({ src, name, size = 28 }) {
+// `eager` marks an avatar that is above the fold (the sidebar profile card, for
+// instance) so Next.js stops counting it as a lazy LCP candidate.
+export default function Avatar({ src, name, size = 28, eager = false }) {
   const imgSrc = src ? `${API_BASE}${src}` : '/default-avatar.png';
 
   return (
@@ -10,6 +12,7 @@ export default function Avatar({ src, name, size = 28 }) {
       alt={name || ''}
       width={size}
       height={size}
+      loading={eager ? 'eager' : 'lazy'}
       unoptimized
       style={{ borderRadius: '50%', objectFit: 'cover' }}
     />

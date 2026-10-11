@@ -2,9 +2,10 @@
 
 import { useToast } from '@/app/context/ToastContext';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useImageInput } from '@/hooks/useImageInput';
 import { apiRequest } from '@/utils/api';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function CreatGroup() {
   const { auth, loading: authLoading } = useRequireAuth();
@@ -13,7 +14,40 @@ export default function CreatGroup() {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const { file: imageFile, setFile: setImageFile } = useImageInput();
+  const [imagePreview, setImagePreview] = useState('');
   const [loading, setLoading] = useState(false);
+  const previewUrlRef = useRef(null);
+
+  useEffect(() => () => {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+  }, []);
+
+  const handleImageChange = (event) => {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+
+    const file = event.target.files?.[0] || null;
+    if (!file) {
+      previewUrlRef.current = null;
+      setImageFile(null);
+      setImagePreview('');
+      event.target.value = '';
+      return;
+    }
+
+    const preview = URL.createObjectURL(file);
+    previewUrlRef.current = preview;
+    setImageFile(file);
+    setImagePreview(preview);
+    event.target.value = '';
+  };
+
+  const clearImage = () => {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    previewUrlRef.current = null;
+    setImageFile(null);
+    setImagePreview('');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,10 +60,12 @@ export default function CreatGroup() {
     setLoading(true);
 
     try {
-      const res = await apiRequest('/groups', 'POST', {
-        titel: title.trim(),
-        description: description.trim(),
-      });
+      const form = new FormData();
+      form.append('titel', title.trim());
+      form.append('description', description.trim());
+      if (imageFile) form.append('image', imageFile);
+
+      const res = await apiRequest('/groups', 'POST', form, true);
 
       showToast(res.message || 'Group created successfully!', false);
       router.push('/groups');
@@ -55,6 +91,7 @@ export default function CreatGroup() {
               placeholder="Group title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              maxLength={50}
               required
             />
           </div>
@@ -65,10 +102,30 @@ export default function CreatGroup() {
               placeholder="Describe your group..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              maxLength={200}
               rows={4}
               required
             />
           </div>
+
+          <label className="glass-file-label">
+            Group image
+            <input
+              className="glass-file-input"
+              type="file"
+              accept="image/jpeg,image/png,image/gif"
+              onChange={handleImageChange}
+            />
+          </label>
+
+          {imagePreview && (
+            <div className="glass-group-image-preview">
+              <img src={imagePreview} alt="Selected group image" />
+              <button type="button" onClick={clearImage}>
+                Remove image
+              </button>
+            </div>
+          )}
 
           <button
             className="glass-button"

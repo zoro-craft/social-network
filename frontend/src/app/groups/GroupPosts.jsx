@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { API_BASE } from '@/utils/api';
 import formatDate from '@/utils/format';
 import { useToast } from '@/app/context/ToastContext';
+import Icon from '@/app/components/Icon';
 
 export default function GroupPosts({ groupId }) {
     const router = useRouter();
@@ -74,7 +75,7 @@ export default function GroupPosts({ groupId }) {
                             className="glass-react-btn"
                             onClick={() => router.push(`/posts/comment/${post.id}`)}
                         >
-                            💬 Comment
+                            <Icon name="message" /> Comment
                         </button>
                     </div>
                 </div>
