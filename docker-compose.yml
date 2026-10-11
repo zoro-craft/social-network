@@ -1,30 +1,58 @@
+# API for the mobile app (that is all you need for mobile development):
+#
+#   docker compose up --build
+#   -> http://<your-lan-ip>:8000/api/...   (Caddy strips /api and proxies to :8080)
+#
+# Add the Next.js web UI when you also want the browser frontend:
+#
+#   docker compose --profile web up --build
+
 services:
   backend:
     build: ./backend
     image: social-backend
+
     environment:
       - DB_PATH=/data/social-network.db
       - UPLOADS_PATH=/uploads
+
     volumes:
-      - db_data:/data
-      - uploads_data:/uploads
+      - ./backend/internal/database:/data
+      - ./backend/uploads:/uploads
+
+    healthcheck:
+      test:
+        ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://localhost:8080/health']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
 
   frontend:
     build: ./frontend
     image: social-frontend
+
+    # Opt-in: not needed to test the mobile app, and building Next.js is slow.
+    profiles: ['web']
+
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
   caddy:
     image: caddy:alpine
+
     ports:
-      - '8000:80'
+      # Bind all interfaces (not just loopback) so an emulator or a phone on the
+      # same network can reach the API.
+      - '0.0.0.0:8000:80'
+
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
-    depends_on:
-      - frontend
-      - backend
 
-volumes:
-  db_data:
-  uploads_data:
+    # Waiting for health avoids the first requests landing before the server is
+    # listening. The frontend is intentionally not a dependency: without the
+    # `web` profile only /api/* is served, which is exactly what mobile needs.
+    depends_on:
+      backend:
+        condition: service_healthy
