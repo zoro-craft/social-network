@@ -3,7 +3,9 @@ name: social-network
 services:
   backend:
     build: ./backend
-    image: elmehdirezoug/social-backend-arm:1.0.0
+    # AMD/x86_64 image.
+    image: elmehdirezoug/social-backend:1.0.0
+    # For ARM/arm64 machines use: elmehdirezoug/social-backend-arm:1.0.0
     restart: unless-stopped
     environment:
       - DB_PATH=/data/social-network.db
@@ -16,7 +18,9 @@ services:
 
   frontend:
     build: ./frontend
-    image: elmehdirezoug/social-frontend-arm:1.0.0
+    # AMD/x86_64 image.
+    image: elmehdirezoug/social-frontend:1.0.0
+    # For ARM/arm64 machines use: elmehdirezoug/social-frontend-arm:1.0.0
     restart: unless-stopped
     environment:
       - API_PROXY_TARGET=http://backend:8080
