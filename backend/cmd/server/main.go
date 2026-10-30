@@ -20,6 +20,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Fill the database with demo accounts and content on first startup.
+	if err := database.Seed(); err != nil {
+		log.Fatal(err)
+	}
+
 	// Start the realtime hub goroutine
 	websocket.WirePresence(websocket.DefaultHub)
 	go websocket.DefaultHub.Run()
