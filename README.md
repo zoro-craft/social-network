@@ -31,16 +31,16 @@ A Facebook-like social network with followers, posts, groups, private chats, eve
 | Backend       | Go, `net/http`, Gorilla WebSocket, SQLite (`mattn/go-sqlite3`), bcrypt, UUID |
 | Migrations    | [golang-migrate](https://github.com/golang-migrate/migrate)                  |
 | Frontend      | Next.js (React), JavaScript                                                  |
-| Reverse proxy | Caddy                                                                        |
+| Reverse proxy | Nginx                                                                        |
 | Infra         | Docker, Docker Compose                                                       |
 
 ## Architecture
 
-Three containers orchestrated by Docker Compose, fronted by a Caddy reverse proxy:
+Three containers orchestrated by Docker Compose, fronted by an Nginx reverse proxy:
 
 ```
                     ┌───────────────┐
-   browser ───────► │  Caddy (:80)  │
+   browser ───────► │  Nginx (:80)  │
                     └──────┬────────┘
               /api/*       │        everything else
               ┌────────────┴─────┐
@@ -57,7 +57,7 @@ Three containers orchestrated by Docker Compose, fronted by a Caddy reverse prox
      └──────────────┘
 ```
 
-- `Caddy` listens on **port 8000** (host) and routes `/api/*` to the backend and everything else to the frontend.
+- `Nginx` listens on **port 8000** (host) and routes `/api/*` to the backend and everything else to the frontend.
 - The backend runs Go migrations on startup to create/update all tables (users, sessions, posts, comments, reactions, followers, groups, group members/invitations/requests, events, event responses, notifications, messages).
 - Uploaded images are stored on disk (`UPLOADS_PATH`) and referenced from the database.
 
@@ -80,7 +80,7 @@ Three containers orchestrated by Docker Compose, fronted by a Caddy reverse prox
 │   ├── Dockerfile
 │   ├── next.config.mjs      # /api proxy to the backend
 │   └── package.json
-├── Caddyfile                # reverse proxy config
+├── nginx.conf               # reverse proxy config
 ├── docker-compose.yml
 └── structure.excalidraw     # architecture diagram
 ```

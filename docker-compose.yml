@@ -1,7 +1,10 @@
+name: social-network
+
 services:
   backend:
     build: ./backend
     image: social-backend
+    restart: unless-stopped
     environment:
       - DB_PATH=/data/social-network.db
       - UPLOADS_PATH=/uploads
@@ -12,15 +15,20 @@ services:
   frontend:
     build: ./frontend
     image: social-frontend
+    restart: unless-stopped
+    environment:
+      - API_PROXY_TARGET=http://backend:8080
     depends_on:
       - backend
 
-  caddy:
-    image: caddy:alpine
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: social-nginx
+    restart: unless-stopped
     ports:
       - '8000:80'
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - frontend
       - backend

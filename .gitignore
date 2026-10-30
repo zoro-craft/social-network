@@ -8,3 +8,6 @@ bugs/
 *.test
 *.out
 vendor/
+
+# Reverse proxy config is kept out of the repo
+nginx.conf
