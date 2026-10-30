@@ -7,7 +7,12 @@
 .glass-stories-bar {
   margin-bottom: 20px;
   padding-bottom: 4px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--card-border);
+}
+
+/* Feed rail aligns left with the posts, never centred. */
+.glass-stories-scroll {
+  justify-content: flex-start;
 }
 
 .glass-stories-scroll {
@@ -44,33 +49,21 @@
   cursor: pointer;
 }
 
-/* The ring is a conic gradient so "unseen" reads as a live accent arc
-   and "seen" as a flat grey one, without a second asset. */
+/* 64px circle: purple→pink ring for an unseen story, flat grey for seen. */
 .glass-story-ring {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 68px;
-  height: 68px;
-  padding: 2px;
+  width: 64px;
+  height: 64px;
+  padding: 3px;
   border-radius: 50%;
-  background: conic-gradient(
-    from 210deg,
-    var(--border-strong),
-    var(--border-strong)
-  );
+  background: linear-gradient(135deg, #3a3a48, #2a2a35);
   transition: transform var(--duration) var(--ease-out);
 }
 
 .glass-story-ring-unseen {
-  background: conic-gradient(
-    from 210deg,
-    var(--accent),
-    var(--accent-strong),
-    var(--accent),
-    var(--accent-strong),
-    var(--accent)
-  );
+  background: var(--ring-gradient);
 }
 
 .glass-story-tile:hover .glass-story-ring {
@@ -85,7 +78,7 @@
 
 .glass-story-label {
   max-width: 100%;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.3;
   color: var(--text-muted);
   text-align: center;

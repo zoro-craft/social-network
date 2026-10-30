@@ -32,6 +32,15 @@
   }
 }
 
+/* Phones use the fixed bottom tab bar for section navigation, so the
+   desktop nav pill must go — otherwise logo + links + actions are wider
+   than the viewport and the whole page scrolls sideways. */
+@media (max-width: 767px) {
+  .glass-nav {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
   .glass-navbar {
     padding: 0 10px;
@@ -40,6 +49,15 @@
 
   .glass-logo {
     font-size: 15px;
+  }
+
+  /* No room for the first name beside the avatar on a phone. */
+  .glass-avatar-name {
+    display: none;
+  }
+
+  .glass-avatar-button {
+    padding: 3px;
   }
 
   .glass-nav-search {
@@ -111,6 +129,17 @@
     padding: 18px;
   }
 
+  /* Keep all four reactions on one line inside the narrower card. */
+  .glass-reactions {
+    gap: 4px;
+  }
+
+  .glass-react-btn {
+    gap: 5px;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
   .glass-input,
   .glass-textarea {
     padding: 11px 12px;
@@ -128,12 +157,14 @@
 
   .glass-header-actions {
     width: 100%;
+    flex-wrap: wrap;
   }
 
   .glass-header-actions .glass-btn-create,
   .glass-header-actions .glass-btn-browse {
-    flex: 1;
+    flex: 1 1 120px;
     padding-inline: 10px;
+    white-space: nowrap;
   }
 
   .glass-groups-title {
@@ -158,6 +189,12 @@
   .glass-comment-form-row {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  /* The image is indented under the avatar, so 280px + 40px margin no
+     longer fits inside a 320px phone. */
+  .glass-comment-image {
+    max-width: calc(100% - 40px);
   }
 
   .glass-file-label-inline {
@@ -190,8 +227,23 @@
     padding: 1.25rem;
   }
 
+  /* Keep the three counters side by side — they are short, and stacking
+     them turned one row into three full-height cards on a phone. */
   .stats-grid {
-    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .profile-wrapper .stats-grid .glass-card {
+    padding: 0.85rem 0.4rem;
+  }
+
+  .stat-item p:first-child {
+    font-size: 0.6rem;
+    letter-spacing: 0.04em;
+  }
+
+  .stat-item p:last-child {
+    font-size: 1.25rem;
   }
 
   .posts-grid {
@@ -206,6 +258,13 @@
 @media (max-width: 480px) {
   .glass-invite-top {
     text-align: center;
+  }
+
+  /* A 340px toast pinned 24px from the right edge overflows a phone. */
+  .glass-toast {
+    left: 12px;
+    right: 12px;
+    max-width: none;
   }
 }
 
@@ -279,6 +338,11 @@
   }
 
   .glass-reel {
+    /* Fill the column that is actually left over, instead of guessing from
+       100vh — on a phone the header and the bottom tab bar both eat into it,
+       which used to push the share/save buttons under the tab bar. */
+    width: auto;
+    height: 100%;
     max-width: 100%;
     border: none;
     border-radius: 0;
@@ -349,5 +413,59 @@
 
   .glass-group-search {
     max-width: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FEED 3-COLUMN SHELL BREAKPOINTS
+   Desktop: left + feed + right · Tablet (<1100): drop the right rail
+   Mobile (<768): single column, both sidebars gone, bottom tab bar
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1100px) {
+  .glass-shell-feed {
+    grid-template-columns: var(--col-left) minmax(0, var(--content-max));
+  }
+
+  .glass-shell-feed .glass-rail-right {
+    display: none;
+  }
+}
+
+/* The generic shell hides its sidebar at 1024px; the feed keeps its left
+   gutter until the mobile breakpoint. */
+@media (min-width: 768px) and (max-width: 1100px) {
+  .glass-shell-feed .glass-shell-side:not(.glass-rail-right) {
+    display: flex;
+  }
+}
+
+@media (max-width: 767px) {
+  .glass-shell-feed {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding: 20px 16px 96px;
+  }
+
+  .glass-shell-feed .glass-shell-side {
+    display: none;
+  }
+
+  /* Room for the fixed bottom tab bar on every other page too. */
+  .glass-shell {
+    padding-bottom: 96px;
+  }
+
+  /* Immersive pages stop above the tab bar rather than running under it.
+     `padding: 0` must win over the .glass-shell bottom padding above. */
+  .glass-shell-immersive {
+    height: calc(
+      100dvh - var(--nav-height) - 62px - env(safe-area-inset-bottom, 0px)
+    );
+    padding: 0;
+  }
+
+  .glass-feed-title {
+    font-size: 26px;
   }
 }

@@ -1,101 +1,254 @@
 /* ═══════════════════════════════════════════════════════════════
-   DESIGN SYSTEM — Dark Minimal UI (Linear / Vercel / Notion)
-   Violet accent, Inter + JetBrains Mono, restrained depth
-   ═══════════════════════════════════════════════════════════════ */
+   DESIGN TOKENS — premium dark glass UI
+   Signature accent: #6e6bf0 (logo)
+   ═══════════════════════════════════════════════════════════════
+
+   Everything visual should come from this file. Other stylesheets
+   must not contain raw colours, shadows or timing values. */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap');
 
 :root {
   color-scheme: dark;
 
-  /* ── Surfaces ── */
-  --bg-page: #0a0a0c;
-  --bg-surface: #111114;
-  --bg-card: #15151a;
-  --bg-input: #0d0d10;
-  --bg-hover: #1c1c22;
+  /* ── Surfaces ─────────────────────────────────────────────────
+     base → raised → overlay. Each step is slightly lighter, never
+     pure black, with a faint blue/violet tint. */
+  --bg-page: #08080f;
+  --bg-base: #08080f;
+  --bg-sunken: #0a0a11;
+  --bg-input: #0b0b12;
+  --bg-surface: #101018;
+  --bg-card: #14141e;
+  --bg-hover: #1a1a26;
+  --bg-overlay: #1e1e2b;
 
-  /* Legacy aliases — keeps every existing var(--bg-*) reference working */
+  /* Legacy aliases — keep every existing var(--bg-*) reference working. */
   --bg: var(--bg-page);
   --bg-elevated: var(--bg-surface);
-  --bg-navbar: rgba(10, 10, 12, 0.78);
-  --scrim: rgba(4, 4, 6, 0.72);
+  --bg-raised: var(--bg-card);
+  --bg-navbar: rgba(8, 8, 15, 0.72);
+  --scrim: rgba(4, 4, 8, 0.76);
+  --scrim-strong: rgba(3, 3, 6, 0.9);
 
-  /* ── Borders ── */
-  --border: #23232a;
-  --border-strong: #34343f;
-  --border-hover: #34343f;
-  --hairline: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  /* ── Glass surfaces ─────────────────────────────────────────── */
+  --card-bg: rgba(255, 255, 255, 0.035);
+  --card-bg-hover: rgba(255, 255, 255, 0.055);
+  --card-border: rgba(255, 255, 255, 0.075);
+  --card-border-hover: rgba(110, 107, 240, 0.42);
+  --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --card-shadow-hover: 0 16px 44px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(110, 107, 240, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --card-blur: blur(16px) saturate(140%);
+  --nav-blur: blur(18px) saturate(150%);
 
-  /* ── Brand accent (violet) ── */
+  /* ── Borders ────────────────────────────────────────────────── */
+  --border-subtle: rgba(255, 255, 255, 0.045);
+  --border: rgba(255, 255, 255, 0.075);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --border-hover: rgba(110, 107, 240, 0.42);
+  --hairline: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+
+  /* ── Brand accent ───────────────────────────────────────────── */
   --accent: #6e6bf0;
-  --accent-hover: #5b58e0;
-  --accent-dark: #524fcc;
-  --accent-strong: #8e8cf5;
-  --accent-soft: rgba(110, 107, 240, 0.12);
-  --accent-border: rgba(110, 107, 240, 0.30);
+  --accent-hover: #5b58e8;
+  --accent-dark: #4a47c9;
+  --accent-strong: #a5a2ff;
+  --accent-soft: rgba(110, 107, 240, 0.14);
+  --accent-soft-hover: rgba(110, 107, 240, 0.2);
+  --accent-border: rgba(110, 107, 240, 0.38);
   --on-accent: #ffffff;
+  --accent-gradient: linear-gradient(135deg, #6e6bf0 0%, #4a47c9 100%);
+  --accent-gradient-hover: linear-gradient(135deg, #7b78ff 0%, #5552d6 100%);
+  --accent-glow: 0 0 28px rgba(110, 107, 240, 0.38);
+  --accent-glow-soft: 0 0 18px rgba(110, 107, 240, 0.22);
+  --ring-gradient: linear-gradient(
+    135deg,
+    #6e6bf0 0%,
+    #a855f7 55%,
+    #ec4899 100%
+  );
 
-  /* ── Semantic colors ── */
+  /* ── Semantic colours ───────────────────────────────────────── */
   --success: #3ecf8e;
-  --success-soft: rgba(62, 207, 142, 0.12);
-  --success-border: rgba(62, 207, 142, 0.30);
+  --success-soft: rgba(62, 207, 142, 0.14);
+  --success-border: rgba(62, 207, 142, 0.32);
+
   --danger: #f0605f;
-  --danger-soft: rgba(240, 96, 95, 0.12);
-  --danger-border: rgba(240, 96, 95, 0.30);
+  --danger-soft: rgba(240, 96, 95, 0.14);
+  --danger-border: rgba(240, 96, 95, 0.32);
+
   --warning: #f0b232;
-  --warning-soft: rgba(240, 178, 50, 0.12);
-  --warning-border: rgba(240, 178, 50, 0.30);
+  --warning-soft: rgba(240, 178, 50, 0.14);
+  --warning-border: rgba(240, 178, 50, 0.32);
 
-  /* ── Typography ── */
-  --text-primary: #f4f4f6;
-  --text-secondary: #a3a3ad;
-  --text-muted: #6b6b75;
-  --text-body: #d6d6df;
+  --info: #5cc8ff;
+  --info-soft: rgba(92, 200, 255, 0.14);
+  --info-border: rgba(92, 200, 255, 0.32);
 
+  /* ── Text ───────────────────────────────────────────────────── */
+  --text-primary: #ededf4;
+  --text-secondary: #a3a3ba;
+  --text-muted: #7a7a90;
+  --text-tertiary: #8e8ea6;
+  --text-body: #d7d7e2;
+  --text-inverse: #08080f;
+
+  /* ── Typography ─────────────────────────────────────────────── */
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system,
     'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular',
-    Menlo, Consolas, monospace;
-  /* Legacy alias — existing rules referencing --font-serif now get Inter */
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo,
+    Consolas, monospace;
+  --font-display: var(--font-sans);
+  /* Legacy alias — existing rules referencing --font-serif now get Inter. */
   --font-serif: var(--font-sans);
 
-  /* ── Shape tokens ── */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.8125rem; /* 13px */
+  --text-base: 0.875rem; /* 14px */
+  --text-md: 1rem; /* 16px */
+  --text-lg: 1.25rem; /* 20px */
+  --text-xl: 1.75rem; /* 28px */
+  --text-2xl: 2.5rem; /* 40px */
+
+  /* ── Shape ──────────────────────────────────────────────────── */
+  --radius-xs: 6px;
   --radius-sm: 8px;
   --radius-md: 12px;
-  --radius: 12px;
-  --radius-lg: 18px;
+  --radius: 14px;
+  --radius-xl: 16px;
+  --radius-lg: 20px;
+  --radius-2xl: 24px;
   --radius-pill: 999px;
 
-  /* ── Depth tokens ── */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.40);
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.36),
-    0 12px 28px -12px rgba(0, 0, 0, 0.60);
-  --shadow-lg: 0 4px 14px rgba(0, 0, 0, 0.42),
-    0 24px 48px -20px rgba(0, 0, 0, 0.70);
-  --shadow-focus: 0 0 0 3px var(--accent-soft);
+  /* ── Depth ──────────────────────────────────────────────────── */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 6px 18px rgba(0, 0, 0, 0.4),
+    0 28px 60px -24px rgba(0, 0, 0, 0.75);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  --shadow-focus: 0 0 0 3px rgba(110, 107, 240, 0.24);
+  --shadow-glow: 0 0 0 1px rgba(110, 107, 240, 0.25),
+    0 8px 30px -8px rgba(110, 107, 240, 0.45);
 
-  /* ── Motion ── */
-  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  /* ── Spacing (4px base) ─────────────────────────────────────── */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── Motion ─────────────────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --duration-fast: 0.12s;
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-instant: 0.08s;
+  --duration-fast: 0.15s;
   --duration: 0.2s;
   --duration-slow: 0.35s;
-  --transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: 0.2s var(--ease-out);
+  --transition-fast: 0.15s var(--ease-out);
 
-  /* ── Layout ── */
+  /* ── Layout ─────────────────────────────────────────────────── */
   --nav-height: 64px;
+  --tabbar-height: 62px;
   --content-max: 640px;
+  --shell-max: 1280px;
+  --shell-gap: 32px;
+  --col-left: 280px;
+  --col-right: 300px;
+  --page-pad-x: 24px;
 
-  /* ── Simplified surface system (no heavy frosted glass) ──
-     Minimal, opaque-ish cards with subtle border & shadow instead */
-  --glass-blur: blur(14px) saturate(130%);
-  --glass-border-color: var(--border);
-  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  --glass-glow: 0 0 24px -8px rgba(110, 107, 240, 0.18);
+  /* ── Layers ─────────────────────────────────────────────────── */
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-nav: 50;
+  --z-tabbar: 60;
+  --z-dropdown: 70;
+  --z-overlay: 900;
+  --z-modal: 1000;
+  --z-toast: 9999;
+  --z-tooltip: 10000;
+
+  /* ── Translucent layers ─────────────────────────────────────── */
+  --white-02: rgba(255, 255, 255, 0.02);
+  --white-03: rgba(255, 255, 255, 0.03);
+  --white-04: rgba(255, 255, 255, 0.04);
+  --white-05: rgba(255, 255, 255, 0.05);
+  --white-06: rgba(255, 255, 255, 0.06);
+  --white-08: rgba(255, 255, 255, 0.08);
+  --white-10: rgba(255, 255, 255, 0.1);
+  --white-12: rgba(255, 255, 255, 0.12);
+  --white-16: rgba(255, 255, 255, 0.16);
+  --white-20: rgba(255, 255, 255, 0.2);
+  --white-28: rgba(255, 255, 255, 0.28);
+  --white-40: rgba(255, 255, 255, 0.4);
+  --white-56: rgba(255, 255, 255, 0.56);
+  --white-68: rgba(255, 255, 255, 0.68);
+  --white-72: rgba(255, 255, 255, 0.72);
+  --white-88: rgba(255, 255, 255, 0.88);
+  --white-92: rgba(255, 255, 255, 0.92);
+  --black-20: rgba(0, 0, 0, 0.2);
+  --black-30: rgba(0, 0, 0, 0.3);
+  --black-45: rgba(0, 0, 0, 0.45);
+  --black-55: rgba(0, 0, 0, 0.55);
+  --black-72: rgba(0, 0, 0, 0.72);
+  --black-78: rgba(0, 0, 0, 0.78);
+  --black-85: rgba(0, 0, 0, 0.85);
+
+  /* ── Scrollbars, selection, focus, skeletons ────────────────── */
+  --scrollbar-size: 6px;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: var(--border-strong);
+  --scrollbar-thumb-hover: var(--accent);
+
+  --selection-bg: var(--accent-soft);
+  --selection-fg: var(--accent-strong);
+
+  --focus-ring-color: var(--accent);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  --skeleton-base: var(--bg-hover);
+  --skeleton-highlight: var(--bg-card);
+
+  /* ── Gradients / ambient background ─────────────────────────── */
+  --page-glow: radial-gradient(
+      720px 480px at 50% -10%,
+      rgba(110, 107, 240, 0.18),
+      transparent 70%
+    ),
+    radial-gradient(
+      480px 360px at 100% 0%,
+      rgba(88, 101, 242, 0.08),
+      transparent 65%
+    );
+  --surface-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.035'/></svg>");
+  --gradient-cover: radial-gradient(
+      120% 100% at 15% 0%,
+      rgba(110, 107, 240, 0.35),
+      transparent 55%
+    ),
+    radial-gradient(
+      100% 100% at 85% 10%,
+      rgba(168, 85, 247, 0.22),
+      transparent 60%
+    ),
+    linear-gradient(135deg, #12121c 0%, #0a0a11 100%);
+
+  /* ── Legacy glass aliases ───────────────────────────────────── */
+  --glass-blur: var(--card-blur);
+  --glass-border-color: var(--card-border);
+  --glass-inset: var(--shadow-inset);
+  --glass-glow: 0 0 28px -10px rgba(110, 107, 240, 0.35);
   --glass-bg: var(--bg-surface);
   --glass-bg-raised: var(--bg-card);
-
-  /* ── Surface grain (subtle) ── */
-  --surface-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.03'/></svg>");
 }

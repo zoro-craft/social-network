@@ -1,129 +1,77 @@
-# Social Network
+# social-network
 
-A Facebook-like social network with followers, posts, groups, private chats, events and real-time notifications — built in Go and Next.js, fully containerized with Docker.
+Monorepo with three parts:
 
-## Authors
+| Folder      | What it is                                          |
+| ----------- | --------------------------------------------------- |
+| `backend/`  | Go API + SQLite (listens on `:8080`, paths at root) |
+| `frontend/` | Next.js web app (listens on `:3000`)                |
+| `mobile/`   | Expo / React Native app                             |
 
-- halhyane
-- msarar
-- erezzoug
-- abouzerd
-
-## Features
-
-- **Authentication** — registration (email, password, first/last name, date of birth + optional avatar, nickname, about me), login/logout with sessions and cookies, passwords hashed with bcrypt.
-- **Followers** — follow/unfollow requests. Private profiles require the request to be accepted; public profiles are followed automatically.
-- **Profiles** — public and private profiles showing user info, posts, followers and following. The owner can toggle their profile between public and private.
-- **Posts & comments** — with optional images/GIFs (JPEG, PNG, GIF supported) and three privacy levels:
-  - _public_ — everyone
-  - _almost private_ — followers only
-  - _private_ — selected followers only
-- **Groups** — create groups, invite users (invitee must accept), browse all groups and request to join (creator accepts/declines). Members can post, comment and invite others.
-- **Events** — group members create events (title, description, day/time) and everyone votes _going_ or _not going_.
-- **Chat** — private one-to-one messages between users who follow each other (either direction), plus a shared chat room per group. Emojis supported.
-- **Notifications** — visible on every page: follow requests, group invitations, group join requests, event creation, and more. Delivered in real time and displayed separately from new private messages.
-- **WebSockets** — real-time messaging and notifications via Gorilla WebSocket.
-
-## Tech Stack
-
-| Layer         | Technology                                                                   |
-| ------------- | ---------------------------------------------------------------------------- |
-| Backend       | Go, `net/http`, Gorilla WebSocket, SQLite (`mattn/go-sqlite3`), bcrypt, UUID |
-| Migrations    | [golang-migrate](https://github.com/golang-migrate/migrate)                  |
-| Frontend      | Next.js (React), JavaScript                                                  |
-| Reverse proxy | Caddy                                                                        |
-| Infra         | Docker, Docker Compose                                                       |
-
-## Architecture
-
-Three containers orchestrated by Docker Compose, fronted by a Caddy reverse proxy:
-
-```
-                    ┌───────────────┐
-   browser ───────► │  Caddy (:80)  │
-                    └──────┬────────┘
-              /api/*       │        everything else
-              ┌────────────┴─────┐
-              ▼                  ▼
-    ┌───────────────┐   ┌─────────────────┐
-    │ backend :8080 │   │ frontend :3000  │
-    │  Go + SQLite  │◄──┘   Next.js       │
-    └───────┬───────┘   └─────────────────┘
-            │
-     ┌──────┴───────┐
-     │   volumes    │
-     │ db_data      │  SQLite database file
-     │ uploads_data │  uploaded images/GIFs
-     └──────────────┘
-```
-
-- `Caddy` listens on **port 8000** (host) and routes `/api/*` to the backend and everything else to the frontend.
-- The backend runs Go migrations on startup to create/update all tables (users, sessions, posts, comments, reactions, followers, groups, group members/invitations/requests, events, event responses, notifications, messages).
-- Uploaded images are stored on disk (`UPLOADS_PATH`) and referenced from the database.
-
-## Project Structure
-
-```
-.
-├── backend/
-│   ├── cmd/server/          # entrypoint
-│   ├── internal/
-│   │   ├── database/
-│   │   │   ├── migrations/sqlite/   # .up.sql / .down.sql migrations
-│   │   │   └── sqlite.go            # DB connection + migration runner
-│   │   ├── events/          # group events
-│   │   └── ...              # auth, posts, groups, chat, notifications, ...
-│   ├── Dockerfile
-│   └── go.mod
-├── frontend/
-│   ├── src/app/             # Next.js pages, components, styles
-│   ├── Dockerfile
-│   ├── next.config.mjs      # /api proxy to the backend
-│   └── package.json
-├── Caddyfile                # reverse proxy config
-├── docker-compose.yml
-└── structure.excalidraw     # architecture diagram
-```
-
-## Getting Started
-
-### Prerequisites
-
-- Docker and Docker Compose
-
-### Run with Docker (recommended)
+## Running the API
 
 ```bash
 docker compose up --build
 ```
 
-Then open **http://localhost:8000**.
+Caddy publishes **`:8000`** and strips the `/api` prefix before proxying to the Go
+server, so the API is reached at `http://<your-lan-ip>:8000/api/...`.
 
-The database and uploaded files persist in the `db_data` and `uploads_data` Docker volumes.
-
-### Environment variables
-
-| Variable           | Container | Default                   | Description                        |
-| ------------------ | --------- | ------------------------- | ---------------------------------- |
-| `DB_PATH`          | backend   | `/data/social-network.db` | SQLite database location           |
-| `UPLOADS_PATH`     | backend   | `/uploads`                | Uploaded images directory          |
-| `API_PROXY_TARGET` | frontend  | `http://localhost:8080`   | Backend URL for `/api` proxy (dev) |
-
-### Local development (without Docker)
-
-Run the backend:
+Check it is healthy:
 
 ```bash
-cd backend
-go run ./cmd/server
+curl http://localhost:8000/api/health      # -> {"status":"ok"}
 ```
 
-Run the frontend in another terminal:
+Add the web UI (not needed for mobile development):
 
 ```bash
-cd frontend
-npm install
-npm run dev
+docker compose --profile web up --build
 ```
 
-Then open **http://localhost:3000** — the frontend proxies `/api/*` to the backend on port 8080.
+The Go server also accepts `/api/...` directly, so it works without Caddy:
+
+```bash
+cd backend && go run ./cmd/server          # serves on :8080
+```
+
+## Running the mobile app
+
+The client targets `EXPO_PUBLIC_API_URL` (falling back to `10.0.2.2:8000` on
+Android, `localhost:8000` elsewhere) and always appends `/api`.
+
+### Android emulator
+
+`10.0.2.2` is the emulator's alias for your host machine, so the default works
+as long as the API is up on port 8000:
+
+```bash
+docker compose up --build
+cd mobile && npx expo start --android
+```
+
+### Physical phone (Expo Go)
+
+`10.0.2.2` does **not** exist on a real device — point the app at your computer's
+LAN IP and restart Metro with `--clear` (the variable is inlined at bundle time):
+
+```bash
+hostname -I | awk '{print $1}'                       # e.g. 192.168.1.50
+docker compose up --build
+
+cd mobile
+EXPO_PUBLIC_API_URL=http://192.168.1.50:8000 npx expo start --clear
+```
+
+The phone must be on the same network. If it still fails, open
+`http://192.168.1.50:8000/api/health` in the phone's browser — if that does not
+show `{"status":"ok"}`, the problem is the network/firewall, not the app.
+
+Over USB, `adb reverse` avoids the LAN entirely:
+
+```bash
+adb reverse tcp:8000 tcp:8000
+EXPO_PUBLIC_API_URL=http://localhost:8000 npx expo start --clear
+```
+
+> `npx expo start --tunnel` only tunnels the Metro bundler, not the API.

@@ -7,10 +7,27 @@ import { API_BASE } from '@/utils/api';
 import StoryBar from '@/app/components/StoryBar';
 import Avatar from '@/app/components/Avatar';
 import Icon from '@/app/components/Icon';
+import { useToast } from '@/app/context/ToastContext';
 import { useReactions } from './useReactions';
 import formatDate from '@/utils/format';
 
 const PAGE_SIZE = 10;
+
+// Names sometimes arrive as the account email. Show a human name derived from
+// the local part ("john.doe@mail.com" -> "John Doe") instead of the raw address.
+function displayName(fullName = '') {
+  if (!fullName.includes('@')) return fullName.trim();
+
+  return fullName
+    .split('@')[0]
+    .replace(/[._-]+/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .trim();
+}
+
+function handleFrom(fullName = '') {
+  return fullName.includes('@') ? `@${fullName.split('@')[0]}` : null;
+}
 
 const PRIVACY_META = {
   public: { label: 'Public', icon: 'eye' },
@@ -57,6 +74,36 @@ export default function Posts() {
   const [snapshotMaxId, setSnapshotMaxId] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const { react } = useReactions(setPosts);
+  const showToast = useToast();
+
+  // Presentation-only share: uses the native sheet when available, falling
+  // back to copying the post link. No API calls, no data flow changes.
+  // Every outcome reports back through the shared toast so a press always
+  // has a visible result.
+  const sharePost = async (post) => {
+    const url = `${window.location.origin}/posts/comment/${post.id}`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: post.title, text: post.content, url });
+        showToast('Post shared', false);
+        return;
+      }
+
+      if (!navigator.clipboard) {
+        showToast('Sharing is not available in this browser');
+        return;
+      }
+
+      await navigator.clipboard.writeText(url);
+      showToast('Link copied', false);
+    } catch (err) {
+      // Dismissing the native share sheet is not an outcome worth reporting.
+      if (err?.name !== 'AbortError') {
+        showToast('Could not share this post');
+      }
+    }
+  };
 
   useEffect(() => {
     if (!auth.authenticated) return;
@@ -134,7 +181,7 @@ export default function Posts() {
           className="glass-button glass-create-post-button"
           onClick={() => router.push('/posts/create')}
         >
-          <Icon name="share" size={16} />
+          <Icon name="plus" size={18} />
           Create Post
         </button>
       </header>
@@ -176,13 +223,16 @@ export default function Posts() {
                     <Avatar
                       src={post.avatar}
                       name={post.full_name}
-                      size={40}
+                      size={44}
                     />
                     <div className="glass-post-author-meta">
                       <span className="glass-post-author">
-                        {post.full_name}
+                        {displayName(post.full_name)}
                       </span>
                       <span className="glass-post-time">
+                        {handleFrom(post.full_name)
+                          ? `${handleFrom(post.full_name)} · `
+                          : ''}
                         {formatDate(post.created_at)}
                       </span>
                     </div>
@@ -193,12 +243,14 @@ export default function Posts() {
                 <h2 className="glass-post-title">{post.title}</h2>
 
                 {post.image && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    className="glass-post-image"
-                    src={`${API_BASE}${post.image}`}
-                    alt=""
-                  />
+                  <div className="glass-post-media">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      className="glass-post-image"
+                      src={`${API_BASE}${post.image}`}
+                      alt=""
+                    />
+                  </div>
                 )}
 
                 <p className="glass-post-content">{post.content}</p>
@@ -224,14 +276,25 @@ export default function Posts() {
                       {post.dislike_count || 0}
                     </span>
                   </button>
-                  <button
-                    type="button"
-                    className="glass-react-btn glass-react-comment"
-                    onClick={() => router.push(`/posts/comment/${post.id}`)}
-                  >
-                    <Icon name="message" />
-                    <span>Comment</span>
-                  </button>
+
+                  <span className="glass-react-end">
+                    <button
+                      type="button"
+                      className="glass-react-btn"
+                      onClick={() => router.push(`/posts/comment/${post.id}`)}
+                    >
+                      <Icon name="message" />
+                      <span>Comment</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="glass-react-btn"
+                      onClick={() => sharePost(post)}
+                    >
+                      <Icon name="share" />
+                      <span>Share</span>
+                    </button>
+                  </span>
                 </footer>
               </article>
             );

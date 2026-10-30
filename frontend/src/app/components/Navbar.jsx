@@ -34,6 +34,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const { auth, setAuth } = useAuth();
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const wrapRef = useRef(null);
 
   const go = (href) => {
@@ -52,6 +53,15 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Lift the navbar with a small shadow once the page has scrolled.
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4);
+
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const handleLogout = async () => {
     try {
       await apiRequest('/logout', 'POST');
@@ -64,7 +74,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="glass-navbar">
+    <header className={`glass-navbar ${scrolled ? 'glass-navbar-scrolled' : ''}`}>
       <button type="button" className="glass-logo" onClick={() => go('/')}>
         Social-Network
       </button>

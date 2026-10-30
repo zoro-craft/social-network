@@ -14,20 +14,25 @@ body {
 }
 
 html {
-  scrollbar-color: var(--border-strong) var(--bg-page);
+  scroll-behavior: smooth;
+  scrollbar-color: var(--border-strong) transparent;
   scrollbar-width: thin;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {
   margin: 0;
   color: var(--text-primary);
   background-color: var(--bg-page);
-  /* Subtle violet radial glow at top of page */
-  background-image:
-    radial-gradient(circle at 50% 0%, rgba(110, 107, 240, 0.06), transparent 60%),
-    var(--surface-grain);
+  /* Violet glow at the top of the page + a very faint grain overlay */
+  background-image: var(--page-glow), var(--surface-grain);
   background-repeat: no-repeat, repeat;
-  background-attachment: fixed;
+  background-attachment: fixed, fixed;
   font-family: var(--font-sans);
   font-size: 15px;
   line-height: 1.6;
@@ -79,25 +84,28 @@ h6 {
 /* Keyboard-only focus ring */
 button:focus-visible,
 a:focus-visible,
-[tabindex]:focus-visible {
+[tabindex]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
 
+/* Thin custom scrollbar — purple thumb on hover */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-page);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--border-strong);
   border-radius: 999px;
-  border: 2px solid var(--bg-page);
 }
 
 ::-webkit-scrollbar-thumb:hover {

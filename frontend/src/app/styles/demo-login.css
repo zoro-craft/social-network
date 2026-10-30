@@ -1,0 +1,132 @@
+/* ═══════════════════════════════════════════════════════════════
+   DEMO LOGIN — quick account picker under the login form
+   ═══════════════════════════════════════════════════════════════ */
+
+.demo-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-5) 0 var(--space-3);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.demo-divider::before,
+.demo-divider::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--border);
+}
+
+.demo-divider span {
+  flex: 0 0 auto;
+}
+
+.demo-users {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.demo-user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--shadow-inset);
+  transition: transform var(--duration-fast) var(--ease-out),
+    border-color var(--transition), background var(--transition),
+    box-shadow var(--transition);
+}
+
+.demo-user:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-glow);
+}
+
+.demo-user:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.demo-user:focus {
+  outline: none;
+}
+
+.demo-user:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.demo-user:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.demo-avatar {
+  display: block;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: var(--shadow-inset);
+}
+
+.demo-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+  line-height: 1.25;
+}
+
+.demo-meta strong,
+.demo-meta small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.demo-meta strong {
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.demo-meta small {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+@media (max-width: 399px) {
+  .demo-users {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-user {
+    transition: none;
+  }
+
+  .demo-user:hover:not(:disabled),
+  .demo-user:active:not(:disabled) {
+    transform: none;
+  }
+}

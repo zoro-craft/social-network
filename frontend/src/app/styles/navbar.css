@@ -15,7 +15,13 @@
   background: var(--bg-navbar);
   backdrop-filter: blur(14px) saturate(130%);
   -webkit-backdrop-filter: blur(14px) saturate(130%);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: box-shadow var(--transition), border-color var(--transition);
+}
+
+.glass-navbar-scrolled {
+  box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.85);
+  border-bottom-color: var(--card-border);
 }
 
 /* Logo: small gradient square + text */
@@ -52,52 +58,52 @@
   color: var(--accent);
 }
 
-/* Primary links, centred between the logo and the actions. Hidden from
-   the a11y tree as a duplicate of the buttons it wraps is not needed —
-   it is a real <nav>, just visually centred. */
+/* Primary links, centred between the logo and the actions, as a pill group. */
 .glass-nav {
   display: flex;
   align-items: center;
   gap: 4px;
   margin-inline: auto;
+  padding: 4px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-pill);
+  background: var(--card-bg);
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
 }
 
 .glass-nav-link {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 7px 12px;
+  padding: 7px 14px;
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
   background: transparent;
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   cursor: pointer;
   transition: background var(--transition), color var(--transition),
-    border-color var(--transition);
+    box-shadow var(--transition);
 }
 
 .glass-nav-link:hover {
-  background: var(--bg-hover);
+  background: rgba(255, 255, 255, 0.06);
   color: var(--text-primary);
 }
 
-.glass-nav-link-active {
-  background: var(--accent-soft);
-  border-color: var(--accent-border);
-  color: var(--accent);
-}
-
+.glass-nav-link-active,
 .glass-nav-link-active:hover {
-  background: var(--accent-soft);
-  color: var(--accent-strong);
+  background: var(--accent-gradient);
+  color: var(--on-accent);
+  box-shadow: var(--accent-glow);
 }
 
 .glass-nav-link-icon {
   display: inline-flex;
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1;
 }
 
@@ -187,7 +193,7 @@
 /* First name in the avatar pill. Collapses to nothing (rather than
    wrapping) once the navbar runs out of room — see responsive.css. */
 .glass-avatar-name {
-  max-width: 110px;
+  max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
