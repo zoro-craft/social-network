@@ -1,5 +1,7 @@
 # Social Network
 
+> **Live demo:** https://social-network.elmehdirezoug.dev
+
 A Facebook-like social network with followers, posts, groups, private chats, events and real-time notifications — built in Go and Next.js, fully containerized with Docker.
 
 ## Authors
