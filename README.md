@@ -31,33 +31,34 @@ A Facebook-like social network with followers, posts, groups, private chats, eve
 | Backend       | Go, `net/http`, Gorilla WebSocket, SQLite (`mattn/go-sqlite3`), bcrypt, UUID |
 | Migrations    | [golang-migrate](https://github.com/golang-migrate/migrate)                  |
 | Frontend      | Next.js (React), JavaScript                                                  |
-| Reverse proxy | Nginx                                                                        |
+| API proxy     | Next.js rewrites                                                             |
 | Infra         | Docker, Docker Compose                                                       |
 
 ## Architecture
 
-Three containers orchestrated by Docker Compose, fronted by an Nginx reverse proxy:
+Two containers orchestrated by Docker Compose. The Next.js frontend proxies
+`/api/*` to the Go backend, so the browser only talks to the frontend:
 
 ```
+   browser ───────► ┌─────────────────┐
+                    │ frontend :3000  │
+                    │   Next.js       │
+                    └───────┬─────────┘
+                            │ /api/*
+                            ▼
                     ┌───────────────┐
-   browser ───────► │  Nginx (:80)  │
-                    └──────┬────────┘
-              /api/*       │        everything else
-              ┌────────────┴─────┐
-              ▼                  ▼
-    ┌───────────────┐   ┌─────────────────┐
-    │ backend :8080 │   │ frontend :3000  │
-    │  Go + SQLite  │◄──┘   Next.js       │
-    └───────┬───────┘   └─────────────────┘
-            │
-     ┌──────┴───────┐
-     │   volumes    │
-     │ db_data      │  SQLite database file
-     │ uploads_data │  uploaded images/GIFs
-     └──────────────┘
+                    │ backend :8080 │
+                    │  Go + SQLite  │
+                    └───────┬───────┘
+                            │
+                     ┌──────┴───────┐
+                     │   volumes    │
+                     │ db_data      │  SQLite database file
+                     │ uploads_data │  uploaded images/GIFs
+                     └──────────────┘
 ```
 
-- `Nginx` listens on **port 8000** (host) and routes `/api/*` to the backend and everything else to the frontend.
+- `Frontend` listens on **port 3000** and proxies `/api/*` to the backend via Next.js rewrites.
 - The backend runs Go migrations on startup to create/update all tables (users, sessions, posts, comments, reactions, followers, groups, group members/invitations/requests, events, event responses, notifications, messages).
 - Uploaded images are stored on disk (`UPLOADS_PATH`) and referenced from the database.
 
@@ -80,7 +81,6 @@ Three containers orchestrated by Docker Compose, fronted by an Nginx reverse pro
 │   ├── Dockerfile
 │   ├── next.config.mjs      # /api proxy to the backend
 │   └── package.json
-├── nginx.conf               # reverse proxy config
 ├── docker-compose.yml
 └── structure.excalidraw     # architecture diagram
 ```
@@ -97,7 +97,7 @@ Three containers orchestrated by Docker Compose, fronted by an Nginx reverse pro
 docker compose up --build
 ```
 
-Then open **http://localhost:8000**.
+Then open **http://localhost:3000**.
 
 The database and uploaded files persist in the `db_data` and `uploads_data` Docker volumes.
 
