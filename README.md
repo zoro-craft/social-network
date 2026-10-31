@@ -1,13 +1,15 @@
 # Social Network
 
-A Facebook-like social network with followers, posts, groups, private chats, events and real-time notifications — built in Go and Next.js, fully containerized with Docker.
+> **Live demo:** https://social-network.elmehdirezoug.dev
 
 ## Authors
 
-- halhyane
-- msarar
-- erezzoug
-- abouzerd
+- [Houssam Alhyane (@Houssam-Alhyane)](https://github.com/Houssam-Alhyane)
+- [Mohammed Sarar (@meedsr07)](https://github.com/meedsr07)
+- [Elmehdi Rezoug (@zoro-craft)](https://github.com/zoro-craft)
+- [Aymane Bouzerda (@bouzerda0)](https://github.com/bouzerda0)
+
+A Facebook-like social network with followers, posts, groups, private chats, events and real-time notifications — built in Go and Next.js, fully containerized with Docker.
 
 ## Features
 
