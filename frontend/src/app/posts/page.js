@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { API_BASE } from '@/utils/api';
+import PostMedia from '@/components/PostMedia';
 import { useReactions } from './useReactions';
 import formatDate from '@/utils/format';
 
@@ -111,14 +112,7 @@ export default function Posts() {
           </div>
           <div className="glass-post-title">{post.title}</div>
 
-          {post.image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              className="glass-post-image"
-              src={`${API_BASE}${post.image}`}
-              alt=""
-            />
-          )}
+          <PostMedia src={post.image} />
 
           <div className="glass-post-content">{post.content}</div>
 

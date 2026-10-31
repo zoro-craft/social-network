@@ -1,8 +1,13 @@
 package database
 
 import (
+	"database/sql"
+	"embed"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -11,6 +16,9 @@ import (
 // DemoPassword is the shared password for every seeded demo account.
 const DemoPassword = "demo1234"
 
+//go:embed demoassets
+var demoAssets embed.FS
+
 type demoUser struct {
 	Email       string
 	FirstName   string
@@ -18,6 +26,7 @@ type demoUser struct {
 	Nickname    string
 	DateOfBirth string
 	AboutMe     string
+	AvatarFile  string
 	Private     bool
 }
 
@@ -35,13 +44,14 @@ type demoGroup struct {
 }
 
 type demoPost struct {
-	Author   int
-	Group    int
-	Title    string
-	Content  string
-	Privacy  string
-	Viewers  []int
-	HoursAgo float64
+	Author    int
+	Group     int
+	Title     string
+	Content   string
+	Privacy   string
+	MediaFile string
+	Viewers   []int
+	HoursAgo  float64
 }
 
 type demoComment struct {
@@ -97,12 +107,12 @@ type demoGroupMessage struct {
 }
 
 var demoUsers = []demoUser{
-	{Email: "sara@demo.local", FirstName: "Sara", LastName: "Johnson", Nickname: "sara", DateOfBirth: "1997-04-12", AboutMe: "Frontend developer. Coffee first, code second."},
-	{Email: "ahmed@demo.local", FirstName: "Ahmed", LastName: "Ali", Nickname: "ahmed", DateOfBirth: "1995-11-03", AboutMe: "Backend engineer. Go, SQLite and distributed systems."},
-	{Email: "nicole@demo.local", FirstName: "Nicole", LastName: "Martin", Nickname: "nicole", DateOfBirth: "1998-06-21", AboutMe: "Movie nerd and amateur cook. Ask me for a recommendation."},
-	{Email: "alex@demo.local", FirstName: "Alex", LastName: "Brown", Nickname: "alex", DateOfBirth: "1994-02-17", AboutMe: "Runner, gamer and weekend hiker."},
-	{Email: "lina@demo.local", FirstName: "Lina", LastName: "Haddad", Nickname: "lina", DateOfBirth: "1999-09-08", AboutMe: "Illustrator and UI designer. Private but friendly.", Private: true},
-	{Email: "omar@demo.local", FirstName: "Omar", LastName: "Farouk", Nickname: "omar", DateOfBirth: "1996-12-30", AboutMe: "Street photographer. Mostly analog, always curious.", Private: true},
+	{Email: "sara@demo.local", FirstName: "Sara", LastName: "Johnson", Nickname: "sara", DateOfBirth: "1997-04-12", AboutMe: "Frontend developer. Coffee first, code second.", AvatarFile: "sara.jpg"},
+	{Email: "ahmed@demo.local", FirstName: "Ahmed", LastName: "Ali", Nickname: "ahmed", DateOfBirth: "1995-11-03", AboutMe: "Backend engineer. Go, SQLite and distributed systems.", AvatarFile: "ahmed.jpg"},
+	{Email: "nicole@demo.local", FirstName: "Nicole", LastName: "Martin", Nickname: "nicole", DateOfBirth: "1998-06-21", AboutMe: "Movie nerd and amateur cook. Ask me for a recommendation.", AvatarFile: "nicole.jpg"},
+	{Email: "alex@demo.local", FirstName: "Alex", LastName: "Brown", Nickname: "alex", DateOfBirth: "1994-02-17", AboutMe: "Runner, gamer and weekend hiker.", AvatarFile: "alex.jpg"},
+	{Email: "lina@demo.local", FirstName: "Lina", LastName: "Haddad", Nickname: "lina", DateOfBirth: "1999-09-08", AboutMe: "Illustrator and UI designer. Private but friendly.", AvatarFile: "lina.jpg", Private: true},
+	{Email: "omar@demo.local", FirstName: "Omar", LastName: "Farouk", Nickname: "omar", DateOfBirth: "1996-12-30", AboutMe: "Street photographer. Mostly analog, always curious.", AvatarFile: "omar.jpg", Private: true},
 }
 
 var demoFollows = []demoFollow{
@@ -129,20 +139,20 @@ var demoGroups = []demoGroup{
 }
 
 var demoPosts = []demoPost{
-	{Author: 0, Group: -1, Title: "Hello from the demo feed 👋", Privacy: "public", HoursAgo: 1, Content: "Welcome! This account is seeded with posts, comments, reactions, groups, events and chats so you can explore the whole app right away.\n\nTry following someone, opening a group or sending a message."},
+	{Author: 0, Group: -1, Title: "Hello from the demo feed 👋", Privacy: "public", MediaFile: "feed.jpg", HoursAgo: 1, Content: "Welcome! This account is seeded with posts, comments, reactions, groups, events and chats so you can explore the whole app right away.\n\nTry following someone, opening a group or sending a message."},
 	{Author: 1, Group: -1, Title: "What are you building this weekend?", Privacy: "public", HoursAgo: 2, Content: "I am rewriting a small side project and finally adding realtime updates. Curious what everyone else has on their desk."},
-	{Author: 2, Group: -1, Title: "Three underrated sci-fi movies", Privacy: "public", HoursAgo: 3, Content: "Arrival, Ex Machina and Coherence. All three are tense, smart and very rewatchable.\n\nWhat is your most underrated pick?"},
-	{Author: 3, Group: -1, Title: "Marathon training: week 6", Privacy: "public", HoursAgo: 4, Content: "Long run done before breakfast. The plan is finally feeling manageable, and the rest days are doing their job."},
+	{Author: 2, Group: -1, Title: "Three underrated sci-fi movies", Privacy: "public", MediaFile: "scifi.jpg", HoursAgo: 3, Content: "Arrival, Ex Machina and Coherence. All three are tense, smart and very rewatchable.\n\nWhat is your most underrated pick?"},
+	{Author: 3, Group: -1, Title: "Marathon training: week 6", Privacy: "public", MediaFile: "run.jpg", HoursAgo: 4, Content: "Long run done before breakfast. The plan is finally feeling manageable, and the rest days are doing their job."},
 	{Author: 0, Group: -1, Title: "Weekend plan: coffee and code", Privacy: "almost_private", HoursAgo: 5, Content: "Keeping this one for my followers: coffee, a small side project and absolutely no meetings on Saturday."},
-	{Author: 2, Group: -1, Title: "Small circle movie night", Privacy: "private", Viewers: []int{0, 3}, HoursAgo: 6, Content: "Private post for the movie crew. I have a surprise pick for Friday and snacks are already covered."},
-	{Author: 4, Group: -1, Title: "New illustration series", Privacy: "public", HoursAgo: 7, Content: "I just finished a set of warm, grainy illustrations. Sharing a few soon once the colors settle."},
-	{Author: 5, Group: -1, Title: "Morning light in the old town", Privacy: "public", HoursAgo: 8, Content: "Walked around with one lens and half a roll of film. The quiet streets before 8am are the best part of the city."},
+	{Author: 2, Group: -1, Title: "Small circle movie night", Privacy: "private", MediaFile: "movie.jpg", Viewers: []int{0, 3}, HoursAgo: 6, Content: "Private post for the movie crew. I have a surprise pick for Friday and snacks are already covered."},
+	{Author: 4, Group: -1, Title: "New illustration series", Privacy: "public", MediaFile: "petals.gif", HoursAgo: 7, Content: "A little looping motion study of petals in the morning light. Sharing a few longer pieces once the colors settle."},
+	{Author: 5, Group: -1, Title: "Morning light in the old town", Privacy: "public", MediaFile: "flowers.mp4", HoursAgo: 8, Content: "The flower market was already awake before the streets filled up. Five quiet seconds of spring in the city."},
 	{Author: 1, Group: -1, Title: "Looking for Go beta testers", Privacy: "almost_private", HoursAgo: 9, Content: "Followers only: I need a few people to try a tiny CLI before I publish it. It is small, fast and mostly harmless."},
 	{Author: 3, Group: -1, Title: "My favorite running playlist", Privacy: "public", HoursAgo: 10, Content: "Synthwave for the first half, something calmer for the cooldown. It makes the long runs feel shorter."},
-	{Author: 0, Group: 0, Title: "Welcome to Go Developers", Privacy: "public", HoursAgo: 11, Content: "Introduce yourself and share what you are building. Beginners are very welcome here."},
+	{Author: 0, Group: 0, Title: "Welcome to Go Developers", Privacy: "public", MediaFile: "go.jpg", HoursAgo: 11, Content: "Introduce yourself and share what you are building. Beginners are very welcome here."},
 	{Author: 1, Group: 0, Title: "Favorite Go package?", Privacy: "public", HoursAgo: 12, Content: "Mine is still the standard library net/http. Simple, boring and dependable. What do you reach for first?"},
-	{Author: 2, Group: 1, Title: "This week's movie pick", Privacy: "public", HoursAgo: 13, Content: "Arrival is the pick. Slow, beautiful and worth discussing afterwards."},
-	{Author: 3, Group: 2, Title: "Saturday route", Privacy: "public", HoursAgo: 14, Content: "Twelve kilometers along the river, easy pace, coffee at the end. Meet at the usual bridge."},
+	{Author: 2, Group: 1, Title: "This week's movie pick", Privacy: "public", MediaFile: "movie-night.mp4", HoursAgo: 13, Content: "Arrival is the pick. Slow, beautiful and worth discussing afterwards."},
+	{Author: 3, Group: 2, Title: "Saturday route", Privacy: "public", MediaFile: "route.jpg", HoursAgo: 14, Content: "Twelve kilometers along the river, easy pace, coffee at the end. Meet at the usual bridge."},
 }
 
 var demoComments = []demoComment{
@@ -240,20 +250,37 @@ var demoGroupMessages = []demoGroupMessage{
 	{Group: 2, From: 1, Content: "Joining too, see you at 7:30.", HoursAgo: 3.8},
 }
 
-// Seed inserts demo data once, on the first startup that has no demo accounts.
-func Seed() error {
+// Seed inserts demo data once and refreshes demo media on later startups.
+func Seed(uploadsDir string) error {
 	tx, err := Database.Begin()
 	if err != nil {
 		return fmt.Errorf("seed: begin tx: %w", err)
 	}
 	defer tx.Rollback()
 
+	placeholders := make([]string, len(demoUsers))
+	emails := make([]any, len(demoUsers))
+	for i, u := range demoUsers {
+		placeholders[i] = "?"
+		emails[i] = u.Email
+	}
 	var existing int
-	if err := tx.QueryRow("SELECT COUNT(*) FROM users WHERE email = ?", demoUsers[0].Email).Scan(&existing); err != nil {
-		return fmt.Errorf("seed: check demo account: %w", err)
+	query := "SELECT COUNT(*) FROM users WHERE email IN (" + strings.Join(placeholders, ",") + ")"
+	if err := tx.QueryRow(query, emails...).Scan(&existing); err != nil {
+		return fmt.Errorf("seed: check demo accounts: %w", err)
+	}
+	if existing == len(demoUsers) {
+		if err := refreshDemoMedia(tx, uploadsDir); err != nil {
+			return err
+		}
+		if err := tx.Commit(); err != nil {
+			return fmt.Errorf("seed: commit media refresh: %w", err)
+		}
+		log.Println("Seed: demo media refreshed")
+		return nil
 	}
 	if existing > 0 {
-		log.Println("Seed: demo data already present, skipping")
+		log.Println("Seed: partial demo data present, skipping")
 		return nil
 	}
 
@@ -266,10 +293,14 @@ func Seed() error {
 	userIDs := make([]int64, len(demoUsers))
 	for i, u := range demoUsers {
 		createdAt := now.Add(-time.Duration(i+1) * 24 * time.Hour).Format("2006-01-02 15:04:05")
+		avatar, err := stageDemoAsset(uploadsDir, "avatars/"+u.AvatarFile)
+		if err != nil {
+			return fmt.Errorf("seed: avatar %s: %w", u.AvatarFile, err)
+		}
 		res, err := tx.Exec(
-			`INSERT INTO users (first_name, last_name, email, password, date_of_birth, nickname, about_me, is_private, created_at, last_seen)
-			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			u.FirstName, u.LastName, u.Email, string(passwordHash), u.DateOfBirth, u.Nickname, u.AboutMe, u.Private, createdAt, createdAt,
+			`INSERT INTO users (first_name, last_name, email, password, date_of_birth, nickname, about_me, avatar, is_private, created_at, last_seen)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			u.FirstName, u.LastName, u.Email, string(passwordHash), u.DateOfBirth, u.Nickname, u.AboutMe, avatar, u.Private, createdAt, createdAt,
 		)
 		if err != nil {
 			return fmt.Errorf("seed: insert user %s: %w", u.Nickname, err)
@@ -361,9 +392,16 @@ func Seed() error {
 			groupID = groupIDs[p.Group]
 		}
 		createdAt := now.Add(-time.Duration(p.HoursAgo * float64(time.Hour))).Format("2006-01-02 15:04:05")
+		image := ""
+		if p.MediaFile != "" {
+			image, err = stageDemoAsset(uploadsDir, "posts/"+p.MediaFile)
+			if err != nil {
+				return fmt.Errorf("seed: post media %s: %w", p.MediaFile, err)
+			}
+		}
 		res, err := tx.Exec(
-			"INSERT INTO posts (user_id, group_id, title, content, privacy, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-			userIDs[p.Author], groupID, p.Title, p.Content, p.Privacy, createdAt,
+			"INSERT INTO posts (user_id, group_id, title, content, image, privacy, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+			userIDs[p.Author], groupID, p.Title, p.Content, image, p.Privacy, createdAt,
 		)
 		if err != nil {
 			return fmt.Errorf("seed: insert post %d: %w", i, err)
@@ -485,4 +523,64 @@ func Seed() error {
 	log.Printf("Seed: inserted %d users, %d posts, %d comments, %d groups, %d events, %d messages",
 		len(demoUsers), len(demoPosts), len(demoComments), len(demoGroups), len(demoEvents), len(demoMessages)+len(demoGroupMessages))
 	return nil
+}
+
+// refreshDemoMedia writes the embedded media and points existing demo rows at it.
+func refreshDemoMedia(tx *sql.Tx, uploadsDir string) error {
+	userIDs, err := demoUserIDs(tx)
+	if err != nil {
+		return err
+	}
+	for _, u := range demoUsers {
+		avatar, err := stageDemoAsset(uploadsDir, "avatars/"+u.AvatarFile)
+		if err != nil {
+			return fmt.Errorf("seed: avatar %s: %w", u.AvatarFile, err)
+		}
+		if _, err := tx.Exec("UPDATE users SET avatar = ? WHERE email = ?", avatar, u.Email); err != nil {
+			return fmt.Errorf("seed: refresh avatar %s: %w", u.Nickname, err)
+		}
+	}
+	for _, p := range demoPosts {
+		if p.MediaFile == "" {
+			continue
+		}
+		image, err := stageDemoAsset(uploadsDir, "posts/"+p.MediaFile)
+		if err != nil {
+			return fmt.Errorf("seed: post media %s: %w", p.MediaFile, err)
+		}
+		if _, err := tx.Exec(
+			"UPDATE posts SET image = ? WHERE user_id = ? AND title = ?",
+			image, userIDs[p.Author], p.Title,
+		); err != nil {
+			return fmt.Errorf("seed: refresh post media %s: %w", p.Title, err)
+		}
+	}
+	return nil
+}
+
+// demoUserIDs returns demo user ids ordered like demoUsers.
+func demoUserIDs(tx *sql.Tx) ([]int64, error) {
+	ids := make([]int64, len(demoUsers))
+	for i, u := range demoUsers {
+		if err := tx.QueryRow("SELECT id FROM users WHERE email = ?", u.Email).Scan(&ids[i]); err != nil {
+			return nil, fmt.Errorf("seed: demo user id %s: %w", u.Nickname, err)
+		}
+	}
+	return ids, nil
+}
+
+// stageDemoAsset writes one embedded file under uploadsDir and returns its public URL.
+func stageDemoAsset(uploadsDir, rel string) (string, error) {
+	data, err := demoAssets.ReadFile("demoassets/" + rel)
+	if err != nil {
+		return "", fmt.Errorf("read demo asset: %w", err)
+	}
+	target := filepath.Join(uploadsDir, filepath.FromSlash(rel))
+	if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+		return "", fmt.Errorf("create demo asset dir: %w", err)
+	}
+	if err := os.WriteFile(target, data, 0o644); err != nil {
+		return "", fmt.Errorf("write demo asset: %w", err)
+	}
+	return "/uploads/" + rel, nil
 }

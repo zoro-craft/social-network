@@ -9,6 +9,7 @@ import { useImageInput } from '@/hooks/useImageInput';
 import { API_BASE } from '@/utils/api';
 import formatDate from '@/utils/format';
 import Avatar from '@/components/Avatar';
+import PostMedia from '@/components/PostMedia';
 
 export default function CommentPage() {
   const { id } = useParams();
@@ -102,14 +103,7 @@ export default function CommentPage() {
             <span>{formatDate(post.created_at)}</span>
           </div>
           <p className="glass-post-title">{post.title}</p>
-          {post.image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              className="glass-post-image"
-              src={`${API_BASE}${post.image}`}
-              alt=""
-            />
-          )}
+          <PostMedia src={post.image} />
           <p className="glass-post-content">{post.content}</p>
         </div>
 

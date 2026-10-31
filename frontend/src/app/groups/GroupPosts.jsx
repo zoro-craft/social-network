@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { API_BASE } from '@/utils/api';
 import formatDate from '@/utils/format';
+import PostMedia from '@/components/PostMedia';
 import { useToast } from '@/app/context/ToastContext';
 
 export default function GroupPosts({ groupId }) {
@@ -58,14 +59,7 @@ export default function GroupPosts({ groupId }) {
                     </div>
                     <div className="glass-post-title">{post.title}</div>
 
-                    {post.image && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                            className="glass-post-image"
-                            src={`${API_BASE}${post.image}`}
-                            alt=""
-                        />
-                    )}
+                    <PostMedia src={post.image} />
 
                     <div className="glass-post-content">{post.content}</div>
 

@@ -11,6 +11,7 @@ import (
 
 	"zone/internal/database"
 	"zone/internal/routing"
+	"zone/internal/utils"
 	"zone/internal/websocket"
 )
 
@@ -21,7 +22,7 @@ func main() {
 	}
 
 	// Fill the database with demo accounts and content on first startup.
-	if err := database.Seed(); err != nil {
+	if err := database.Seed(utils.UploadsDir()); err != nil {
 		log.Fatal(err)
 	}
 

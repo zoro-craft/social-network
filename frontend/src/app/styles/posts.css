@@ -95,6 +95,11 @@
   margin: 4px 0 12px;
 }
 
+.glass-post-video {
+  object-fit: contain;
+  background: #000;
+}
+
 /* ── Reactions ────────────────────────────────────────────────── */
 .glass-reactions {
   display: flex;
